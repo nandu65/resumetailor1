@@ -72,7 +72,7 @@ export default function Dashboard() {
     }
   };
 
-  const remaining = profile?.plan === "free" ? Math.max(0, 1 - (profile?.optimizations_used ?? 0)) : "∞";
+  const remaining: number | string = "∞";
 
   return (
     <div className="min-h-screen bg-background">

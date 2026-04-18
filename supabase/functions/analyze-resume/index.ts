@@ -48,11 +48,7 @@ serve(async (req) => {
       .eq("user_id", userId)
       .maybeSingle();
 
-    if (profile && profile.plan === "free" && profile.optimizations_used >= 1) {
-      return new Response(JSON.stringify({ error: "Free plan limit reached. Upgrade to continue." }), {
-        status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Free for all (limit temporarily disabled)
 
     const systemPrompt = `You are an expert ATS (Applicant Tracking System) and resume optimization specialist. Analyze the provided resume against the job description and return structured tailoring advice. Be specific, actionable, and concise.`;
 
