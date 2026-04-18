@@ -72,7 +72,7 @@ export default function Dashboard() {
     }
   };
 
-  const remaining = profile?.plan === "free" ? Math.max(0, 1 - (profile?.optimizations_used ?? 0)) : "∞";
+  const remaining: number | string = "∞";
 
   return (
     <div className="min-h-screen bg-background">
@@ -85,7 +85,7 @@ export default function Dashboard() {
           </div>
           <div className="rounded-xl border border-border bg-gradient-card px-4 py-3 text-sm shadow-card">
             <div className="text-xs text-muted-foreground uppercase font-semibold tracking-wide">Plan · {profile?.plan ?? "free"}</div>
-            <div className="font-display font-semibold">{remaining} optimization{remaining === 1 ? "" : "s"} left</div>
+            <div className="font-display font-semibold">{remaining} optimizations left</div>
           </div>
         </div>
 
