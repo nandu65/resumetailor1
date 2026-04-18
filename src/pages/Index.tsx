@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, FileText, Target, Zap, CheckCircle2, BarChart3, ShieldCheck } from "lucide-react";
+import { ArrowRight, Sparkles, FileText, Target, Zap, CheckCircle2, BarChart3, ShieldCheck, Mail, Layers, GitCompare, Gauge, SlidersHorizontal, Download, Building2, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 
@@ -62,6 +62,47 @@ const Index = () => {
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Pro toolkit showcase */}
+      <section className="bg-secondary/40 border-y border-border">
+        <div className="container py-24">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-accent px-4 py-1.5 text-xs font-medium text-accent-foreground mb-4">
+              <Sparkles className="h-3.5 w-3.5" /> All included, free for everyone
+            </div>
+            <h2 className="font-display text-4xl font-bold tracking-tight">A complete job-search toolkit</h2>
+            <p className="mt-4 text-muted-foreground">Eight powerful tools working together — from tailoring to interview-ready in minutes.</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              { icon: Mail, title: "Cover Letter Generator", desc: "Tailored cover letter from your resume + JD in one click.", tag: "AI" },
+              { icon: Layers, title: "Multiple Resume Versions", desc: "Save & revisit a tailored copy for every job you apply to.", tag: "Saved" },
+              { icon: GitCompare, title: "Before / After Diff", desc: "See exactly what changed with word-level highlighting.", tag: "Visual" },
+              { icon: Gauge, title: "Keyword Density Meter", desc: "Visual score per keyword so you hit ATS thresholds.", tag: "ATS" },
+              { icon: SlidersHorizontal, title: "Rewrite Intensity", desc: "Choose Light polish, Balanced, or Aggressive rewrite.", tag: "Control" },
+              { icon: Download, title: "Multi-Format Export", desc: "Download as PDF, DOCX, plain text, or Markdown.", tag: "4 formats" },
+              { icon: Building2, title: "Company Research Brief", desc: "AI summary of the company + interview talking points.", tag: "Research" },
+              { icon: GraduationCap, title: "Skill Gap Analysis", desc: "Targeted courses & certs to close the gaps fast.", tag: "Growth" },
+            ].map(({ icon: Icon, title, desc, tag }) => (
+              <div key={title} className="group relative rounded-2xl border border-border bg-background p-6 shadow-card hover:shadow-elegant hover:-translate-y-0.5 transition-all duration-300">
+                <div className="absolute top-4 right-4 text-[10px] font-semibold uppercase tracking-wider text-primary bg-primary/10 rounded-full px-2 py-0.5">{tag}</div>
+                <div className="h-10 w-10 rounded-xl bg-gradient-primary text-primary-foreground flex items-center justify-center mb-4 shadow-glow">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h3 className="font-display font-semibold">{title}</h3>
+                <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 text-center">
+            <Button asChild size="lg" className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow h-12 px-7">
+              <Link to="/auth">Try the full toolkit free <ArrowRight className="ml-1 h-4 w-4" /></Link>
+            </Button>
+          </div>
         </div>
       </section>
 
