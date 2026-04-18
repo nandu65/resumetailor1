@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, FileText, Loader2, Sparkles, History } from "lucide-react";
+import { Upload, FileText, Loader2, Sparkles, History, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { extractTextFromFile } from "@/lib/extractText";
 import { toast } from "sonner";
+
+type RewriteLevel = "light" | "balanced" | "aggressive";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -17,17 +20,24 @@ export default function Dashboard() {
   const [resumeText, setResumeText] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [filename, setFilename] = useState<string | null>(null);
+  const [title, setTitle] = useState("");
+  const [rewriteLevel, setRewriteLevel] = useState<RewriteLevel>("balanced");
   const [extracting, setExtracting] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [profile, setProfile] = useState<{ plan: string; optimizations_used: number } | null>(null);
   const [history, setHistory] = useState<any[]>([]);
 
+  const loadHistory = () => {
+    if (!user) return;
+    supabase.from("optimizations").select("id, ats_score, created_at, title, company, role").eq("user_id", user.id).order("created_at", { ascending: false }).limit(9)
+      .then(({ data }) => setHistory(data ?? []));
+  };
+
   useEffect(() => {
     if (!user) return;
     supabase.from("profiles").select("plan, optimizations_used").eq("user_id", user.id).maybeSingle()
       .then(({ data }) => setProfile(data));
-    supabase.from("optimizations").select("id, ats_score, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5)
-      .then(({ data }) => setHistory(data ?? []));
+    loadHistory();
   }, [user]);
 
   const handleFile = async (file: File) => {
@@ -51,18 +61,14 @@ export default function Dashboard() {
     setAnalyzing(true);
     try {
       const { data, error } = await supabase.functions.invoke("analyze-resume", {
-        body: { resume: resumeText, jobDescription },
+        body: { resume: resumeText, jobDescription, rewriteLevel, title: title.trim() || undefined },
       });
       if (error) {
-        // supabase invoke wraps non-2xx; try parsing context
         const msg = (error as any).context?.error || error.message || "Analysis failed";
         toast.error(msg);
         return;
       }
-      if (data?.error) {
-        toast.error(data.error);
-        return;
-      }
+      if (data?.error) { toast.error(data.error); return; }
       toast.success("Resume tailored!");
       navigate(`/results/${data.optimization.id}`);
     } catch (e) {
@@ -73,6 +79,12 @@ export default function Dashboard() {
   };
 
   const remaining: number | string = "∞";
+
+  const levels: { value: RewriteLevel; label: string; desc: string }[] = [
+    { value: "light", label: "Light polish", desc: "Minimal edits, keep voice" },
+    { value: "balanced", label: "Balanced", desc: "Strong rewrite + keywords" },
+    { value: "aggressive", label: "Aggressive", desc: "Max rewrite for ATS" },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -137,7 +149,32 @@ export default function Dashboard() {
             </div>
             <Textarea value={jobDescription} onChange={(e) => setJobDescription(e.target.value)}
               placeholder="Paste the full job description here — the more detail, the better the tailoring..."
-              className="min-h-[340px]" />
+              className="min-h-[280px]" />
+
+            <div className="mt-4">
+              <Label htmlFor="title" className="text-xs">Version name (optional)</Label>
+              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Acme – Senior Engineer" className="mt-1.5" />
+            </div>
+          </div>
+        </div>
+
+        {/* Rewrite level selector */}
+        <div className="mt-6 rounded-2xl border border-border bg-gradient-card p-6 shadow-card">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <h3 className="font-display font-semibold">Rewrite intensity</h3>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-3">
+            {levels.map(l => (
+              <button key={l.value}
+                onClick={() => setRewriteLevel(l.value)}
+                type="button"
+                className={`text-left rounded-xl border-2 p-4 transition-all ${rewriteLevel === l.value ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/40"}`}>
+                <div className="font-display font-semibold text-sm">{l.label}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{l.desc}</div>
+              </button>
+            ))}
           </div>
         </div>
 
@@ -152,14 +189,23 @@ export default function Dashboard() {
           <div className="mt-12">
             <div className="flex items-center gap-2 mb-4">
               <History className="h-4 w-4 text-muted-foreground" />
-              <h3 className="font-display font-semibold">Recent optimizations</h3>
+              <h3 className="font-display font-semibold">Your tailored versions</h3>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {history.map((h) => (
                 <button key={h.id} onClick={() => navigate(`/results/${h.id}`)}
                   className="text-left rounded-xl border border-border bg-card p-4 shadow-card hover:shadow-elegant hover:-translate-y-0.5 transition-all">
-                  <div className="text-xs text-muted-foreground">{new Date(h.created_at).toLocaleString()}</div>
-                  <div className="mt-1 font-display font-semibold">Score: <span className="text-primary">{h.ats_score ?? "—"}</span>/100</div>
+                  <div className="font-display font-semibold truncate">{h.title || "Untitled"}</div>
+                  {(h.company || h.role) && (
+                    <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1 truncate">
+                      <Building2 className="h-3 w-3 shrink-0" />
+                      {[h.company, h.role].filter(Boolean).join(" · ")}
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="text-xs text-muted-foreground">{new Date(h.created_at).toLocaleDateString()}</div>
+                    <div className="text-sm font-display font-semibold">Score <span className="text-primary">{h.ats_score ?? "—"}</span></div>
+                  </div>
                 </button>
               ))}
             </div>
