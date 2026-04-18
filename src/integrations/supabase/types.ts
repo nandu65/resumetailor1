@@ -17,38 +17,62 @@ export type Database = {
       optimizations: {
         Row: {
           ats_score: number | null
+          company: string | null
+          company_brief: Json | null
+          cover_letter: string | null
           created_at: string
           id: string
           improved_bullets: Json | null
           job_description: string
+          keyword_density: Json | null
           missing_keywords: Json | null
           professional_summary: string | null
           resume_text: string
+          rewrite_level: string
+          role: string | null
+          skill_gaps: Json | null
           skills_to_add: Json | null
+          title: string | null
           user_id: string
         }
         Insert: {
           ats_score?: number | null
+          company?: string | null
+          company_brief?: Json | null
+          cover_letter?: string | null
           created_at?: string
           id?: string
           improved_bullets?: Json | null
           job_description: string
+          keyword_density?: Json | null
           missing_keywords?: Json | null
           professional_summary?: string | null
           resume_text: string
+          rewrite_level?: string
+          role?: string | null
+          skill_gaps?: Json | null
           skills_to_add?: Json | null
+          title?: string | null
           user_id: string
         }
         Update: {
           ats_score?: number | null
+          company?: string | null
+          company_brief?: Json | null
+          cover_letter?: string | null
           created_at?: string
           id?: string
           improved_bullets?: Json | null
           job_description?: string
+          keyword_density?: Json | null
           missing_keywords?: Json | null
           professional_summary?: string | null
           resume_text?: string
+          rewrite_level?: string
+          role?: string | null
+          skill_gaps?: Json | null
           skills_to_add?: Json | null
+          title?: string | null
           user_id?: string
         }
         Relationships: []
