@@ -34,25 +34,23 @@ serve(async (req) => {
     }
     const userId = userData.user.id;
 
-    const { resume, jobDescription } = await req.json();
+    const { resume, jobDescription, rewriteLevel = "balanced", title } = await req.json();
     if (!resume || !jobDescription) {
       return new Response(JSON.stringify({ error: "Resume and job description are required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Check usage / plan
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("plan, optimizations_used")
-      .eq("user_id", userId)
-      .maybeSingle();
+    const levelGuidance: Record<string, string> = {
+      light: "LIGHT POLISH: Make minimal edits — fix grammar, add 1-2 missing keywords, slight rephrasing only. Preserve original voice.",
+      balanced: "BALANCED REWRITE: Rewrite bullets with strong action verbs and metrics, weave in JD keywords naturally.",
+      aggressive: "AGGRESSIVE REWRITE: Heavily restructure bullets for maximum ATS match — assume metrics where reasonable, lead with JD keywords, transform weak bullets dramatically.",
+    };
+    const level = levelGuidance[rewriteLevel] ?? levelGuidance.balanced;
 
-    // Free for all (limit temporarily disabled)
+    const systemPrompt = `You are an expert ATS and resume optimization specialist. Analyze the resume against the job description and return structured tailoring advice. ${level} Be specific, actionable, and concise.`;
 
-    const systemPrompt = `You are an expert ATS (Applicant Tracking System) and resume optimization specialist. Analyze the provided resume against the job description and return structured tailoring advice. Be specific, actionable, and concise.`;
-
-    const userPrompt = `RESUME:\n${resume}\n\nJOB DESCRIPTION:\n${jobDescription}\n\nAnalyze the match and provide tailoring recommendations.`;
+    const userPrompt = `RESUME:\n${resume}\n\nJOB DESCRIPTION:\n${jobDescription}\n\nAnalyze the match and provide tailoring recommendations using the rewrite intensity above.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -75,7 +73,23 @@ serve(async (req) => {
               type: "object",
               properties: {
                 ats_score: { type: "number", description: "ATS match score from 0-100" },
+                company: { type: "string", description: "Company name extracted from JD, or empty if unknown" },
+                role: { type: "string", description: "Job title extracted from JD" },
                 missing_keywords: { type: "array", items: { type: "string" }, description: "Important keywords from the JD missing in the resume" },
+                keyword_density: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      keyword: { type: "string" },
+                      jd_count: { type: "number", description: "Times keyword appears in JD" },
+                      resume_count: { type: "number", description: "Times keyword appears in resume" },
+                      importance: { type: "string", enum: ["high", "medium", "low"] },
+                    },
+                    required: ["keyword", "jd_count", "resume_count", "importance"],
+                  },
+                  description: "8-15 most important JD keywords with density comparison",
+                },
                 professional_summary: { type: "string", description: "A tailored 3-4 sentence professional summary" },
                 improved_bullets: {
                   type: "array",
@@ -87,11 +101,11 @@ serve(async (req) => {
                     },
                     required: ["original", "improved"],
                   },
-                  description: "5-8 improved work experience bullet points (rewritten with metrics and JD keywords)",
+                  description: "5-8 improved work experience bullet points",
                 },
                 skills_to_add: { type: "array", items: { type: "string" }, description: "Skills to add to the resume from the JD" },
               },
-              required: ["ats_score", "missing_keywords", "professional_summary", "improved_bullets", "skills_to_add"],
+              required: ["ats_score", "missing_keywords", "keyword_density", "professional_summary", "improved_bullets", "skills_to_add", "company", "role"],
             },
           },
         }],
@@ -122,15 +136,23 @@ serve(async (req) => {
     if (!toolCall) throw new Error("No analysis returned");
     const analysis = JSON.parse(toolCall.function.arguments);
 
-    // Save optimization
+    const finalTitle = title?.trim() ||
+      [analysis.company, analysis.role].filter(Boolean).join(" – ") ||
+      `Tailored ${new Date().toLocaleDateString()}`;
+
     const { data: opt, error: insertErr } = await supabase
       .from("optimizations")
       .insert({
         user_id: userId,
         resume_text: resume,
         job_description: jobDescription,
+        rewrite_level: rewriteLevel,
+        title: finalTitle,
+        company: analysis.company || null,
+        role: analysis.role || null,
         ats_score: analysis.ats_score,
         missing_keywords: analysis.missing_keywords,
+        keyword_density: analysis.keyword_density,
         professional_summary: analysis.professional_summary,
         improved_bullets: analysis.improved_bullets,
         skills_to_add: analysis.skills_to_add,
@@ -142,12 +164,6 @@ serve(async (req) => {
       console.error("Insert error:", insertErr);
       throw insertErr;
     }
-
-    // Increment usage
-    await supabase
-      .from("profiles")
-      .update({ optimizations_used: (profile?.optimizations_used ?? 0) + 1 })
-      .eq("user_id", userId);
 
     return new Response(JSON.stringify({ optimization: opt }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
