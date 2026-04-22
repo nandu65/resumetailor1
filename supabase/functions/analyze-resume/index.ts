@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { computeAtsScore } from "../_shared/atsScore.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -136,6 +137,19 @@ serve(async (req) => {
     if (!toolCall) throw new Error("No analysis returned");
     const analysis = JSON.parse(toolCall.function.arguments);
 
+    // Deterministic scoring engine — recomputes every time, so improved resumes raise the score.
+    const scoring = computeAtsScore(resume, jobDescription);
+
+    // Look up the user's previous score for the SAME job description (delta).
+    const { data: prev } = await supabase
+      .from("optimizations")
+      .select("ats_score")
+      .eq("user_id", userId)
+      .eq("job_description", jobDescription)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
     const finalTitle = title?.trim() ||
       [analysis.company, analysis.role].filter(Boolean).join(" – ") ||
       `Tailored ${new Date().toLocaleDateString()}`;
@@ -150,7 +164,11 @@ serve(async (req) => {
         title: finalTitle,
         company: analysis.company || null,
         role: analysis.role || null,
-        ats_score: analysis.ats_score,
+        ats_score: scoring.ats_score,
+        previous_ats_score: prev?.ats_score ?? null,
+        recruiter_score: scoring.recruiter_score,
+        score_breakdown: scoring.breakdown,
+        recommendations: scoring.recommendations,
         missing_keywords: analysis.missing_keywords,
         keyword_density: analysis.keyword_density,
         professional_summary: analysis.professional_summary,

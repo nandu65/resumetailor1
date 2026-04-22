@@ -26,10 +26,14 @@ export type Database = {
           job_description: string
           keyword_density: Json | null
           missing_keywords: Json | null
+          previous_ats_score: number | null
           professional_summary: string | null
+          recommendations: Json | null
+          recruiter_score: number | null
           resume_text: string
           rewrite_level: string
           role: string | null
+          score_breakdown: Json | null
           skill_gaps: Json | null
           skills_to_add: Json | null
           title: string | null
@@ -46,10 +50,14 @@ export type Database = {
           job_description: string
           keyword_density?: Json | null
           missing_keywords?: Json | null
+          previous_ats_score?: number | null
           professional_summary?: string | null
+          recommendations?: Json | null
+          recruiter_score?: number | null
           resume_text: string
           rewrite_level?: string
           role?: string | null
+          score_breakdown?: Json | null
           skill_gaps?: Json | null
           skills_to_add?: Json | null
           title?: string | null
@@ -66,10 +74,14 @@ export type Database = {
           job_description?: string
           keyword_density?: Json | null
           missing_keywords?: Json | null
+          previous_ats_score?: number | null
           professional_summary?: string | null
+          recommendations?: Json | null
+          recruiter_score?: number | null
           resume_text?: string
           rewrite_level?: string
           role?: string | null
+          score_breakdown?: Json | null
           skill_gaps?: Json | null
           skills_to_add?: Json | null
           title?: string | null
