@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Download, Loader2, Target, Sparkles, ListChecks, Lightbulb, Tag, FileText, Mail, Building2, GraduationCap, BarChart3, Eye, Code2, ExternalLink } from "lucide-react";
+import { ArrowLeft, Download, Loader2, Target, Sparkles, ListChecks, Lightbulb, Tag, FileText, Mail, Building2, GraduationCap, BarChart3, Eye, Code2, ExternalLink, TrendingUp, TrendingDown, Minus, Award, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,7 @@ import { toast } from "sonner";
 interface KeywordDensity { keyword: string; jd_count: number; resume_count: number; importance: "high" | "medium" | "low"; }
 interface SkillGap { skill: string; priority: "critical" | "important" | "nice-to-have"; why: string; time_to_learn?: string; resources: { name: string; type: string; provider: string; cost?: string }[]; }
 interface CompanyBrief { company_name: string; what_they_do: string; industry?: string; size?: string; values: string[]; recent_news?: string[]; role_focus?: string; interview_talking_points: string[]; questions_to_ask: string[]; }
+interface ScoreCategory { key: string; label: string; score: number; max: number; detail: string; }
 interface Optimization {
   id: string;
   title: string | null;
@@ -22,6 +23,10 @@ interface Optimization {
   role: string | null;
   rewrite_level: string | null;
   ats_score: number | null;
+  previous_ats_score: number | null;
+  recruiter_score: number | null;
+  score_breakdown: ScoreCategory[] | null;
+  recommendations: string[] | null;
   missing_keywords: string[] | null;
   keyword_density: KeywordDensity[] | null;
   professional_summary: string | null;
@@ -107,7 +112,22 @@ export default function Results() {
   }
 
   const score = opt.ats_score ?? 0;
+  const prevScore = opt.previous_ats_score;
+  const delta = prevScore != null ? score - prevScore : null;
+  const recruiter = opt.recruiter_score ?? 0;
+  const breakdown = opt.score_breakdown ?? [];
+  const recs = opt.recommendations ?? [];
   const scoreColor = score >= 75 ? "text-primary" : score >= 50 ? "text-warning" : "text-destructive";
+  const recruiterColor = recruiter >= 75 ? "text-primary" : recruiter >= 50 ? "text-warning" : "text-destructive";
+
+  const deltaCopy = (() => {
+    if (delta == null) return null;
+    if (delta >= 5) return { tone: "up" as const, text: `+${delta} improvement vs your last version`, sub: "Your tailoring made a measurable difference." };
+    if (delta <= -5) return { tone: "down" as const, text: `${delta} from last version`, sub: "Some changes hurt the match — review the recommendations." };
+    return { tone: "flat" as const, text: `${delta >= 0 ? "+" : ""}${delta} vs last version`, sub: score >= 75
+      ? "ATS score was already strong. Improvements focused on recruiter appeal, wording quality, and impact."
+      : "Score moved slightly. Apply the recommendations below to push it higher." };
+  })();
 
   return (
     <div className="min-h-screen bg-background">
@@ -142,31 +162,113 @@ export default function Results() {
           </DropdownMenu>
         </div>
 
-        {/* Score */}
-        <div className="rounded-2xl border border-border bg-gradient-card p-8 shadow-card mb-6 flex flex-col md:flex-row items-center gap-8">
-          <div className="relative h-36 w-36 shrink-0">
-            <svg className="h-full w-full -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="42" stroke="hsl(var(--muted))" strokeWidth="8" fill="none" />
-              <circle cx="50" cy="50" r="42" stroke="hsl(var(--primary))" strokeWidth="8" fill="none"
-                strokeLinecap="round" strokeDasharray={`${(score / 100) * 264} 264`} />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div className={`font-display text-4xl font-extrabold ${scoreColor}`}>{score}</div>
-              <div className="text-xs text-muted-foreground">/ 100</div>
+        {/* Score panel */}
+        <div className="grid lg:grid-cols-5 gap-5 mb-6">
+          {/* ATS score */}
+          <div className="lg:col-span-3 rounded-2xl border border-border bg-gradient-card p-7 shadow-card">
+            <div className="flex flex-col sm:flex-row items-center gap-7">
+              <div className="relative h-36 w-36 shrink-0">
+                <svg className="h-full w-full -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" stroke="hsl(var(--muted))" strokeWidth="8" fill="none" />
+                  <circle cx="50" cy="50" r="42" stroke="hsl(var(--primary))" strokeWidth="8" fill="none"
+                    strokeLinecap="round" strokeDasharray={`${(score / 100) * 264} 264`} />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <div className={`font-display text-4xl font-extrabold ${scoreColor}`}>{score}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">/ 100 ATS</div>
+                </div>
+              </div>
+              <div className="flex-1 text-center sm:text-left min-w-0">
+                <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-primary">
+                  <Target className="h-3.5 w-3.5" /> ATS Match Score
+                </div>
+                <h2 className="font-display text-2xl font-bold mt-2">
+                  {score >= 80 ? "Strong match" : score >= 65 ? "Good match — push it higher" : score >= 45 ? "Needs more tailoring" : "Significant gaps"}
+                </h2>
+                {deltaCopy && (
+                  <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm">
+                    {deltaCopy.tone === "up" && <TrendingUp className="h-4 w-4 text-primary" />}
+                    {deltaCopy.tone === "down" && <TrendingDown className="h-4 w-4 text-destructive" />}
+                    {deltaCopy.tone === "flat" && <Minus className="h-4 w-4 text-muted-foreground" />}
+                    <span className="font-semibold">{prevScore} → {score}</span>
+                    <span className={deltaCopy.tone === "up" ? "text-primary" : deltaCopy.tone === "down" ? "text-destructive" : "text-muted-foreground"}>
+                      {deltaCopy.text}
+                    </span>
+                  </div>
+                )}
+                {deltaCopy && <p className="mt-2 text-xs text-muted-foreground">{deltaCopy.sub}</p>}
+                {!deltaCopy && <p className="mt-2 text-sm text-muted-foreground">First version for this job — re-run after edits to track improvements.</p>}
+              </div>
             </div>
           </div>
-          <div className="flex-1 text-center md:text-left">
+
+          {/* Recruiter Appeal */}
+          <div className="lg:col-span-2 rounded-2xl border border-border bg-gradient-card p-7 shadow-card flex flex-col">
             <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-primary">
-              <Target className="h-3.5 w-3.5" /> ATS Match Score
+              <Award className="h-3.5 w-3.5" /> Recruiter Appeal
             </div>
-            <h2 className="font-display text-2xl font-bold mt-2">
-              {score >= 75 ? "Strong match!" : score >= 50 ? "Good start — room to improve" : "Needs significant tailoring"}
-            </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Apply the recommendations below to maximise your chances of passing automated screens and reaching a recruiter.
+            <div className="flex items-baseline gap-2 mt-2">
+              <div className={`font-display text-5xl font-extrabold ${recruiterColor}`}>{recruiter}</div>
+              <div className="text-sm text-muted-foreground">/ 100</div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {recruiter >= 75 ? "Strong verbs, metrics, and clarity." : recruiter >= 50 ? "Decent — sharpen verbs and add metrics." : "Reads weak to a recruiter — rewrite for impact."}
             </p>
+            <div className="mt-4 h-2 w-full bg-muted rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-primary transition-all" style={{ width: `${recruiter}%` }} />
+            </div>
+            <div className="mt-auto pt-4 text-xs text-muted-foreground leading-relaxed">
+              Measures clarity, action verbs, quantified impact, and persuasive tone — not just keyword matching.
+            </div>
           </div>
         </div>
+
+        {/* Score breakdown */}
+        {breakdown.length > 0 && (
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-card mb-6">
+            <div className="flex items-center gap-2 mb-5">
+              <div className="h-8 w-8 rounded-lg bg-accent flex items-center justify-center text-accent-foreground"><BarChart3 className="h-4 w-4" /></div>
+              <h3 className="font-display font-semibold">Score breakdown</h3>
+              <span className="ml-auto text-xs text-muted-foreground">Weighted out of 100</span>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {breakdown.map((c) => {
+                const pct = c.max ? (c.score / c.max) * 100 : 0;
+                const tone = pct >= 75 ? "bg-primary" : pct >= 45 ? "bg-warning" : "bg-destructive";
+                return (
+                  <div key={c.key} className="rounded-xl border border-border bg-background p-4">
+                    <div className="flex items-baseline justify-between gap-2 mb-1">
+                      <div className="text-sm font-semibold">{c.label}</div>
+                      <div className="text-sm tabular-nums"><span className="font-bold">{c.score}</span><span className="text-muted-foreground">/{c.max}</span></div>
+                    </div>
+                    <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                      <div className={`h-full ${tone} transition-all`} style={{ width: `${pct}%` }} />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">{c.detail}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Recommendations */}
+        {recs.length > 0 && (
+          <div className="rounded-2xl border border-primary/30 bg-gradient-card p-6 shadow-card mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-8 w-8 rounded-lg bg-gradient-primary text-primary-foreground flex items-center justify-center shadow-glow"><Wand2 className="h-4 w-4" /></div>
+              <h3 className="font-display font-semibold">Top ways to improve your score</h3>
+            </div>
+            <ol className="space-y-2.5">
+              {recs.map((r, i) => (
+                <li key={i} className="flex gap-3 text-sm">
+                  <span className="h-6 w-6 shrink-0 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                  <span className="leading-relaxed">{r}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
 
         <Tabs defaultValue="resume" className="w-full">
           <TabsList className="w-full justify-start flex-wrap h-auto bg-card border border-border">
