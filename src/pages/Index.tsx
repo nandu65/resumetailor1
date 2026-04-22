@@ -78,23 +78,24 @@ const Index = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
-              { icon: Mail, title: "Cover Letter Generator", desc: "Tailored cover letter from your resume + JD in one click.", tag: "AI" },
-              { icon: Layers, title: "Multiple Resume Versions", desc: "Save & revisit a tailored copy for every job you apply to.", tag: "Saved" },
-              { icon: GitCompare, title: "Before / After Diff", desc: "See exactly what changed with word-level highlighting.", tag: "Visual" },
-              { icon: Gauge, title: "Keyword Density Meter", desc: "Visual score per keyword so you hit ATS thresholds.", tag: "ATS" },
-              { icon: SlidersHorizontal, title: "Rewrite Intensity", desc: "Choose Light polish, Balanced, or Aggressive rewrite.", tag: "Control" },
-              { icon: Download, title: "Multi-Format Export", desc: "Download as PDF, DOCX, plain text, or Markdown.", tag: "4 formats" },
-              { icon: Building2, title: "Company Research Brief", desc: "AI summary of the company + interview talking points.", tag: "Research" },
-              { icon: GraduationCap, title: "Skill Gap Analysis", desc: "Targeted courses & certs to close the gaps fast.", tag: "Growth" },
-            ].map(({ icon: Icon, title, desc, tag }) => (
-              <div key={title} className="group relative rounded-2xl border border-border bg-background p-6 shadow-card hover:shadow-elegant hover:-translate-y-0.5 transition-all duration-300">
+              { icon: Mail, title: "Cover Letter Generator", desc: "Tailored cover letter from your resume + JD in one click.", tag: "AI", to: "/tools/cover-letter" },
+              { icon: Layers, title: "Multiple Resume Versions", desc: "Save & revisit a tailored copy for every job you apply to.", tag: "Saved", to: "/dashboard" },
+              { icon: GitCompare, title: "Before / After Diff", desc: "See exactly what changed with word-level highlighting.", tag: "Visual", to: "/tools/diff" },
+              { icon: Gauge, title: "Keyword Density Meter", desc: "Visual score per keyword so you hit ATS thresholds.", tag: "ATS", to: "/tools/keyword-density" },
+              { icon: SlidersHorizontal, title: "Rewrite Intensity", desc: "Choose Light polish, Balanced, or Aggressive rewrite.", tag: "Control", to: "/dashboard" },
+              { icon: Download, title: "Multi-Format Export", desc: "Download as PDF, DOCX, plain text, or Markdown.", tag: "4 formats", to: "/dashboard" },
+              { icon: Building2, title: "Company Research Brief", desc: "AI summary of the company + interview talking points.", tag: "Research", to: "/tools/company-brief" },
+              { icon: GraduationCap, title: "Skill Gap Analysis", desc: "Targeted courses & certs to close the gaps fast.", tag: "Growth", to: "/tools/skill-gap" },
+            ].map(({ icon: Icon, title, desc, tag, to }) => (
+              <Link to={to} key={title} className="group relative rounded-2xl border border-border bg-background p-6 shadow-card hover:shadow-elegant hover:-translate-y-0.5 hover:border-primary/40 transition-all duration-300 block">
                 <div className="absolute top-4 right-4 text-[10px] font-semibold uppercase tracking-wider text-primary bg-primary/10 rounded-full px-2 py-0.5">{tag}</div>
                 <div className="h-10 w-10 rounded-xl bg-gradient-primary text-primary-foreground flex items-center justify-center mb-4 shadow-glow">
                   <Icon className="h-5 w-5" />
                 </div>
-                <h3 className="font-display font-semibold">{title}</h3>
+                <h3 className="font-display font-semibold group-hover:text-primary transition-colors">{title}</h3>
                 <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{desc}</p>
-              </div>
+                <div className="mt-3 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">Open tool →</div>
+              </Link>
             ))}
           </div>
 
