@@ -18,7 +18,7 @@ const Index = () => {
           </div>
           <h1 className="font-display text-5xl md:text-7xl font-extrabold tracking-tight text-balance max-w-4xl mx-auto animate-fade-in-up">
             Land more interviews with a{" "}
-            <span className="bg-gradient-primary bg-clip-text text-transparent">resume that fits</span>
+            <span className="text-foreground">resume that fits</span>
           </h1>
           <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto text-balance animate-fade-in-up">
             Paste any job description and we'll tailor your resume to beat ATS filters and impress recruiters — in seconds.
