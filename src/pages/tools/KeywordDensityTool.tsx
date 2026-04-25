@@ -32,6 +32,7 @@ function saveBaseline(jd: string, score: number) {
 }
 
 export default function KeywordDensityTool() {
+  const navigate = useNavigate();
   const [resume, setResume] = useState("");
   const [jd, setJd] = useState("");
   const [result, setResult] = useState<AtsResult | null>(null);
