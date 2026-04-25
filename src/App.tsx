@@ -8,6 +8,7 @@ import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Results from "./pages/Results.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import Pricing from "./pages/Pricing.tsx";
 import CoverLetterTool from "./pages/tools/CoverLetterTool.tsx";
 import CompanyBriefTool from "./pages/tools/CompanyBriefTool.tsx";
 import SkillGapTool from "./pages/tools/SkillGapTool.tsx";
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/tools/skill-gap" element={<SkillGapTool />} />
           <Route path="/tools/keyword-density" element={<KeywordDensityTool />} />
           <Route path="/tools/diff" element={<DiffTool />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
