@@ -34,6 +34,7 @@ const App = () => (
           <Route path="/tools/skill-gap" element={<SkillGapTool />} />
           <Route path="/tools/keyword-density" element={<KeywordDensityTool />} />
           <Route path="/tools/diff" element={<DiffTool />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
