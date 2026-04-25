@@ -233,12 +233,21 @@ export default function KeywordDensityTool() {
                   Missing keywords ({result.missing_keywords.length})
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {result.missing_keywords.map((k) => (
+                  {result.missing_keywords.slice(0, 3).map((k) => (
                     <span
                       key={k}
                       className="inline-flex rounded-full border border-destructive/30 bg-destructive/5 text-foreground/80 px-2.5 py-0.5 text-xs font-medium"
                     >
                       {k}
+                    </span>
+                  ))}
+                  {result.missing_keywords.slice(3).map((k, i) => (
+                    <span
+                      key={`locked-${i}`}
+                      className="relative inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-2.5 py-0.5 text-xs font-medium select-none"
+                    >
+                      <Lock className="h-3 w-3 text-muted-foreground" />
+                      <span className="blur-sm">{k}</span>
                     </span>
                   ))}
                   {result.missing_keywords.length === 0 && (
@@ -248,8 +257,8 @@ export default function KeywordDensityTool() {
               </div>
             </div>
 
-            {result.improvements.length > 0 && (
-              <div className="mt-6 rounded-2xl border border-primary/30 bg-gradient-card p-6 shadow-card">
+            {(result.improvements.length > 0 || result.missing_keywords.length > 3) && (
+              <div className="mt-6 rounded-2xl border border-primary/40 bg-gradient-card p-6 shadow-card relative overflow-hidden">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="h-8 w-8 rounded-lg bg-gradient-primary text-primary-foreground flex items-center justify-center shadow-glow">
                     <Wand2 className="h-4 w-4" />
@@ -257,7 +266,7 @@ export default function KeywordDensityTool() {
                   <h3 className="font-display font-semibold">Top ways to improve</h3>
                 </div>
                 <ol className="space-y-2.5">
-                  {result.improvements.map((r, i) => (
+                  {result.improvements.slice(0, 1).map((r, i) => (
                     <li key={i} className="flex gap-3 text-sm">
                       <span className="h-6 w-6 shrink-0 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center">
                         {i + 1}
@@ -265,7 +274,52 @@ export default function KeywordDensityTool() {
                       <span className="leading-relaxed">{r}</span>
                     </li>
                   ))}
+                  {result.improvements.slice(1).map((r, i) => (
+                    <li key={`locked-imp-${i}`} className="flex gap-3 text-sm">
+                      <span className="h-6 w-6 shrink-0 rounded-full bg-muted text-muted-foreground text-xs font-bold flex items-center justify-center">
+                        <Lock className="h-3 w-3" />
+                      </span>
+                      <span className="leading-relaxed blur-sm select-none">{r}</span>
+                    </li>
+                  ))}
                 </ol>
+
+                {(() => {
+                  const hiddenIssues =
+                    Math.max(0, result.missing_keywords.length - 3) +
+                    Math.max(0, result.improvements.length - 1);
+                  if (hiddenIssues === 0) return null;
+                  return (
+                    <div className="mt-6 rounded-xl border border-primary/40 bg-background/70 backdrop-blur p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
+                          <Lock className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="font-display font-semibold text-base">
+                            {hiddenIssues} more critical issues found
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Unlock every missing keyword & rewrite suggestion.
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-stretch sm:items-end gap-1 w-full sm:w-auto">
+                        <Button
+                          onClick={() => navigate("/pricing")}
+                          size="lg"
+                          className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow h-11 px-5"
+                        >
+                          <Zap className="h-4 w-4 mr-2" />
+                          Fix all issues for ₹99
+                        </Button>
+                        <p className="text-[10px] text-muted-foreground text-center sm:text-right">
+                          One job offer pays for this 1000x over.
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </>
