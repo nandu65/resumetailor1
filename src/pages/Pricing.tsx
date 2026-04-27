@@ -92,11 +92,16 @@ export default function Pricing() {
 
             <Button
               onClick={handleUpgrade}
+              disabled={loading}
               size="lg"
               className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow h-14 px-8 text-base font-semibold"
             >
-              <Zap className="h-5 w-5 mr-2" />
-              Unlock Pro for ₹99
+              {loading ? (
+                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+              ) : (
+                <Zap className="h-5 w-5 mr-2" />
+              )}
+              {loading ? "Opening checkout…" : "Unlock Pro for ₹99"}
             </Button>
           </div>
 
