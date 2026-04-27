@@ -1,8 +1,10 @@
-import { Check, Zap, Sparkles, ArrowLeft } from "lucide-react";
+import { Check, Zap, Sparkles, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { payWithRazorpay } from "@/lib/razorpay";
 
 const features = [
   "Unlimited ATS scans with Gemini 2.5",
@@ -17,12 +19,32 @@ const features = [
 
 export default function Pricing() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  const handleUpgrade = () => {
-    toast({
-      title: "Checkout coming soon",
-      description: "Payment processing will be enabled shortly. ₹99 lifetime access.",
-    });
+  const handleUpgrade = async () => {
+    setLoading(true);
+    try {
+      const result = await payWithRazorpay({
+        amountInRupees: 99,
+        description: "ResumeTailor Pro · Lifetime",
+        notes: { plan: "pro_lifetime" },
+      });
+
+      if (result.success) {
+        toast({
+          title: "Payment successful 🎉",
+          description: `Pro unlocked. Payment ID: ${result.razorpay_payment_id}`,
+        });
+      } else {
+        toast({
+          title: "Payment not completed",
+          description: result.error ?? "Please try again.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
