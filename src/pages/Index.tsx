@@ -148,17 +148,21 @@ const Index = () => {
             <Button asChild variant="outline" className="w-full mt-8"><Link to="/auth">Start free</Link></Button>
           </div>
           <div className="relative rounded-2xl border-2 border-primary bg-gradient-card p-8 shadow-glow">
-            <div className="absolute -top-3 right-6 rounded-full bg-gradient-primary text-primary-foreground text-xs font-semibold px-3 py-1">Coming soon</div>
+            <div className="absolute -top-3 right-6 rounded-full bg-gradient-primary text-primary-foreground text-xs font-semibold px-3 py-1">Lifetime · 90% off</div>
             <div className="text-sm font-semibold text-primary">Pro</div>
-            <div className="mt-2 font-display text-4xl font-bold">$19<span className="text-lg text-muted-foreground font-normal">/mo</span></div>
-            <p className="mt-1 text-sm text-muted-foreground">For active job seekers</p>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="font-display text-4xl font-bold">₹99</span>
+              <span className="text-base text-muted-foreground line-through">₹999</span>
+              <span className="text-xs text-muted-foreground font-normal">one-time</span>
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">One job offer pays for this <span className="font-semibold text-foreground">1000x over.</span></p>
             <ul className="mt-6 space-y-3 text-sm">
               <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-primary mt-0.5" /> Unlimited optimizations</li>
               <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-primary mt-0.5" /> History & version tracking</li>
               <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-primary mt-0.5" /> Cover letter generator</li>
               <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-primary mt-0.5" /> Priority AI</li>
             </ul>
-            <Button disabled className="w-full mt-8 bg-gradient-primary text-primary-foreground">Notify me</Button>
+            <Button asChild className="w-full mt-8 bg-gradient-primary text-primary-foreground hover:opacity-90"><Link to="/pricing">Unlock Pro for ₹99</Link></Button>
           </div>
         </div>
       </section>
