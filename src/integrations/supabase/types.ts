@@ -92,33 +92,81 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          current_period_end: string | null
           display_name: string | null
           email: string | null
           id: string
           optimizations_used: number
           plan: string
+          razorpay_customer_id: string | null
+          razorpay_subscription_id: string | null
+          scan_period_start: string
+          scans_used_month: number
+          subscription_status: string
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          current_period_end?: string | null
           display_name?: string | null
           email?: string | null
           id?: string
           optimizations_used?: number
           plan?: string
+          razorpay_customer_id?: string | null
+          razorpay_subscription_id?: string | null
+          scan_period_start?: string
+          scans_used_month?: number
+          subscription_status?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          current_period_end?: string | null
           display_name?: string | null
           email?: string | null
           id?: string
           optimizations_used?: number
           plan?: string
+          razorpay_customer_id?: string | null
+          razorpay_subscription_id?: string | null
+          scan_period_start?: string
+          scans_used_month?: number
+          subscription_status?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      razorpay_plans: {
+        Row: {
+          amount_paise: number
+          created_at: string
+          currency: string
+          id: string
+          interval: string
+          razorpay_plan_id: string
+          tier: string
+        }
+        Insert: {
+          amount_paise: number
+          created_at?: string
+          currency?: string
+          id?: string
+          interval?: string
+          razorpay_plan_id: string
+          tier: string
+        }
+        Update: {
+          amount_paise?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          interval?: string
+          razorpay_plan_id?: string
+          tier?: string
         }
         Relationships: []
       }

@@ -134,3 +134,82 @@ export async function payWithRazorpay(opts: PayOptions): Promise<PayResult> {
     rzp.open();
   });
 }
+
+// ---------- Subscriptions (autopay) ----------
+
+export interface SubscribeOptions {
+  tier: "basic" | "pro";
+  name?: string;
+  description?: string;
+  prefill?: { name?: string; email?: string; contact?: string };
+  theme?: { color?: string };
+}
+
+export interface SubscribeResult {
+  success: boolean;
+  razorpay_payment_id?: string;
+  razorpay_subscription_id?: string;
+  error?: string;
+}
+
+export async function subscribeWithRazorpay(
+  opts: SubscribeOptions,
+): Promise<SubscribeResult> {
+  const loaded = await loadRazorpayScript();
+  if (!loaded) return { success: false, error: "Failed to load Razorpay" };
+
+  const { data, error } = await supabase.functions.invoke(
+    "razorpay-create-subscription",
+    { body: { tier: opts.tier } },
+  );
+
+  if (error || !data?.subscription_id) {
+    return {
+      success: false,
+      error: error?.message || data?.error || "Could not start subscription",
+    };
+  }
+
+  return new Promise<SubscribeResult>((resolve) => {
+    const rzp = new window.Razorpay({
+      key: data.key_id,
+      subscription_id: data.subscription_id,
+      name: opts.name ?? "ResumeTailor",
+      description:
+        opts.description ??
+        (opts.tier === "pro"
+          ? "Pro · ₹99/month (autopay)"
+          : "Basic · ₹49/month (autopay)"),
+      prefill: opts.prefill ?? { email: data.email },
+      theme: opts.theme ?? { color: "#6366f1" },
+      modal: {
+        ondismiss: () =>
+          resolve({ success: false, error: "Checkout cancelled" }),
+      },
+      handler: (response: {
+        razorpay_payment_id: string;
+        razorpay_subscription_id: string;
+        razorpay_signature: string;
+      }) => {
+        // For subscriptions, plan activation is confirmed by the webhook
+        // (subscription.activated / subscription.charged). The handler just
+        // confirms the auth/charge succeeded client-side.
+        resolve({
+          success: true,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_subscription_id: response.razorpay_subscription_id,
+        });
+      },
+    });
+
+    rzp.on("payment.failed", (resp: any) => {
+      resolve({
+        success: false,
+        error: resp?.error?.description || "Payment failed",
+      });
+    });
+
+    rzp.open();
+  });
+}
+
