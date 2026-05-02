@@ -8,34 +8,41 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Top pricing strip */}
-      <section className="border-b border-border bg-secondary/40">
-        <div className="container py-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="font-semibold">Plans:</span>
-              <span className="text-muted-foreground">Cancel anytime · UPI/Card autopay</span>
+      {/* Top pricing strip — sticky below navbar */}
+      <section className="sticky top-16 z-40 border-b border-primary/20 bg-background/85 backdrop-blur-xl shadow-sm">
+        {/* gradient accent line */}
+        <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-primary to-transparent opacity-70" />
+        <div className="container py-3.5">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div className="hidden md:flex items-center gap-2 text-sm shrink-0">
+              <div className="h-7 w-7 rounded-lg bg-gradient-primary flex items-center justify-center shadow-glow">
+                <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />
+              </div>
+              <div className="leading-tight">
+                <div className="font-bold text-sm">Choose your plan</div>
+                <div className="text-[10px] text-muted-foreground">Cancel anytime · UPI/Card</div>
+              </div>
             </div>
-            <div className="grid grid-cols-3 gap-2 md:gap-3 w-full md:w-auto">
-              <Link to="/pricing" className="rounded-xl border border-border bg-background px-4 py-2.5 text-center hover:border-primary/40 hover:shadow-card transition-all">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Free</div>
-                <div className="font-display text-lg font-extrabold leading-tight">₹0</div>
-                <div className="text-[10px] text-muted-foreground">1 scan</div>
+            <div className="grid grid-cols-3 gap-2 md:gap-3 w-full md:w-auto md:flex-1 md:max-w-2xl">
+              <Link to="/pricing" className="group relative rounded-xl border border-border bg-background px-3 py-2 text-center hover:border-primary/50 hover:-translate-y-0.5 hover:shadow-card transition-all">
+                <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Free</div>
+                <div className="font-display text-base font-extrabold leading-tight">₹0</div>
+                <div className="text-[9px] text-muted-foreground">1 scan</div>
               </Link>
-              <Link to="/pricing" className="rounded-xl border border-border bg-background px-4 py-2.5 text-center hover:border-primary/40 hover:shadow-card transition-all">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Basic</div>
-                <div className="font-display text-lg font-extrabold leading-tight">₹49<span className="text-[10px] font-normal text-muted-foreground">/mo</span></div>
-                <div className="text-[10px] text-muted-foreground">10 scans</div>
+              <Link to="/pricing" className="group relative rounded-xl border border-primary/30 bg-accent/40 px-3 py-2 text-center hover:border-primary hover:-translate-y-0.5 hover:shadow-card transition-all">
+                <div className="text-[9px] font-bold uppercase tracking-wider text-primary">Basic</div>
+                <div className="font-display text-base font-extrabold leading-tight">₹49<span className="text-[9px] font-normal text-muted-foreground">/mo</span></div>
+                <div className="text-[9px] text-muted-foreground">10 scans</div>
               </Link>
-              <Link to="/pricing" className="rounded-xl border-2 border-primary bg-gradient-card px-4 py-2.5 text-center shadow-glow hover:opacity-95 transition-all">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-primary">Pro</div>
-                <div className="font-display text-lg font-extrabold leading-tight">₹99<span className="text-[10px] font-normal text-muted-foreground">/mo</span></div>
-                <div className="text-[10px] text-muted-foreground">50 scans · AI</div>
+              <Link to="/pricing" className="group relative rounded-xl border-2 border-primary bg-gradient-primary px-3 py-2 text-center shadow-glow hover:-translate-y-0.5 hover:opacity-95 transition-all overflow-hidden">
+                <div className="absolute -top-1 -right-1 rotate-12 bg-warning text-[8px] font-bold text-background px-1.5 py-0.5 rounded shadow-md">★ BEST</div>
+                <div className="text-[9px] font-bold uppercase tracking-wider text-primary-foreground/90">Pro</div>
+                <div className="font-display text-base font-extrabold leading-tight text-primary-foreground">₹99<span className="text-[9px] font-normal text-primary-foreground/80">/mo</span></div>
+                <div className="text-[9px] text-primary-foreground/90">50 scans · AI</div>
               </Link>
             </div>
-            <Button asChild size="sm" variant="outline" className="hidden md:inline-flex">
-              <Link to="/pricing">Compare plans <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
+            <Button asChild size="sm" className="hidden md:inline-flex bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-md shrink-0">
+              <Link to="/pricing">Compare <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
             </Button>
           </div>
         </div>
