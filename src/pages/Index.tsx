@@ -8,6 +8,39 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
+      {/* Top pricing strip */}
+      <section className="border-b border-border bg-secondary/40">
+        <div className="container py-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex items-center gap-2 text-sm">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="font-semibold">Plans:</span>
+              <span className="text-muted-foreground">Cancel anytime · UPI/Card autopay</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 md:gap-3 w-full md:w-auto">
+              <Link to="/pricing" className="rounded-xl border border-border bg-background px-4 py-2.5 text-center hover:border-primary/40 hover:shadow-card transition-all">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Free</div>
+                <div className="font-display text-lg font-extrabold leading-tight">₹0</div>
+                <div className="text-[10px] text-muted-foreground">1 scan</div>
+              </Link>
+              <Link to="/pricing" className="rounded-xl border border-border bg-background px-4 py-2.5 text-center hover:border-primary/40 hover:shadow-card transition-all">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Basic</div>
+                <div className="font-display text-lg font-extrabold leading-tight">₹49<span className="text-[10px] font-normal text-muted-foreground">/mo</span></div>
+                <div className="text-[10px] text-muted-foreground">10 scans</div>
+              </Link>
+              <Link to="/pricing" className="rounded-xl border-2 border-primary bg-gradient-card px-4 py-2.5 text-center shadow-glow hover:opacity-95 transition-all">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-primary">Pro</div>
+                <div className="font-display text-lg font-extrabold leading-tight">₹99<span className="text-[10px] font-normal text-muted-foreground">/mo</span></div>
+                <div className="text-[10px] text-muted-foreground">50 scans · AI</div>
+              </Link>
+            </div>
+            <Button asChild size="sm" variant="outline" className="hidden md:inline-flex">
+              <Link to="/pricing">Compare plans <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Hero */}
       <section className="relative overflow-hidden bg-hero">
         <div className="absolute inset-0 bg-mesh pointer-events-none" />
