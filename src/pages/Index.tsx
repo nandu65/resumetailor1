@@ -207,8 +207,16 @@ const Index = () => {
         </div>
       </section>
 
-      <footer className="border-t border-border py-10 text-center text-sm text-muted-foreground">
-        <div className="container">© {new Date().getFullYear()} Resume Tailor AI. Crafted to help you get hired.</div>
+      <footer className="border-t border-border py-10 text-sm text-muted-foreground">
+        <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
+          <div>© {new Date().getFullYear()} Resume Tailor AI. Crafted to help you get hired.</div>
+          <nav className="flex flex-wrap gap-x-5 gap-y-2">
+            <Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
+            <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
+            <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+            <Link to="/refund" className="hover:text-primary transition-colors">Refund &amp; Cancellation</Link>
+          </nav>
+        </div>
       </footer>
     </div>
   );

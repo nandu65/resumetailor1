@@ -20,12 +20,14 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
+    const admin = createClient(supabaseUrl, serviceRoleKey);
 
     const { data: userData, error: userErr } = await supabase.auth.getUser();
     if (userErr || !userData.user) {
@@ -34,6 +36,24 @@ serve(async (req) => {
       });
     }
     const userId = userData.user.id;
+
+    // Enforce monthly scan quota atomically
+    const { data: gate, error: gateErr } = await admin.rpc("consume_scan", { _user_id: userId });
+    if (gateErr) {
+      console.error("consume_scan error", gateErr);
+      return new Response(JSON.stringify({ error: "Could not verify scan quota" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (gate && (gate as any).allowed === false) {
+      const g = gate as any;
+      const msg = g.reason === "limit_reached"
+        ? `You've used all ${g.limit} scans on the ${g.plan} plan this month. Upgrade or wait for next month's reset.`
+        : "Scan not allowed.";
+      return new Response(JSON.stringify({ error: msg, code: g.reason, plan: g.plan, used: g.used, limit: g.limit }), {
+        status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const { resume, jobDescription, rewriteLevel = "balanced", title } = await req.json();
     if (!resume || !jobDescription) {
