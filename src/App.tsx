@@ -15,6 +15,9 @@ import SkillGapTool from "./pages/tools/SkillGapTool.tsx";
 import KeywordDensityTool from "./pages/tools/KeywordDensityTool.tsx";
 import DiffTool from "./pages/tools/DiffTool.tsx";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import Terms from "./pages/legal/Terms.tsx";
+import Privacy from "./pages/legal/Privacy.tsx";
+import Refund from "./pages/legal/Refund.tsx";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +38,9 @@ const App = () => (
           <Route path="/tools/keyword-density" element={<KeywordDensityTool />} />
           <Route path="/tools/diff" element={<DiffTool />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/refund" element={<Refund />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
