@@ -14,8 +14,8 @@ const corsHeaders = {
 type Tier = "basic" | "pro";
 
 const TIER_CONFIG: Record<Tier, { amountPaise: number; name: string }> = {
-  basic: { amountPaise: 4900, name: "ResumeTailor Basic (Monthly)" },
-  pro: { amountPaise: 9900, name: "ResumeTailor Pro (Monthly)" },
+  basic: { amountPaise: 4900, name: "ResumeShot Basic (Monthly)" },
+  pro: { amountPaise: 9900, name: "ResumeShot Pro (Monthly)" },
 };
 
 async function rzpFetch(path: string, auth: string, init?: RequestInit) {
