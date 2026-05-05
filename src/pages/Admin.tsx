@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Users, IndianRupee, Crown } from "lucide-react";
+import { Loader2, Users, IndianRupee, Crown, Shield, LogOut } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 const ADMIN_EMAIL = "nandunaidu656565@gmail.com";
 
@@ -26,8 +28,10 @@ interface AdminUser {
 export default function Admin() {
   const { user, loading } = useAuth();
   const [data, setData] = useState<{ users: AdminUser[]; total: number; counts: Record<string, number>; monthlyRevenueINR: number } | null>(null);
-  const [busy, setBusy] = useState(true);
+  const [busy, setBusy] = useState(false);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
+  const [signingIn, setSigningIn] = useState(false);
 
   const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
@@ -41,9 +45,21 @@ export default function Admin() {
 
   useEffect(() => { if (isAdmin) load(); }, [isAdmin]);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
-  if (!user) return <Navigate to="/auth" replace />;
-  if (!isAdmin) return <Navigate to="/" replace />;
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSigningIn(true);
+    // If signed in as a non-admin user, sign out first to avoid conflicts
+    if (user && !isAdmin) await supabase.auth.signOut();
+    const { error } = await supabase.auth.signInWithPassword({ email: ADMIN_EMAIL, password });
+    if (error) toast({ title: "Login failed", description: error.message, variant: "destructive" });
+    else toast({ title: "Welcome, admin" });
+    setSigningIn(false);
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setData(null);
+  };
 
   const updatePlan = async (user_id: string, plan: string) => {
     setUpdating(user_id);
@@ -53,13 +69,53 @@ export default function Admin() {
     setUpdating(null);
   };
 
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              <CardTitle>Admin Login</CardTitle>
+            </div>
+            <p className="text-sm text-muted-foreground">Restricted area. Authorized personnel only.</p>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSignIn} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input value={ADMIN_EMAIL} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="pwd">Password</Label>
+                <Input id="pwd" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoFocus />
+              </div>
+              <Button type="submit" className="w-full" disabled={signingIn}>
+                {signingIn ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="container py-10 space-y-8">
-        <div>
-          <h1 className="text-3xl font-display font-bold">Admin Panel</h1>
-          <p className="text-muted-foreground">Manage users, plans, and view revenue.</p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-display font-bold">Admin Panel</h1>
+            <p className="text-muted-foreground">Manage users, plans, and view revenue.</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleSignOut}>
+            <LogOut className="h-4 w-4 mr-2" /> Sign out
+          </Button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-4">
