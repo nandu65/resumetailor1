@@ -47,7 +47,7 @@ export default function Auth() {
           <div className="h-9 w-9 rounded-lg bg-gradient-primary flex items-center justify-center shadow-glow">
             <Sparkles className="h-4 w-4 text-primary-foreground" />
           </div>
-          Resume Tailor <span className="text-primary">AI</span>
+          ResumeShot <span className="text-primary">AI</span>
         </Link>
         <div className="rounded-2xl border border-border bg-card p-8 shadow-elegant">
           <Tabs defaultValue="signin">

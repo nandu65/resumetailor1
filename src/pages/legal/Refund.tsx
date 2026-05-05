@@ -17,7 +17,7 @@ export default function Refund() {
         <section className="space-y-6 text-foreground/90 leading-relaxed text-sm">
           <div>
             <h2 className="font-display text-xl font-semibold mt-6 mb-2">Cancel anytime</h2>
-            <p>You can cancel your monthly subscription at any time from the <Link to="/pricing" className="text-primary underline">Pricing page</Link> using the "Cancel subscription" button, or by emailing <a className="text-primary underline" href="mailto:support@resumetailor.ai">support@resumetailor.ai</a>.</p>
+            <p>You can cancel your monthly subscription at any time from the <Link to="/pricing" className="text-primary underline">Pricing page</Link> using the "Cancel subscription" button, or by emailing <a className="text-primary underline" href="mailto:Support.resumeshot@gmail.com">Support.resumeshot@gmail.com</a>.</p>
             <p className="mt-2">When you cancel, autopay stops immediately and you keep access to paid features until the end of the current billing cycle. No further charges will be made.</p>
           </div>
 
@@ -37,7 +37,7 @@ export default function Refund() {
 
           <div>
             <h2 className="font-display text-xl font-semibold mt-6 mb-2">Contact</h2>
-            <p>For all refund or cancellation requests, email <a className="text-primary underline" href="mailto:support@resumetailor.ai">support@resumetailor.ai</a> with your registered email and the date of the charge. We respond within 2 business days.</p>
+            <p>For all refund or cancellation requests, email <a className="text-primary underline" href="mailto:Support.resumeshot@gmail.com">Support.resumeshot@gmail.com</a> with your registered email and the date of the charge. We respond within 2 business days.</p>
           </div>
         </section>
       </main>

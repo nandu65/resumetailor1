@@ -86,7 +86,7 @@ export async function payWithRazorpay(opts: PayOptions): Promise<PayResult> {
       amount: orderData.amount,
       currency: orderData.currency,
       order_id: orderData.order_id,
-      name: opts.name ?? "ResumeTailor",
+      name: opts.name ?? "ResumeShot",
       description: opts.description ?? "Pro · Lifetime",
       prefill: opts.prefill ?? {},
       notes: opts.notes ?? {},
@@ -174,7 +174,7 @@ export async function subscribeWithRazorpay(
     const rzp = new window.Razorpay({
       key: data.key_id,
       subscription_id: data.subscription_id,
-      name: opts.name ?? "ResumeTailor",
+      name: opts.name ?? "ResumeShot",
       description:
         opts.description ??
         (opts.tier === "pro"

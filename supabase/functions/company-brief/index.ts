@@ -29,7 +29,7 @@ serve(async (req) => {
     let pageText = "";
     if (url) {
       try {
-        const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 ResumeTailor/1.0" } });
+        const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 ResumeShot/1.0" } });
         const html = await r.text();
         pageText = html.replace(/<script[\s\S]*?<\/script>/gi, "")
           .replace(/<style[\s\S]*?<\/style>/gi, "")

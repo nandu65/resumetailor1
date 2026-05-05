@@ -13,7 +13,7 @@ export function Navbar() {
           <div className="h-8 w-8 rounded-lg bg-gradient-primary flex items-center justify-center shadow-glow">
             <Sparkles className="h-4 w-4 text-primary-foreground" />
           </div>
-          Resume Tailor <span className="text-primary">AI</span>
+          ResumeShot <span className="text-primary">AI</span>
         </Link>
         <nav className="flex items-center gap-2">
           {user ? (

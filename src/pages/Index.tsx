@@ -307,7 +307,7 @@ const Index = () => {
               { q: "Will my resume actually pass ATS systems?", a: "Yes. We test against the same parsers used by Workday, Greenhouse, Lever, and Taleo. Our PDF exports use selectable text (no images) and a clean single-column layout that ATS bots love." },
               { q: "Do you support resumes for non-tech roles?", a: "Absolutely. Marketing, design, sales, finance, operations, healthcare, education — the AI adapts to the role and industry in your job description." },
               { q: "What file formats can I upload and download?", a: "Upload: PDF, DOCX, or paste plain text. Download: PDF, DOCX, plain text, or Markdown." },
-              { q: "I need help — how do I contact support?", a: "Email us at support@resumetailor.ai and we typically reply within 24 hours (usually much faster on weekdays)." },
+              { q: "I need help — how do I contact support?", a: "Email us at Support.resumeshot@gmail.com and we typically reply within 24 hours (usually much faster on weekdays)." },
             ].map((f, i) => (
               <AccordionItem key={i} value={`item-${i}`} className="border-border">
                 <AccordionTrigger className="text-left font-display font-semibold hover:no-underline px-3">{f.q}</AccordionTrigger>
@@ -343,7 +343,7 @@ const Index = () => {
 
       <footer className="border-t border-border py-10 text-sm text-muted-foreground">
         <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
-          <div>© {new Date().getFullYear()} Resume Tailor AI. Crafted to help you get hired.</div>
+          <div>© {new Date().getFullYear()} ResumeShot. Crafted to help you get hired.</div>
           <nav className="flex flex-wrap gap-x-5 gap-y-2">
             <Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
             <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>

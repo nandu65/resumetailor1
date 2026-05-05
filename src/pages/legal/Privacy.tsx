@@ -17,7 +17,7 @@ export default function Privacy() {
         <section className="space-y-6 text-foreground/90 leading-relaxed text-sm">
           <div>
             <h2 className="font-display text-xl font-semibold mt-6 mb-2">1. Who we are</h2>
-            <p>Resume Tailor AI ("we", "us") is the data fiduciary for personal data you provide while using the Service.</p>
+            <p>ResumeShot ("we", "us") is the data fiduciary for personal data you provide while using the Service.</p>
           </div>
 
           <div>
@@ -53,7 +53,7 @@ export default function Privacy() {
 
           <div>
             <h2 className="font-display text-xl font-semibold mt-6 mb-2">6. Your rights (DPDP Act)</h2>
-            <p>You have the right to access, correct, update or erase your personal data, and to withdraw consent at any time. Email <a className="text-primary underline" href="mailto:support@resumetailor.ai">support@resumetailor.ai</a> and we will respond within 30 days.</p>
+            <p>You have the right to access, correct, update or erase your personal data, and to withdraw consent at any time. Email <a className="text-primary underline" href="mailto:Support.resumeshot@gmail.com">Support.resumeshot@gmail.com</a> and we will respond within 30 days.</p>
           </div>
 
           <div>
@@ -68,7 +68,7 @@ export default function Privacy() {
 
           <div>
             <h2 className="font-display text-xl font-semibold mt-6 mb-2">9. Contact / Grievance Officer</h2>
-            <p>Email <a className="text-primary underline" href="mailto:support@resumetailor.ai">support@resumetailor.ai</a> for any privacy concern or grievance.</p>
+            <p>Email <a className="text-primary underline" href="mailto:Support.resumeshot@gmail.com">Support.resumeshot@gmail.com</a> for any privacy concern or grievance.</p>
           </div>
         </section>
       </main>

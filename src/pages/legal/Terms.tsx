@@ -17,12 +17,12 @@ export default function Terms() {
         <section className="prose prose-sm dark:prose-invert max-w-none space-y-6 text-foreground/90 leading-relaxed">
           <div>
             <h2 className="font-display text-xl font-semibold mt-6 mb-2">1. Acceptance of Terms</h2>
-            <p>By accessing or using Resume Tailor AI ("the Service"), you agree to be bound by these Terms of Service. If you do not agree, do not use the Service.</p>
+            <p>By accessing or using ResumeShot ("the Service"), you agree to be bound by these Terms of Service. If you do not agree, do not use the Service.</p>
           </div>
 
           <div>
             <h2 className="font-display text-xl font-semibold mt-6 mb-2">2. The Service</h2>
-            <p>Resume Tailor AI provides automated resume optimization, ATS scoring, cover letters, company briefs and related career tools using AI models. Results are suggestions and do not guarantee employment outcomes.</p>
+            <p>ResumeShot provides automated resume optimization, ATS scoring, cover letters, company briefs and related career tools using AI models. Results are suggestions and do not guarantee employment outcomes.</p>
           </div>
 
           <div>
@@ -62,7 +62,7 @@ export default function Terms() {
 
           <div>
             <h2 className="font-display text-xl font-semibold mt-6 mb-2">10. Contact</h2>
-            <p>Questions? Email <a className="text-primary underline" href="mailto:support@resumetailor.ai">support@resumetailor.ai</a>.</p>
+            <p>Questions? Email <a className="text-primary underline" href="mailto:Support.resumeshot@gmail.com">Support.resumeshot@gmail.com</a>.</p>
           </div>
         </section>
       </main>
