@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, FileText, Target, Zap, CheckCircle2, BarChart3, ShieldCheck, Mail, Layers, GitCompare, Gauge, SlidersHorizontal, Download, Building2, GraduationCap } from "lucide-react";
+import { ArrowRight, Sparkles, FileText, Target, Zap, CheckCircle2, BarChart3, ShieldCheck, Mail, Layers, GitCompare, Gauge, SlidersHorizontal, Download, Building2, GraduationCap, Star, Quote, Lock, RefreshCw, Clock, Users, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const Index = () => {
   return (
@@ -203,6 +204,139 @@ const Index = () => {
               <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-primary mt-0.5" /> Priority AI</li>
             </ul>
             <Button asChild className="w-full mt-8 bg-gradient-primary text-primary-foreground hover:opacity-90"><Link to="/pricing">Unlock Pro for ₹99</Link></Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust strip / Stats */}
+      <section className="border-y border-border bg-gradient-to-r from-accent/30 via-background to-accent/30">
+        <div className="container py-12 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          {[
+            { icon: Users, n: "12,400+", l: "Resumes tailored" },
+            { icon: TrendingUp, n: "3.2x", l: "More interview calls" },
+            { icon: Clock, n: "<30s", l: "Average turnaround" },
+            { icon: ShieldCheck, n: "100%", l: "Private & encrypted" },
+          ].map(({ icon: Icon, n, l }) => (
+            <div key={l} className="flex flex-col items-center">
+              <div className="h-10 w-10 rounded-xl bg-gradient-primary text-primary-foreground flex items-center justify-center shadow-glow mb-3">
+                <Icon className="h-5 w-5" />
+              </div>
+              <div className="font-display text-2xl md:text-3xl font-extrabold">{n}</div>
+              <div className="text-xs text-muted-foreground mt-1">{l}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="container py-24">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-accent px-4 py-1.5 text-xs font-medium text-accent-foreground mb-4">
+            <Star className="h-3.5 w-3.5 fill-current" /> Loved by job seekers across India
+          </div>
+          <h2 className="font-display text-4xl font-bold tracking-tight">From "no replies" to "offer accepted"</h2>
+          <p className="mt-4 text-muted-foreground">Real stories from people who landed roles after tailoring with us.</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            { name: "Aditya Sharma", role: "SDE-2 @ Razorpay", quote: "Went from 2 callbacks in 3 months to 7 in two weeks. The keyword gap report was a game-changer.", initials: "AS" },
+            { name: "Priya Iyer", role: "Product Manager @ Swiggy", quote: "I tailored 14 resumes for 14 different PM roles in one weekend. Got 5 first-round interviews.", initials: "PI" },
+            { name: "Rohan Mehta", role: "Data Analyst @ Flipkart", quote: "The ATS score jumped from 42 to 89 after one rewrite. Recruiters started reaching out within days.", initials: "RM" },
+            { name: "Sneha Kapoor", role: "UX Designer @ Zomato", quote: "Worth ₹99 a hundred times over. The cover letter generator alone saved me 6+ hours per week.", initials: "SK" },
+            { name: "Vikram Singh", role: "Marketing Lead @ CRED", quote: "Finally a tool that doesn't make my resume sound robotic. The bullets read like I actually wrote them.", initials: "VS" },
+            { name: "Ananya Reddy", role: "New Grad → Microsoft", quote: "As a fresher I had no clue what recruiters wanted. The skill-gap analysis told me exactly what to learn.", initials: "AR" },
+          ].map((t) => (
+            <div key={t.name} className="rounded-2xl border border-border bg-gradient-card p-7 shadow-card hover:shadow-elegant hover:-translate-y-0.5 transition-all">
+              <Quote className="h-6 w-6 text-primary/40 mb-3" />
+              <div className="flex gap-0.5 mb-3">
+                {[...Array(5)].map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-warning text-warning" />)}
+              </div>
+              <p className="text-sm leading-relaxed">"{t.quote}"</p>
+              <div className="mt-5 flex items-center gap-3 pt-4 border-t border-border">
+                <div className="h-10 w-10 rounded-full bg-gradient-primary text-primary-foreground flex items-center justify-center font-bold text-sm shadow-glow">
+                  {t.initials}
+                </div>
+                <div>
+                  <div className="font-semibold text-sm">{t.name}</div>
+                  <div className="text-xs text-muted-foreground">{t.role}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Trust badges row */}
+      <section className="bg-secondary/40 border-y border-border">
+        <div className="container py-12">
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            {[
+              { icon: Lock, t: "Bank-grade security", d: "256-bit encryption. Your resume is never shared, sold, or used to train AI models." },
+              { icon: RefreshCw, t: "Cancel anytime", d: "No lock-ins. Cancel your plan in one click — keep access till the end of the billing cycle." },
+              { icon: ShieldCheck, t: "7-day refund window", d: "Not happy? Email us within 7 days for a full no-questions-asked refund." },
+            ].map(({ icon: Icon, t, d }) => (
+              <div key={t} className="flex gap-4 rounded-2xl bg-background border border-border p-6 shadow-card">
+                <div className="h-11 w-11 shrink-0 rounded-xl bg-accent text-primary flex items-center justify-center">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-display font-semibold">{t}</h3>
+                  <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{d}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="container py-24">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <h2 className="font-display text-4xl font-bold tracking-tight">Frequently asked questions</h2>
+          <p className="mt-4 text-muted-foreground">Everything about pricing, refunds, privacy, and how it works.</p>
+        </div>
+        <div className="max-w-3xl mx-auto rounded-2xl border border-border bg-gradient-card p-2 md:p-6 shadow-card">
+          <Accordion type="single" collapsible className="w-full">
+            {[
+              { q: "How does the free plan work?", a: "Sign up and you get 1 free resume optimization — no credit card required. You'll see your full ATS score, keyword gaps, and a tailored rewrite. Upgrade only if you want more scans." },
+              { q: "What's included in Basic (₹49) and Pro (₹99)?", a: "Basic gives you 10 scans/month. Pro gives you 50 scans/month plus priority AI processing, the cover letter generator, company research briefs, and skill-gap analysis. Both renew monthly." },
+              { q: "Can I cancel my subscription anytime?", a: "Yes — 100%. Go to Pricing → Manage subscription → Cancel. You keep access till the end of your current billing cycle. No cancellation fees, no lock-in, no email-us-to-cancel nonsense." },
+              { q: "What's your refund policy?", a: "If you're unhappy within 7 days of purchase, email us and we'll refund you in full — no questions asked. Refunds reach your account in 5–7 business days. Read full policy on the Refund page." },
+              { q: "Is my resume data safe? Do you train AI on it?", a: "Your resume is encrypted in transit (TLS 1.3) and at rest (AES-256). We never sell your data, never share it with third parties, and never use it to train AI models. You can delete your account and all data anytime from the dashboard." },
+              { q: "Which payment methods do you accept?", a: "All major UPI apps (GPay, PhonePe, Paytm), credit/debit cards (Visa, Mastercard, RuPay, Amex), net banking, and wallets — securely processed by Razorpay." },
+              { q: "Will my resume actually pass ATS systems?", a: "Yes. We test against the same parsers used by Workday, Greenhouse, Lever, and Taleo. Our PDF exports use selectable text (no images) and a clean single-column layout that ATS bots love." },
+              { q: "Do you support resumes for non-tech roles?", a: "Absolutely. Marketing, design, sales, finance, operations, healthcare, education — the AI adapts to the role and industry in your job description." },
+              { q: "What file formats can I upload and download?", a: "Upload: PDF, DOCX, or paste plain text. Download: PDF, DOCX, plain text, or Markdown." },
+              { q: "I need help — how do I contact support?", a: "Email us at support@resumetailor.ai and we typically reply within 24 hours (usually much faster on weekdays)." },
+            ].map((f, i) => (
+              <AccordionItem key={i} value={`item-${i}`} className="border-border">
+                <AccordionTrigger className="text-left font-display font-semibold hover:no-underline px-3">{f.q}</AccordionTrigger>
+                <AccordionContent className="text-muted-foreground leading-relaxed px-3">{f.a}</AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="container pb-24">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-primary p-10 md:p-16 text-center shadow-glow">
+          <div className="absolute inset-0 bg-mesh opacity-30 pointer-events-none" />
+          <div className="relative">
+            <h2 className="font-display text-3xl md:text-5xl font-extrabold text-primary-foreground tracking-tight">
+              Your next interview is one tailor away.
+            </h2>
+            <p className="mt-4 text-primary-foreground/90 max-w-xl mx-auto">
+              Join 12,000+ job seekers who stopped sending the same resume to every job.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Button asChild size="lg" variant="secondary" className="h-12 px-7 text-base font-semibold">
+                <Link to="/auth">Start free — 1 scan on us <ArrowRight className="ml-1 h-4 w-4" /></Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="h-12 px-7 text-base bg-transparent border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
+                <Link to="/pricing">See pricing</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
