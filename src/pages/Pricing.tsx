@@ -26,10 +26,10 @@ const PLANS: Array<{
     cadence: "forever",
     tagline: "Try it out",
     features: [
-      "Unlimited scans (fair use)",
-      "ATS score",
-      "Limited keyword insights",
-      "No premium downloads",
+      "1 resume scan only",
+      "ATS score (blurred breakdown)",
+      "First 2 missing keywords only",
+      "No downloads",
     ],
   },
   {
@@ -43,6 +43,7 @@ const PLANS: Array<{
       "Full ATS score breakdown",
       "All missing keywords",
       "PDF download",
+      "No AI writing features",
     ],
   },
   {
@@ -194,9 +195,7 @@ export default function Pricing() {
           {PLANS.map((plan) => {
             const isLoading = loadingTier === plan.tier;
             const isCurrent = user && plan.tier === currentPlan && (plan.tier === "free" || isActive);
-            // Blur tiers the user has NOT subscribed to (only when they have an active paid plan)
-            const userHasPaidPlan = isActive && currentPlan !== "free";
-            const isBlurred = !!user && userHasPaidPlan && !isCurrent;
+            const isBlurred = false;
 
             return (
               <div key={plan.tier} className="relative">

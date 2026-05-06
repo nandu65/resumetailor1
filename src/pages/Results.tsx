@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Download, Loader2, Target, Sparkles, ListChecks, Lightbulb, Tag, FileText, Mail, Building2, GraduationCap, BarChart3, Eye, Code2, ExternalLink, TrendingUp, TrendingDown, Minus, Award, Wand2 } from "lucide-react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, Download, Loader2, Target, Sparkles, ListChecks, Lightbulb, Tag, FileText, Mail, Building2, GraduationCap, BarChart3, Eye, Code2, ExternalLink, TrendingUp, TrendingDown, Minus, Award, Wand2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,7 +40,9 @@ interface Optimization {
 
 export default function Results() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [opt, setOpt] = useState<Optimization | null>(null);
+  const [plan, setPlan] = useState<"free" | "basic" | "pro">("free");
   const [loading, setLoading] = useState(true);
   const [diffMode, setDiffMode] = useState(true);
   const [coverLoading, setCoverLoading] = useState(false);
@@ -56,6 +58,18 @@ export default function Results() {
         setOpt(data as any);
         setLoading(false);
       });
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) return;
+      supabase.from("profiles").select("plan, subscription_status")
+        .eq("user_id", data.user.id).maybeSingle()
+        .then(({ data: p }) => {
+          if (p && (p as any).subscription_status === "active") {
+            setPlan(((p as any).plan as any) || "free");
+          } else {
+            setPlan("free");
+          }
+        });
+    });
   };
 
   useEffect(load, [id]);
@@ -120,6 +134,26 @@ export default function Results() {
   const scoreColor = score >= 75 ? "text-primary" : score >= 50 ? "text-warning" : "text-destructive";
   const recruiterColor = recruiter >= 75 ? "text-primary" : recruiter >= 50 ? "text-warning" : "text-destructive";
 
+  // Plan-based feature gates
+  const isFree = plan === "free";
+  const isBasic = plan === "basic";
+  const canDownload = plan === "basic" || plan === "pro"; // PDF for basic; all formats for pro
+  const proOnly = plan === "pro";
+  const visibleMissingKeywords = isFree ? (opt.missing_keywords ?? []).slice(0, 2) : (opt.missing_keywords ?? []);
+  const hiddenMissingCount = isFree ? Math.max(0, (opt.missing_keywords?.length ?? 0) - 2) : 0;
+
+  const UpgradeOverlay = ({ label = "Upgrade to unlock", to = "/pricing" }: { label?: string; to?: string }) => (
+    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/70 backdrop-blur-sm rounded-2xl">
+      <div className="h-12 w-12 rounded-full bg-background border border-border flex items-center justify-center mb-3 shadow-md">
+        <Lock className="h-5 w-5 text-muted-foreground" />
+      </div>
+      <div className="text-sm font-semibold mb-2">{label}</div>
+      <Button size="sm" onClick={() => navigate(to)} className="bg-gradient-primary text-primary-foreground hover:opacity-90">
+        Upgrade plan
+      </Button>
+    </div>
+  );
+
   const deltaCopy = (() => {
     if (delta == null) return null;
     if (delta >= 5) return { tone: "up" as const, text: `+${delta} improvement vs your last version`, sub: "Your tailoring made a measurable difference." };
@@ -147,19 +181,30 @@ export default function Results() {
               {opt.rewrite_level && <span className="rounded-full bg-accent px-2 py-0.5 text-xs capitalize">{opt.rewrite_level} rewrite</span>}
             </div>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="lg" className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
-                <Download className="h-4 w-4 mr-2" /> Download
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem onClick={() => downloadResumePdf(opt)}><FileText className="h-4 w-4 mr-2" /> PDF (formatted)</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => downloadResumeDocx(opt)}><FileText className="h-4 w-4 mr-2" /> DOCX (Word)</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => downloadResumeTxt(opt)}><FileText className="h-4 w-4 mr-2" /> Plain text (ATS-safe)</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => downloadResumeMarkdown(opt)}><Code2 className="h-4 w-4 mr-2" /> Markdown</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {!canDownload ? (
+            <Button size="lg" onClick={() => navigate("/pricing")} className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
+              <Lock className="h-4 w-4 mr-2" /> Upgrade to download
+            </Button>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="lg" className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
+                  <Download className="h-4 w-4 mr-2" /> Download
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => downloadResumePdf(opt)}><FileText className="h-4 w-4 mr-2" /> PDF (formatted)</DropdownMenuItem>
+                {proOnly && <DropdownMenuItem onClick={() => downloadResumeDocx(opt)}><FileText className="h-4 w-4 mr-2" /> DOCX (Word)</DropdownMenuItem>}
+                {proOnly && <DropdownMenuItem onClick={() => downloadResumeTxt(opt)}><FileText className="h-4 w-4 mr-2" /> Plain text (ATS-safe)</DropdownMenuItem>}
+                {proOnly && <DropdownMenuItem onClick={() => downloadResumeMarkdown(opt)}><Code2 className="h-4 w-4 mr-2" /> Markdown</DropdownMenuItem>}
+                {!proOnly && (
+                  <DropdownMenuItem onClick={() => navigate("/pricing")} className="text-muted-foreground">
+                    <Lock className="h-4 w-4 mr-2" /> DOCX / TXT / Markdown — Pro
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
 
         {/* Score panel */}
@@ -225,13 +270,13 @@ export default function Results() {
 
         {/* Score breakdown */}
         {breakdown.length > 0 && (
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-card mb-6">
+          <div className="relative rounded-2xl border border-border bg-card p-6 shadow-card mb-6">
             <div className="flex items-center gap-2 mb-5">
               <div className="h-8 w-8 rounded-lg bg-accent flex items-center justify-center text-accent-foreground"><BarChart3 className="h-4 w-4" /></div>
               <h3 className="font-display font-semibold">Score breakdown</h3>
               <span className="ml-auto text-xs text-muted-foreground">Weighted out of 100</span>
             </div>
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className={`grid sm:grid-cols-2 gap-4 ${isFree ? "blur-md pointer-events-none select-none" : ""}`}>
               {breakdown.map((c) => {
                 const pct = c.max ? (c.score / c.max) * 100 : 0;
                 const tone = pct >= 75 ? "bg-primary" : pct >= 45 ? "bg-warning" : "bg-destructive";
@@ -249,6 +294,7 @@ export default function Results() {
                 );
               })}
             </div>
+            {isFree && <UpgradeOverlay label="Score breakdown is a Basic feature" />}
           </div>
         )}
 
@@ -284,52 +330,71 @@ export default function Results() {
             <div className="grid md:grid-cols-2 gap-6">
               <Card icon={Tag} title="Missing keywords">
                 <div className="flex flex-wrap gap-2">
-                  {(opt.missing_keywords ?? []).map((k) => (
+                  {visibleMissingKeywords.map((k) => (
                     <span key={k} className="inline-flex items-center rounded-full border border-warning/30 bg-warning/10 px-3 py-1 text-xs font-medium text-foreground">{k}</span>
                   ))}
                   {!opt.missing_keywords?.length && <p className="text-sm text-muted-foreground">No major keywords missing — nice work!</p>}
                 </div>
+                {hiddenMissingCount > 0 && (
+                  <div className="mt-4 rounded-lg border border-dashed border-primary/40 bg-primary/5 p-3 flex items-center justify-between gap-3">
+                    <div className="text-xs text-muted-foreground">
+                      <Lock className="h-3 w-3 inline mr-1" /> +{hiddenMissingCount} more keywords hidden on Free.
+                    </div>
+                    <Button size="sm" variant="outline" onClick={() => navigate("/pricing")}>Upgrade</Button>
+                  </div>
+                )}
               </Card>
-              <Card icon={ListChecks} title="Skills to add">
-                <div className="flex flex-wrap gap-2">
-                  {(opt.skills_to_add ?? []).map((s) => (
-                    <span key={s} className="inline-flex items-center rounded-full bg-gradient-primary text-primary-foreground px-3 py-1 text-xs font-medium">{s}</span>
-                  ))}
-                  {!opt.skills_to_add?.length && <p className="text-sm text-muted-foreground">All key skills already present.</p>}
-                </div>
-              </Card>
+              <div className="relative">
+                <Card icon={ListChecks} title="Skills to add">
+                  <div className={`flex flex-wrap gap-2 ${!proOnly ? "blur-sm pointer-events-none select-none" : ""}`}>
+                    {(opt.skills_to_add ?? []).map((s) => (
+                      <span key={s} className="inline-flex items-center rounded-full bg-gradient-primary text-primary-foreground px-3 py-1 text-xs font-medium">{s}</span>
+                    ))}
+                    {!opt.skills_to_add?.length && <p className="text-sm text-muted-foreground">All key skills already present.</p>}
+                  </div>
+                </Card>
+                {!proOnly && <UpgradeOverlay label="Skills suggestions are a Pro feature" />}
+              </div>
             </div>
 
-            <Card icon={Sparkles} title="Suggested professional summary">
-              <p className="text-sm leading-relaxed text-foreground/90">{opt.professional_summary || "—"}</p>
-            </Card>
+            <div className="relative">
+              <Card icon={Sparkles} title="Suggested professional summary">
+                <p className={`text-sm leading-relaxed text-foreground/90 ${!proOnly ? "blur-sm pointer-events-none select-none" : ""}`}>
+                  {opt.professional_summary || "—"}
+                </p>
+              </Card>
+              {!proOnly && <UpgradeOverlay label="Profile summary rewrite is a Pro feature" />}
+            </div>
 
-            <Card icon={Lightbulb} title="Improved work experience bullets" right={
-              <Button variant="ghost" size="sm" onClick={() => setDiffMode(!diffMode)}>
-                <Eye className="h-3.5 w-3.5 mr-1" /> {diffMode ? "Side-by-side" : "Diff view"}
-              </Button>
-            }>
-              <div className="space-y-5">
-                {(opt.improved_bullets ?? []).map((b, i) => (
-                  <div key={i} className="rounded-xl border border-border bg-background p-4">
-                    {diffMode ? (
-                      <>
-                        <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-2">Changes</div>
-                        <DiffView original={b.original} improved={b.improved} />
-                      </>
-                    ) : (
-                      <>
-                        <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-1">Original</div>
-                        <p className="text-sm text-muted-foreground line-through decoration-1">{b.original}</p>
-                        <div className="text-xs uppercase tracking-wide text-primary font-semibold mt-3 mb-1">Improved</div>
-                        <p className="text-sm font-medium">{b.improved}</p>
-                      </>
-                    )}
-                  </div>
-                ))}
-                {!opt.improved_bullets?.length && <p className="text-sm text-muted-foreground">No bullet improvements suggested.</p>}
-              </div>
-            </Card>
+            <div className="relative">
+              <Card icon={Lightbulb} title="Improved work experience bullets" right={proOnly ? (
+                <Button variant="ghost" size="sm" onClick={() => setDiffMode(!diffMode)}>
+                  <Eye className="h-3.5 w-3.5 mr-1" /> {diffMode ? "Side-by-side" : "Diff view"}
+                </Button>
+              ) : null}>
+                <div className={`space-y-5 ${!proOnly ? "blur-sm pointer-events-none select-none" : ""}`}>
+                  {(opt.improved_bullets ?? []).map((b, i) => (
+                    <div key={i} className="rounded-xl border border-border bg-background p-4">
+                      {diffMode ? (
+                        <>
+                          <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-2">Changes</div>
+                          <DiffView original={b.original} improved={b.improved} />
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-1">Original</div>
+                          <p className="text-sm text-muted-foreground line-through decoration-1">{b.original}</p>
+                          <div className="text-xs uppercase tracking-wide text-primary font-semibold mt-3 mb-1">Improved</div>
+                          <p className="text-sm font-medium">{b.improved}</p>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                  {!opt.improved_bullets?.length && <p className="text-sm text-muted-foreground">No bullet improvements suggested.</p>}
+                </div>
+              </Card>
+              {!proOnly && <UpgradeOverlay label="AI bullet rewrites are a Pro feature" />}
+            </div>
           </TabsContent>
 
           {/* KEYWORD DENSITY */}
@@ -366,6 +431,9 @@ export default function Results() {
 
           {/* COVER LETTER */}
           <TabsContent value="cover" className="mt-6">
+            {!proOnly ? (
+              <ProGate title="Cover Letter Generator" desc="Generate tailored cover letters for every application." onUpgrade={() => navigate("/pricing")} />
+            ) : (
             <Card icon={Mail} title="Cover letter" right={opt.cover_letter ? (
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => downloadCoverLetterPdf(opt, opt.cover_letter!)}>
@@ -389,10 +457,14 @@ export default function Results() {
                 </div>
               )}
             </Card>
+            )}
           </TabsContent>
 
           {/* COMPANY BRIEF */}
           <TabsContent value="company" className="mt-6">
+            {!proOnly ? (
+              <ProGate title="Company Research Brief" desc="Get an AI dossier on the company, role, and smart questions to ask." onUpgrade={() => navigate("/pricing")} />
+            ) : (
             <Card icon={Building2} title="Company research brief">
               {opt.company_brief ? (
                 <div className="space-y-5">
@@ -445,10 +517,14 @@ export default function Results() {
                 </div>
               )}
             </Card>
+            )}
           </TabsContent>
 
           {/* SKILL GAPS */}
           <TabsContent value="gaps" className="mt-6">
+            {!proOnly ? (
+              <ProGate title="Skill Gap Analysis" desc="See exactly which skills to learn — and where — to close the gap to your target role." onUpgrade={() => navigate("/pricing")} />
+            ) : (
             <Card icon={GraduationCap} title="Skill gap analysis">
               {opt.skill_gaps?.length ? (
                 <div className="space-y-4">
@@ -494,6 +570,7 @@ export default function Results() {
                 </div>
               )}
             </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
@@ -512,6 +589,21 @@ function Card({ icon: Icon, title, children, right, className = "" }: { icon: an
         {right}
       </div>
       {children}
+    </div>
+  );
+}
+
+function ProGate({ title, desc, onUpgrade }: { title: string; desc: string; onUpgrade: () => void }) {
+  return (
+    <div className="rounded-2xl border border-primary/30 bg-gradient-card p-10 shadow-card text-center">
+      <div className="h-14 w-14 mx-auto rounded-full bg-gradient-primary text-primary-foreground flex items-center justify-center shadow-glow mb-4">
+        <Lock className="h-6 w-6" />
+      </div>
+      <h3 className="font-display text-xl font-bold">{title} — Pro feature</h3>
+      <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">{desc}</p>
+      <Button onClick={onUpgrade} className="mt-5 bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
+        Upgrade to Pro · ₹99/mo
+      </Button>
     </div>
   );
 }
