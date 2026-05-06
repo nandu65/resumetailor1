@@ -462,6 +462,9 @@ export default function Results() {
 
           {/* COMPANY BRIEF */}
           <TabsContent value="company" className="mt-6">
+            {!proOnly ? (
+              <ProGate title="Company Research Brief" desc="Get an AI dossier on the company, role, and smart questions to ask." onUpgrade={() => navigate("/pricing")} />
+            ) : (
             <Card icon={Building2} title="Company research brief">
               {opt.company_brief ? (
                 <div className="space-y-5">
@@ -514,6 +517,7 @@ export default function Results() {
                 </div>
               )}
             </Card>
+            )}
           </TabsContent>
 
           {/* SKILL GAPS */}
