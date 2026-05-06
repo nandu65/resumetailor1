@@ -593,6 +593,21 @@ function Card({ icon: Icon, title, children, right, className = "" }: { icon: an
   );
 }
 
+function ProGate({ title, desc, onUpgrade }: { title: string; desc: string; onUpgrade: () => void }) {
+  return (
+    <div className="rounded-2xl border border-primary/30 bg-gradient-card p-10 shadow-card text-center">
+      <div className="h-14 w-14 mx-auto rounded-full bg-gradient-primary text-primary-foreground flex items-center justify-center shadow-glow mb-4">
+        <Lock className="h-6 w-6" />
+      </div>
+      <h3 className="font-display text-xl font-bold">{title} — Pro feature</h3>
+      <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">{desc}</p>
+      <Button onClick={onUpgrade} className="mt-5 bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
+        Upgrade to Pro · ₹99/mo
+      </Button>
+    </div>
+  );
+}
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
