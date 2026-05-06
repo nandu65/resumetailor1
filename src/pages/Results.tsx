@@ -431,6 +431,9 @@ export default function Results() {
 
           {/* COVER LETTER */}
           <TabsContent value="cover" className="mt-6">
+            {!proOnly ? (
+              <ProGate title="Cover Letter Generator" desc="Generate tailored cover letters for every application." onUpgrade={() => navigate("/pricing")} />
+            ) : (
             <Card icon={Mail} title="Cover letter" right={opt.cover_letter ? (
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => downloadCoverLetterPdf(opt, opt.cover_letter!)}>
@@ -454,6 +457,7 @@ export default function Results() {
                 </div>
               )}
             </Card>
+            )}
           </TabsContent>
 
           {/* COMPANY BRIEF */}
