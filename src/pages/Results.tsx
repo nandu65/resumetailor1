@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Download, Loader2, Target, Sparkles, ListChecks, Lightbulb, Tag, FileText, Mail, Building2, GraduationCap, BarChart3, Eye, Code2, ExternalLink, TrendingUp, TrendingDown, Minus, Award, Wand2, Lock } from "lucide-react";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
