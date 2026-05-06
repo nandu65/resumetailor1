@@ -134,6 +134,26 @@ export default function Results() {
   const scoreColor = score >= 75 ? "text-primary" : score >= 50 ? "text-warning" : "text-destructive";
   const recruiterColor = recruiter >= 75 ? "text-primary" : recruiter >= 50 ? "text-warning" : "text-destructive";
 
+  // Plan-based feature gates
+  const isFree = plan === "free";
+  const isBasic = plan === "basic";
+  const canDownload = plan === "basic" || plan === "pro"; // PDF for basic; all formats for pro
+  const proOnly = plan === "pro";
+  const visibleMissingKeywords = isFree ? (opt.missing_keywords ?? []).slice(0, 2) : (opt.missing_keywords ?? []);
+  const hiddenMissingCount = isFree ? Math.max(0, (opt.missing_keywords?.length ?? 0) - 2) : 0;
+
+  const UpgradeOverlay = ({ label = "Upgrade to unlock", to = "/pricing" }: { label?: string; to?: string }) => (
+    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/70 backdrop-blur-sm rounded-2xl">
+      <div className="h-12 w-12 rounded-full bg-background border border-border flex items-center justify-center mb-3 shadow-md">
+        <Lock className="h-5 w-5 text-muted-foreground" />
+      </div>
+      <div className="text-sm font-semibold mb-2">{label}</div>
+      <Button size="sm" onClick={() => navigate(to)} className="bg-gradient-primary text-primary-foreground hover:opacity-90">
+        Upgrade plan
+      </Button>
+    </div>
+  );
+
   const deltaCopy = (() => {
     if (delta == null) return null;
     if (delta >= 5) return { tone: "up" as const, text: `+${delta} improvement vs your last version`, sub: "Your tailoring made a measurable difference." };
