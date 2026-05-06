@@ -522,6 +522,9 @@ export default function Results() {
 
           {/* SKILL GAPS */}
           <TabsContent value="gaps" className="mt-6">
+            {!proOnly ? (
+              <ProGate title="Skill Gap Analysis" desc="See exactly which skills to learn — and where — to close the gap to your target role." onUpgrade={() => navigate("/pricing")} />
+            ) : (
             <Card icon={GraduationCap} title="Skill gap analysis">
               {opt.skill_gaps?.length ? (
                 <div className="space-y-4">
