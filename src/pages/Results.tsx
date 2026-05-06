@@ -330,52 +330,71 @@ export default function Results() {
             <div className="grid md:grid-cols-2 gap-6">
               <Card icon={Tag} title="Missing keywords">
                 <div className="flex flex-wrap gap-2">
-                  {(opt.missing_keywords ?? []).map((k) => (
+                  {visibleMissingKeywords.map((k) => (
                     <span key={k} className="inline-flex items-center rounded-full border border-warning/30 bg-warning/10 px-3 py-1 text-xs font-medium text-foreground">{k}</span>
                   ))}
                   {!opt.missing_keywords?.length && <p className="text-sm text-muted-foreground">No major keywords missing — nice work!</p>}
                 </div>
+                {hiddenMissingCount > 0 && (
+                  <div className="mt-4 rounded-lg border border-dashed border-primary/40 bg-primary/5 p-3 flex items-center justify-between gap-3">
+                    <div className="text-xs text-muted-foreground">
+                      <Lock className="h-3 w-3 inline mr-1" /> +{hiddenMissingCount} more keywords hidden on Free.
+                    </div>
+                    <Button size="sm" variant="outline" onClick={() => navigate("/pricing")}>Upgrade</Button>
+                  </div>
+                )}
               </Card>
-              <Card icon={ListChecks} title="Skills to add">
-                <div className="flex flex-wrap gap-2">
-                  {(opt.skills_to_add ?? []).map((s) => (
-                    <span key={s} className="inline-flex items-center rounded-full bg-gradient-primary text-primary-foreground px-3 py-1 text-xs font-medium">{s}</span>
-                  ))}
-                  {!opt.skills_to_add?.length && <p className="text-sm text-muted-foreground">All key skills already present.</p>}
-                </div>
-              </Card>
+              <div className="relative">
+                <Card icon={ListChecks} title="Skills to add">
+                  <div className={`flex flex-wrap gap-2 ${!proOnly ? "blur-sm pointer-events-none select-none" : ""}`}>
+                    {(opt.skills_to_add ?? []).map((s) => (
+                      <span key={s} className="inline-flex items-center rounded-full bg-gradient-primary text-primary-foreground px-3 py-1 text-xs font-medium">{s}</span>
+                    ))}
+                    {!opt.skills_to_add?.length && <p className="text-sm text-muted-foreground">All key skills already present.</p>}
+                  </div>
+                </Card>
+                {!proOnly && <UpgradeOverlay label="Skills suggestions are a Pro feature" />}
+              </div>
             </div>
 
-            <Card icon={Sparkles} title="Suggested professional summary">
-              <p className="text-sm leading-relaxed text-foreground/90">{opt.professional_summary || "—"}</p>
-            </Card>
+            <div className="relative">
+              <Card icon={Sparkles} title="Suggested professional summary">
+                <p className={`text-sm leading-relaxed text-foreground/90 ${!proOnly ? "blur-sm pointer-events-none select-none" : ""}`}>
+                  {opt.professional_summary || "—"}
+                </p>
+              </Card>
+              {!proOnly && <UpgradeOverlay label="Profile summary rewrite is a Pro feature" />}
+            </div>
 
-            <Card icon={Lightbulb} title="Improved work experience bullets" right={
-              <Button variant="ghost" size="sm" onClick={() => setDiffMode(!diffMode)}>
-                <Eye className="h-3.5 w-3.5 mr-1" /> {diffMode ? "Side-by-side" : "Diff view"}
-              </Button>
-            }>
-              <div className="space-y-5">
-                {(opt.improved_bullets ?? []).map((b, i) => (
-                  <div key={i} className="rounded-xl border border-border bg-background p-4">
-                    {diffMode ? (
-                      <>
-                        <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-2">Changes</div>
-                        <DiffView original={b.original} improved={b.improved} />
-                      </>
-                    ) : (
-                      <>
-                        <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-1">Original</div>
-                        <p className="text-sm text-muted-foreground line-through decoration-1">{b.original}</p>
-                        <div className="text-xs uppercase tracking-wide text-primary font-semibold mt-3 mb-1">Improved</div>
-                        <p className="text-sm font-medium">{b.improved}</p>
-                      </>
-                    )}
-                  </div>
-                ))}
-                {!opt.improved_bullets?.length && <p className="text-sm text-muted-foreground">No bullet improvements suggested.</p>}
-              </div>
-            </Card>
+            <div className="relative">
+              <Card icon={Lightbulb} title="Improved work experience bullets" right={proOnly ? (
+                <Button variant="ghost" size="sm" onClick={() => setDiffMode(!diffMode)}>
+                  <Eye className="h-3.5 w-3.5 mr-1" /> {diffMode ? "Side-by-side" : "Diff view"}
+                </Button>
+              ) : null}>
+                <div className={`space-y-5 ${!proOnly ? "blur-sm pointer-events-none select-none" : ""}`}>
+                  {(opt.improved_bullets ?? []).map((b, i) => (
+                    <div key={i} className="rounded-xl border border-border bg-background p-4">
+                      {diffMode ? (
+                        <>
+                          <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-2">Changes</div>
+                          <DiffView original={b.original} improved={b.improved} />
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-1">Original</div>
+                          <p className="text-sm text-muted-foreground line-through decoration-1">{b.original}</p>
+                          <div className="text-xs uppercase tracking-wide text-primary font-semibold mt-3 mb-1">Improved</div>
+                          <p className="text-sm font-medium">{b.improved}</p>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                  {!opt.improved_bullets?.length && <p className="text-sm text-muted-foreground">No bullet improvements suggested.</p>}
+                </div>
+              </Card>
+              {!proOnly && <UpgradeOverlay label="AI bullet rewrites are a Pro feature" />}
+            </div>
           </TabsContent>
 
           {/* KEYWORD DENSITY */}
