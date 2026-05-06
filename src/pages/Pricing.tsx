@@ -195,9 +195,7 @@ export default function Pricing() {
           {PLANS.map((plan) => {
             const isLoading = loadingTier === plan.tier;
             const isCurrent = user && plan.tier === currentPlan && (plan.tier === "free" || isActive);
-            // Blur tiers the user has NOT subscribed to (only when they have an active paid plan)
-            const userHasPaidPlan = isActive && currentPlan !== "free";
-            const isBlurred = !!user && userHasPaidPlan && !isCurrent;
+            const isBlurred = false;
 
             return (
               <div key={plan.tier} className="relative">
