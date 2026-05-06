@@ -270,13 +270,13 @@ export default function Results() {
 
         {/* Score breakdown */}
         {breakdown.length > 0 && (
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-card mb-6">
+          <div className="relative rounded-2xl border border-border bg-card p-6 shadow-card mb-6">
             <div className="flex items-center gap-2 mb-5">
               <div className="h-8 w-8 rounded-lg bg-accent flex items-center justify-center text-accent-foreground"><BarChart3 className="h-4 w-4" /></div>
               <h3 className="font-display font-semibold">Score breakdown</h3>
               <span className="ml-auto text-xs text-muted-foreground">Weighted out of 100</span>
             </div>
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className={`grid sm:grid-cols-2 gap-4 ${isFree ? "blur-md pointer-events-none select-none" : ""}`}>
               {breakdown.map((c) => {
                 const pct = c.max ? (c.score / c.max) * 100 : 0;
                 const tone = pct >= 75 ? "bg-primary" : pct >= 45 ? "bg-warning" : "bg-destructive";
@@ -294,6 +294,7 @@ export default function Results() {
                 );
               })}
             </div>
+            {isFree && <UpgradeOverlay label="Score breakdown is a Basic feature" />}
           </div>
         )}
 
