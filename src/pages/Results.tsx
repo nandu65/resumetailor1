@@ -40,7 +40,9 @@ interface Optimization {
 
 export default function Results() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [opt, setOpt] = useState<Optimization | null>(null);
+  const [plan, setPlan] = useState<"free" | "basic" | "pro">("free");
   const [loading, setLoading] = useState(true);
   const [diffMode, setDiffMode] = useState(true);
   const [coverLoading, setCoverLoading] = useState(false);
@@ -56,6 +58,18 @@ export default function Results() {
         setOpt(data as any);
         setLoading(false);
       });
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) return;
+      supabase.from("profiles").select("plan, subscription_status")
+        .eq("user_id", data.user.id).maybeSingle()
+        .then(({ data: p }) => {
+          if (p && (p as any).subscription_status === "active") {
+            setPlan(((p as any).plan as any) || "free");
+          } else {
+            setPlan("free");
+          }
+        });
+    });
   };
 
   useEffect(load, [id]);
