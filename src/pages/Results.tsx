@@ -181,19 +181,30 @@ export default function Results() {
               {opt.rewrite_level && <span className="rounded-full bg-accent px-2 py-0.5 text-xs capitalize">{opt.rewrite_level} rewrite</span>}
             </div>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="lg" className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
-                <Download className="h-4 w-4 mr-2" /> Download
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem onClick={() => downloadResumePdf(opt)}><FileText className="h-4 w-4 mr-2" /> PDF (formatted)</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => downloadResumeDocx(opt)}><FileText className="h-4 w-4 mr-2" /> DOCX (Word)</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => downloadResumeTxt(opt)}><FileText className="h-4 w-4 mr-2" /> Plain text (ATS-safe)</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => downloadResumeMarkdown(opt)}><Code2 className="h-4 w-4 mr-2" /> Markdown</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {!canDownload ? (
+            <Button size="lg" onClick={() => navigate("/pricing")} className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
+              <Lock className="h-4 w-4 mr-2" /> Upgrade to download
+            </Button>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="lg" className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
+                  <Download className="h-4 w-4 mr-2" /> Download
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => downloadResumePdf(opt)}><FileText className="h-4 w-4 mr-2" /> PDF (formatted)</DropdownMenuItem>
+                {proOnly && <DropdownMenuItem onClick={() => downloadResumeDocx(opt)}><FileText className="h-4 w-4 mr-2" /> DOCX (Word)</DropdownMenuItem>}
+                {proOnly && <DropdownMenuItem onClick={() => downloadResumeTxt(opt)}><FileText className="h-4 w-4 mr-2" /> Plain text (ATS-safe)</DropdownMenuItem>}
+                {proOnly && <DropdownMenuItem onClick={() => downloadResumeMarkdown(opt)}><Code2 className="h-4 w-4 mr-2" /> Markdown</DropdownMenuItem>}
+                {!proOnly && (
+                  <DropdownMenuItem onClick={() => navigate("/pricing")} className="text-muted-foreground">
+                    <Lock className="h-4 w-4 mr-2" /> DOCX / TXT / Markdown — Pro
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
 
         {/* Score panel */}
