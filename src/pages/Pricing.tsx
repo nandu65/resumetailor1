@@ -43,6 +43,7 @@ const PLANS: Array<{
       "Full ATS score breakdown",
       "All missing keywords",
       "PDF download",
+      "No AI writing features",
     ],
   },
   {
