@@ -26,10 +26,10 @@ const PLANS: Array<{
     cadence: "forever",
     tagline: "Try it out",
     features: [
-      "Unlimited scans (fair use)",
-      "ATS score",
-      "Limited keyword insights",
-      "No premium downloads",
+      "1 resume scan only",
+      "ATS score (blurred breakdown)",
+      "First 2 missing keywords only",
+      "No downloads",
     ],
   },
   {
