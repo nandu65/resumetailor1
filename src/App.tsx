@@ -40,8 +40,11 @@ const App = () => (
           <Route path="/tools/diff" element={<DiffTool />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/terms-of-service" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/privacy-policy" element={<Privacy />} />
           <Route path="/refund" element={<Refund />} />
+          <Route path="/refund-policy" element={<Refund />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
