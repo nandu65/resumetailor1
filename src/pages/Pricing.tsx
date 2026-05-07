@@ -282,6 +282,20 @@ export default function Pricing() {
                       <Button variant="outline" onClick={() => navigate(user ? "/dashboard" : "/auth")} className="w-full" disabled={isBlurred}>
                         {user ? "Go to dashboard" : "Get started"}
                       </Button>
+                    ) : currentPlan === "pro" && plan.tier === "basic" && isActive ? (
+                      <Button
+                        onClick={() => handleDowngrade("basic")}
+                        disabled={downgrading || profile?.pending_plan === "basic"}
+                        variant="outline"
+                        className="w-full h-12 text-base font-semibold"
+                      >
+                        {downgrading ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <ArrowDown className="h-4 w-4 mr-2" />
+                        )}
+                        {profile?.pending_plan === "basic" ? "Downgrade scheduled" : "Downgrade to Basic"}
+                      </Button>
                     ) : (
                       <Button
                         onClick={() => handleSubscribe(plan.tier as "basic" | "pro")}
@@ -299,7 +313,7 @@ export default function Pricing() {
                         ) : (
                           <Lock className="h-4 w-4 mr-2" />
                         )}
-                        {isLoading ? "Opening checkout…" : user ? `Subscribe for ${plan.price}/mo` : "Sign in to subscribe"}
+                        {isLoading ? "Opening checkout…" : user ? (currentPlan === "basic" && plan.tier === "pro" ? `Upgrade to Pro – ${plan.price}/mo` : `Subscribe for ${plan.price}/mo`) : "Sign in to subscribe"}
                       </Button>
                     )}
                   </div>
