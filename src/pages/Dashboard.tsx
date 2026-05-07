@@ -24,8 +24,27 @@ export default function Dashboard() {
   const [rewriteLevel, setRewriteLevel] = useState<RewriteLevel>("balanced");
   const [extracting, setExtracting] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
-  const [profile, setProfile] = useState<{ plan: string; optimizations_used: number } | null>(null);
+  const [profile, setProfile] = useState<{
+    plan: string;
+    optimizations_used: number;
+    scans_used_month: number;
+    subscription_status: string;
+    current_period_end: string | null;
+    payment_failed: boolean;
+    pending_plan: string | null;
+  } | null>(null);
   const [history, setHistory] = useState<any[]>([]);
+  const [cancelling, setCancelling] = useState(false);
+
+  const loadProfile = () => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("plan, optimizations_used, scans_used_month, subscription_status, current_period_end, payment_failed, pending_plan")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => setProfile(data as any));
+  };
 
   const loadHistory = () => {
     if (!user) return;
@@ -35,10 +54,25 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("plan, optimizations_used").eq("user_id", user.id).maybeSingle()
-      .then(({ data }) => setProfile(data));
+    loadProfile();
     loadHistory();
   }, [user]);
+
+  const handleCancel = async () => {
+    if (!confirm("Cancel your subscription? You'll keep paid access until the end of the current billing cycle, then drop to Free.")) return;
+    setCancelling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("razorpay-cancel-subscription");
+      if (error || (data as any)?.error) {
+        toast.error((error as any)?.message || (data as any)?.error || "Could not cancel");
+        return;
+      }
+      toast.success("Subscription cancelled. Access continues until the cycle ends.");
+      loadProfile();
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   const handleFile = async (file: File) => {
     setExtracting(true);
