@@ -42,6 +42,20 @@ export default function Privacy() {
           </div>
 
           <div>
+            <h2 className="font-display text-xl font-semibold mt-6 mb-2">3a. Cookies</h2>
+            <p>We use only essential cookies required for authentication, session management and CSRF protection. We do not use advertising or cross-site tracking cookies. Your browser can block non-essential cookies without breaking the Service.</p>
+          </div>
+
+          <div>
+            <h2 className="font-display text-xl font-semibold mt-6 mb-2">3b. Third-party services</h2>
+            <ul className="list-disc pl-6 space-y-1">
+              <li><strong>Google Gemini AI</strong> — processes your resume and JD to generate ATS scores and AI rewrites. Google does not train on your data.</li>
+              <li><strong>Razorpay</strong> — processes UPI/Card autopay. Card details never touch our servers; we only store subscription IDs and status.</li>
+              <li><strong>Supabase</strong> — secure hosting, authentication and database (encrypted in transit and at rest).</li>
+            </ul>
+          </div>
+
+          <div>
             <h2 className="font-display text-xl font-semibold mt-6 mb-2">4. AI processing</h2>
             <p>Your resume and JD text are sent to AI providers (Google Gemini, OpenAI) via secured APIs solely to generate your output. We do not allow these providers to train on your data.</p>
           </div>
