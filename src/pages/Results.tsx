@@ -541,8 +541,27 @@ export default function Results() {
 
           {/* COVER LETTER */}
           <TabsContent value="cover" className="mt-6">
-            {!proOnly ? (
+            {isFree ? (
               <ProGate title="Cover Letter Generator" desc="Generate tailored cover letters for every application." onUpgrade={() => navigate("/pricing")} />
+            ) : isBasic ? (
+              <Card icon={Mail} title="Cover letter — preview">
+                <div className="text-sm leading-relaxed text-foreground/90 space-y-3">
+                  <p>Dear Hiring Manager,</p>
+                  <p>
+                    I'm excited to apply for the <span className="font-semibold">{opt.role || "role"}</span>
+                    {opt.company ? <> at <span className="font-semibold">{opt.company}</span></> : null}.
+                    With over five years of experience shipping production systems at scale, I'm confident I can…
+                  </p>
+                  <p className="blur-sm select-none">
+                    contribute meaningfully from day one. In my last role I led a team of six engineers to deliver a real-time analytics platform processing 2M+ events per minute, reducing infrastructure costs by 30% while improving p95 latency by 40%. I'm particularly drawn to your work on…
+                  </p>
+                  <p className="blur-sm select-none">
+                    …and would love to bring my background in distributed systems, technical leadership, and customer-obsessed product thinking to your team. I'd welcome the opportunity to discuss how my experience aligns with your roadmap.
+                  </p>
+                  <p className="blur-sm select-none">Sincerely,<br />[Your name]</p>
+                </div>
+                <TeaserCTA hiddenLabel="Full personalized cover letter is a Pro feature" />
+              </Card>
             ) : (
             <Card icon={Mail} title="Cover letter" right={opt.cover_letter ? (
               <div className="flex gap-2">
