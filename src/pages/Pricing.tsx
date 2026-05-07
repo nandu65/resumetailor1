@@ -1,4 +1,4 @@
-import { Check, Zap, Sparkles, ArrowLeft, Loader2, Lock, ShieldCheck, X } from "lucide-react";
+import { Check, Zap, Sparkles, ArrowLeft, Loader2, Lock, ShieldCheck, X, ArrowDown, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Link, useNavigate } from "react-router-dom";
@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { subscribeWithRazorpay } from "@/lib/razorpay";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 type Tier = "free" | "basic" | "pro";
 
