@@ -97,6 +97,8 @@ export type Database = {
           email: string | null
           id: string
           optimizations_used: number
+          payment_failed: boolean
+          pending_plan: string | null
           plan: string
           razorpay_customer_id: string | null
           razorpay_subscription_id: string | null
@@ -113,6 +115,8 @@ export type Database = {
           email?: string | null
           id?: string
           optimizations_used?: number
+          payment_failed?: boolean
+          pending_plan?: string | null
           plan?: string
           razorpay_customer_id?: string | null
           razorpay_subscription_id?: string | null
@@ -129,6 +133,8 @@ export type Database = {
           email?: string | null
           id?: string
           optimizations_used?: number
+          payment_failed?: boolean
+          pending_plan?: string | null
           plan?: string
           razorpay_customer_id?: string | null
           razorpay_subscription_id?: string | null
