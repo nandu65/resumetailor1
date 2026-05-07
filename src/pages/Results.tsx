@@ -364,24 +364,74 @@ export default function Results() {
               </Card>
               <div className="relative">
                 <Card icon={ListChecks} title="Skills to add">
-                  <div className={`flex flex-wrap gap-2 ${!proOnly ? "blur-sm pointer-events-none select-none" : ""}`}>
-                    {(opt.skills_to_add ?? []).map((s) => (
-                      <span key={s} className="inline-flex items-center rounded-full bg-gradient-primary text-primary-foreground px-3 py-1 text-xs font-medium">{s}</span>
-                    ))}
-                    {!opt.skills_to_add?.length && <p className="text-sm text-muted-foreground">All key skills already present.</p>}
-                  </div>
+                  {(() => {
+                    const skills = opt.skills_to_add ?? [];
+                    if (proOnly) {
+                      return (
+                        <div className="flex flex-wrap gap-2">
+                          {skills.map((s) => (
+                            <span key={s} className="inline-flex items-center rounded-full bg-gradient-primary text-primary-foreground px-3 py-1 text-xs font-medium">{s}</span>
+                          ))}
+                          {!skills.length && <p className="text-sm text-muted-foreground">All key skills already present.</p>}
+                        </div>
+                      );
+                    }
+                    if (isBasic) {
+                      const sample = skills.length ? skills : ["System Design", "Kubernetes", "GraphQL", "TypeScript", "AWS", "CI/CD"];
+                      const visible = sample.slice(0, 2);
+                      const hidden = sample.slice(2);
+                      return (
+                        <>
+                          <div className="flex flex-wrap gap-2">
+                            {visible.map((s) => (
+                              <span key={s} className="inline-flex items-center rounded-full bg-gradient-primary text-primary-foreground px-3 py-1 text-xs font-medium">{s}</span>
+                            ))}
+                            {hidden.map((s, i) => (
+                              <span key={`b-${i}`} className="inline-flex items-center rounded-full bg-gradient-primary text-primary-foreground px-3 py-1 text-xs font-medium blur-sm select-none">{s}</span>
+                            ))}
+                          </div>
+                          {hidden.length > 0 && <TeaserCTA hiddenLabel={`+${hidden.length} more skill suggestions hidden`} />}
+                        </>
+                      );
+                    }
+                    return (
+                      <div className="blur-sm pointer-events-none select-none flex flex-wrap gap-2">
+                        {["System Design", "Kubernetes", "GraphQL", "TypeScript"].map((s) => (
+                          <span key={s} className="inline-flex items-center rounded-full bg-gradient-primary text-primary-foreground px-3 py-1 text-xs font-medium">{s}</span>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </Card>
-                {!proOnly && <UpgradeOverlay label="Skills suggestions are a Pro feature" />}
+                {isFree && <UpgradeOverlay label="Skills suggestions are a Pro feature" />}
               </div>
             </div>
 
             <div className="relative">
               <Card icon={Sparkles} title="Suggested professional summary">
-                <p className={`text-sm leading-relaxed text-foreground/90 ${!proOnly ? "blur-sm pointer-events-none select-none" : ""}`}>
-                  {opt.professional_summary || "—"}
-                </p>
+                {(() => {
+                  const summary = opt.professional_summary || "Results-driven engineer with 5+ years building scalable systems. Led cross-functional teams to ship features used by millions, reduced infra costs by 30%, and mentored junior developers across distributed teams.";
+                  if (proOnly) {
+                    return <p className="text-sm leading-relaxed text-foreground/90">{opt.professional_summary || "—"}</p>;
+                  }
+                  if (isBasic) {
+                    const words = summary.split(" ");
+                    const cut = Math.ceil(words.length / 3);
+                    const visible = words.slice(0, cut).join(" ");
+                    const hidden = words.slice(cut).join(" ");
+                    return (
+                      <>
+                        <p className="text-sm leading-relaxed text-foreground/90">
+                          {visible} <span className="blur-sm select-none">{hidden}</span>
+                        </p>
+                        <TeaserCTA hiddenLabel="Full AI-rewritten summary hidden" />
+                      </>
+                    );
+                  }
+                  return <p className="text-sm leading-relaxed text-foreground/90 blur-sm pointer-events-none select-none">{summary}</p>;
+                })()}
               </Card>
-              {!proOnly && <UpgradeOverlay label="Profile summary rewrite is a Pro feature" />}
+              {isFree && <UpgradeOverlay label="Profile summary rewrite is a Pro feature" />}
             </div>
 
             <div className="relative">
@@ -390,28 +440,70 @@ export default function Results() {
                   <Eye className="h-3.5 w-3.5 mr-1" /> {diffMode ? "Side-by-side" : "Diff view"}
                 </Button>
               ) : null}>
-                <div className={`space-y-5 ${!proOnly ? "blur-sm pointer-events-none select-none" : ""}`}>
-                  {(opt.improved_bullets ?? []).map((b, i) => (
-                    <div key={i} className="rounded-xl border border-border bg-background p-4">
-                      {diffMode ? (
-                        <>
-                          <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-2">Changes</div>
-                          <DiffView original={b.original} improved={b.improved} />
-                        </>
-                      ) : (
-                        <>
-                          <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-1">Original</div>
-                          <p className="text-sm text-muted-foreground line-through decoration-1">{b.original}</p>
-                          <div className="text-xs uppercase tracking-wide text-primary font-semibold mt-3 mb-1">Improved</div>
-                          <p className="text-sm font-medium">{b.improved}</p>
-                        </>
-                      )}
+                {(() => {
+                  const bullets = opt.improved_bullets ?? [];
+                  if (proOnly) {
+                    return (
+                      <div className="space-y-5">
+                        {bullets.map((b, i) => (
+                          <div key={i} className="rounded-xl border border-border bg-background p-4">
+                            {diffMode ? (
+                              <>
+                                <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-2">Changes</div>
+                                <DiffView original={b.original} improved={b.improved} />
+                              </>
+                            ) : (
+                              <>
+                                <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-1">Original</div>
+                                <p className="text-sm text-muted-foreground line-through decoration-1">{b.original}</p>
+                                <div className="text-xs uppercase tracking-wide text-primary font-semibold mt-3 mb-1">Improved</div>
+                                <p className="text-sm font-medium">{b.improved}</p>
+                              </>
+                            )}
+                          </div>
+                        ))}
+                        {!bullets.length && <p className="text-sm text-muted-foreground">No bullet improvements suggested.</p>}
+                      </div>
+                    );
+                  }
+                  if (isBasic) {
+                    const sample = bullets.length ? bullets : [
+                      { original: "Worked on backend services for the platform.", improved: "Architected and shipped 4 microservices handling 2M+ daily requests, reducing p95 latency by 40%." },
+                      { original: "Helped improve performance.", improved: "Optimized PostgreSQL queries and Redis caching, cutting API response time from 800ms to 120ms." },
+                      { original: "Collaborated with team on features.", improved: "Led 6-engineer pod through 3 quarterly releases, shipping 12 features used by 500K MAU." },
+                    ];
+                    const visible = sample.slice(0, 1);
+                    const hidden = sample.slice(1);
+                    return (
+                      <div className="space-y-5">
+                        {visible.map((b, i) => (
+                          <div key={i} className="rounded-xl border border-border bg-background p-4">
+                            <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-1">Original</div>
+                            <p className="text-sm text-muted-foreground line-through decoration-1">{b.original}</p>
+                            <div className="text-xs uppercase tracking-wide text-primary font-semibold mt-3 mb-1">Improved</div>
+                            <p className="text-sm font-medium">{b.improved}</p>
+                          </div>
+                        ))}
+                        {hidden.map((b, i) => (
+                          <div key={`h-${i}`} className="rounded-xl border border-border bg-background p-4 blur-sm select-none pointer-events-none">
+                            <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-1">Original</div>
+                            <p className="text-sm text-muted-foreground line-through decoration-1">{b.original}</p>
+                            <div className="text-xs uppercase tracking-wide text-primary font-semibold mt-3 mb-1">Improved</div>
+                            <p className="text-sm font-medium">{b.improved}</p>
+                          </div>
+                        ))}
+                        {hidden.length > 0 && <TeaserCTA hiddenLabel={`+${hidden.length} more AI-rewritten bullets hidden`} />}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="blur-sm pointer-events-none select-none rounded-xl border border-border bg-background p-4">
+                      <p className="text-sm font-medium">Architected and shipped 4 microservices handling 2M+ daily requests, reducing p95 latency by 40%.</p>
                     </div>
-                  ))}
-                  {!opt.improved_bullets?.length && <p className="text-sm text-muted-foreground">No bullet improvements suggested.</p>}
-                </div>
+                  );
+                })()}
               </Card>
-              {!proOnly && <UpgradeOverlay label="AI bullet rewrites are a Pro feature" />}
+              {isFree && <UpgradeOverlay label="AI bullet rewrites are a Pro feature" />}
             </div>
           </TabsContent>
 
