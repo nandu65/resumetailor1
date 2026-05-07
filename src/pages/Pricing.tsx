@@ -391,10 +391,11 @@ export default function Pricing() {
           </Accordion>
         </section>
 
+        <p className="text-center text-xs text-muted-foreground mt-10">
           Secure UPI / Card autopay via Razorpay · Cancel anytime · GST included ·{" "}
-          <Link to="/terms" className="underline hover:text-primary">Terms</Link> ·{" "}
-          <Link to="/privacy" className="underline hover:text-primary">Privacy</Link> ·{" "}
-          <Link to="/refund" className="underline hover:text-primary">Refund Policy</Link>
+          <Link to="/terms-of-service" className="underline hover:text-primary">Terms</Link> ·{" "}
+          <Link to="/privacy-policy" className="underline hover:text-primary">Privacy</Link> ·{" "}
+          <Link to="/refund-policy" className="underline hover:text-primary">Refund Policy</Link>
         </p>
       </div>
     </div>
