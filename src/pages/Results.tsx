@@ -154,6 +154,24 @@ export default function Results() {
     </div>
   );
 
+  // Inline upgrade strip shown beneath a partially-blurred preview (Basic users)
+  const TeaserCTA = ({ hiddenLabel, target = "Pro" }: { hiddenLabel: string; target?: string }) => (
+    <div className="mt-4 rounded-xl border border-primary/40 bg-gradient-card p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between">
+      <div className="flex items-center gap-3">
+        <div className="h-9 w-9 rounded-lg bg-gradient-primary text-primary-foreground flex items-center justify-center shadow-glow shrink-0">
+          <Lock className="h-4 w-4" />
+        </div>
+        <div>
+          <div className="text-sm font-semibold">{hiddenLabel}</div>
+          <div className="text-xs text-muted-foreground">Upgrade to {target} to unlock the full output.</div>
+        </div>
+      </div>
+      <Button size="sm" onClick={() => navigate("/pricing")} className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow shrink-0">
+        Upgrade to {target}
+      </Button>
+    </div>
+  );
+
   const deltaCopy = (() => {
     if (delta == null) return null;
     if (delta >= 5) return { tone: "up" as const, text: `+${delta} improvement vs your last version`, sub: "Your tailoring made a measurable difference." };
@@ -346,24 +364,74 @@ export default function Results() {
               </Card>
               <div className="relative">
                 <Card icon={ListChecks} title="Skills to add">
-                  <div className={`flex flex-wrap gap-2 ${!proOnly ? "blur-sm pointer-events-none select-none" : ""}`}>
-                    {(opt.skills_to_add ?? []).map((s) => (
-                      <span key={s} className="inline-flex items-center rounded-full bg-gradient-primary text-primary-foreground px-3 py-1 text-xs font-medium">{s}</span>
-                    ))}
-                    {!opt.skills_to_add?.length && <p className="text-sm text-muted-foreground">All key skills already present.</p>}
-                  </div>
+                  {(() => {
+                    const skills = opt.skills_to_add ?? [];
+                    if (proOnly) {
+                      return (
+                        <div className="flex flex-wrap gap-2">
+                          {skills.map((s) => (
+                            <span key={s} className="inline-flex items-center rounded-full bg-gradient-primary text-primary-foreground px-3 py-1 text-xs font-medium">{s}</span>
+                          ))}
+                          {!skills.length && <p className="text-sm text-muted-foreground">All key skills already present.</p>}
+                        </div>
+                      );
+                    }
+                    if (isBasic) {
+                      const sample = skills.length ? skills : ["System Design", "Kubernetes", "GraphQL", "TypeScript", "AWS", "CI/CD"];
+                      const visible = sample.slice(0, 2);
+                      const hidden = sample.slice(2);
+                      return (
+                        <>
+                          <div className="flex flex-wrap gap-2">
+                            {visible.map((s) => (
+                              <span key={s} className="inline-flex items-center rounded-full bg-gradient-primary text-primary-foreground px-3 py-1 text-xs font-medium">{s}</span>
+                            ))}
+                            {hidden.map((s, i) => (
+                              <span key={`b-${i}`} className="inline-flex items-center rounded-full bg-gradient-primary text-primary-foreground px-3 py-1 text-xs font-medium blur-sm select-none">{s}</span>
+                            ))}
+                          </div>
+                          {hidden.length > 0 && <TeaserCTA hiddenLabel={`+${hidden.length} more skill suggestions hidden`} />}
+                        </>
+                      );
+                    }
+                    return (
+                      <div className="blur-sm pointer-events-none select-none flex flex-wrap gap-2">
+                        {["System Design", "Kubernetes", "GraphQL", "TypeScript"].map((s) => (
+                          <span key={s} className="inline-flex items-center rounded-full bg-gradient-primary text-primary-foreground px-3 py-1 text-xs font-medium">{s}</span>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </Card>
-                {!proOnly && <UpgradeOverlay label="Skills suggestions are a Pro feature" />}
+                {isFree && <UpgradeOverlay label="Skills suggestions are a Pro feature" />}
               </div>
             </div>
 
             <div className="relative">
               <Card icon={Sparkles} title="Suggested professional summary">
-                <p className={`text-sm leading-relaxed text-foreground/90 ${!proOnly ? "blur-sm pointer-events-none select-none" : ""}`}>
-                  {opt.professional_summary || "—"}
-                </p>
+                {(() => {
+                  const summary = opt.professional_summary || "Results-driven engineer with 5+ years building scalable systems. Led cross-functional teams to ship features used by millions, reduced infra costs by 30%, and mentored junior developers across distributed teams.";
+                  if (proOnly) {
+                    return <p className="text-sm leading-relaxed text-foreground/90">{opt.professional_summary || "—"}</p>;
+                  }
+                  if (isBasic) {
+                    const words = summary.split(" ");
+                    const cut = Math.ceil(words.length / 3);
+                    const visible = words.slice(0, cut).join(" ");
+                    const hidden = words.slice(cut).join(" ");
+                    return (
+                      <>
+                        <p className="text-sm leading-relaxed text-foreground/90">
+                          {visible} <span className="blur-sm select-none">{hidden}</span>
+                        </p>
+                        <TeaserCTA hiddenLabel="Full AI-rewritten summary hidden" />
+                      </>
+                    );
+                  }
+                  return <p className="text-sm leading-relaxed text-foreground/90 blur-sm pointer-events-none select-none">{summary}</p>;
+                })()}
               </Card>
-              {!proOnly && <UpgradeOverlay label="Profile summary rewrite is a Pro feature" />}
+              {isFree && <UpgradeOverlay label="Profile summary rewrite is a Pro feature" />}
             </div>
 
             <div className="relative">
@@ -372,28 +440,70 @@ export default function Results() {
                   <Eye className="h-3.5 w-3.5 mr-1" /> {diffMode ? "Side-by-side" : "Diff view"}
                 </Button>
               ) : null}>
-                <div className={`space-y-5 ${!proOnly ? "blur-sm pointer-events-none select-none" : ""}`}>
-                  {(opt.improved_bullets ?? []).map((b, i) => (
-                    <div key={i} className="rounded-xl border border-border bg-background p-4">
-                      {diffMode ? (
-                        <>
-                          <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-2">Changes</div>
-                          <DiffView original={b.original} improved={b.improved} />
-                        </>
-                      ) : (
-                        <>
-                          <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-1">Original</div>
-                          <p className="text-sm text-muted-foreground line-through decoration-1">{b.original}</p>
-                          <div className="text-xs uppercase tracking-wide text-primary font-semibold mt-3 mb-1">Improved</div>
-                          <p className="text-sm font-medium">{b.improved}</p>
-                        </>
-                      )}
+                {(() => {
+                  const bullets = opt.improved_bullets ?? [];
+                  if (proOnly) {
+                    return (
+                      <div className="space-y-5">
+                        {bullets.map((b, i) => (
+                          <div key={i} className="rounded-xl border border-border bg-background p-4">
+                            {diffMode ? (
+                              <>
+                                <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-2">Changes</div>
+                                <DiffView original={b.original} improved={b.improved} />
+                              </>
+                            ) : (
+                              <>
+                                <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-1">Original</div>
+                                <p className="text-sm text-muted-foreground line-through decoration-1">{b.original}</p>
+                                <div className="text-xs uppercase tracking-wide text-primary font-semibold mt-3 mb-1">Improved</div>
+                                <p className="text-sm font-medium">{b.improved}</p>
+                              </>
+                            )}
+                          </div>
+                        ))}
+                        {!bullets.length && <p className="text-sm text-muted-foreground">No bullet improvements suggested.</p>}
+                      </div>
+                    );
+                  }
+                  if (isBasic) {
+                    const sample = bullets.length ? bullets : [
+                      { original: "Worked on backend services for the platform.", improved: "Architected and shipped 4 microservices handling 2M+ daily requests, reducing p95 latency by 40%." },
+                      { original: "Helped improve performance.", improved: "Optimized PostgreSQL queries and Redis caching, cutting API response time from 800ms to 120ms." },
+                      { original: "Collaborated with team on features.", improved: "Led 6-engineer pod through 3 quarterly releases, shipping 12 features used by 500K MAU." },
+                    ];
+                    const visible = sample.slice(0, 1);
+                    const hidden = sample.slice(1);
+                    return (
+                      <div className="space-y-5">
+                        {visible.map((b, i) => (
+                          <div key={i} className="rounded-xl border border-border bg-background p-4">
+                            <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-1">Original</div>
+                            <p className="text-sm text-muted-foreground line-through decoration-1">{b.original}</p>
+                            <div className="text-xs uppercase tracking-wide text-primary font-semibold mt-3 mb-1">Improved</div>
+                            <p className="text-sm font-medium">{b.improved}</p>
+                          </div>
+                        ))}
+                        {hidden.map((b, i) => (
+                          <div key={`h-${i}`} className="rounded-xl border border-border bg-background p-4 blur-sm select-none pointer-events-none">
+                            <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-1">Original</div>
+                            <p className="text-sm text-muted-foreground line-through decoration-1">{b.original}</p>
+                            <div className="text-xs uppercase tracking-wide text-primary font-semibold mt-3 mb-1">Improved</div>
+                            <p className="text-sm font-medium">{b.improved}</p>
+                          </div>
+                        ))}
+                        {hidden.length > 0 && <TeaserCTA hiddenLabel={`+${hidden.length} more AI-rewritten bullets hidden`} />}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="blur-sm pointer-events-none select-none rounded-xl border border-border bg-background p-4">
+                      <p className="text-sm font-medium">Architected and shipped 4 microservices handling 2M+ daily requests, reducing p95 latency by 40%.</p>
                     </div>
-                  ))}
-                  {!opt.improved_bullets?.length && <p className="text-sm text-muted-foreground">No bullet improvements suggested.</p>}
-                </div>
+                  );
+                })()}
               </Card>
-              {!proOnly && <UpgradeOverlay label="AI bullet rewrites are a Pro feature" />}
+              {isFree && <UpgradeOverlay label="AI bullet rewrites are a Pro feature" />}
             </div>
           </TabsContent>
 
@@ -431,8 +541,27 @@ export default function Results() {
 
           {/* COVER LETTER */}
           <TabsContent value="cover" className="mt-6">
-            {!proOnly ? (
+            {isFree ? (
               <ProGate title="Cover Letter Generator" desc="Generate tailored cover letters for every application." onUpgrade={() => navigate("/pricing")} />
+            ) : isBasic ? (
+              <Card icon={Mail} title="Cover letter — preview">
+                <div className="text-sm leading-relaxed text-foreground/90 space-y-3">
+                  <p>Dear Hiring Manager,</p>
+                  <p>
+                    I'm excited to apply for the <span className="font-semibold">{opt.role || "role"}</span>
+                    {opt.company ? <> at <span className="font-semibold">{opt.company}</span></> : null}.
+                    With over five years of experience shipping production systems at scale, I'm confident I can…
+                  </p>
+                  <p className="blur-sm select-none">
+                    contribute meaningfully from day one. In my last role I led a team of six engineers to deliver a real-time analytics platform processing 2M+ events per minute, reducing infrastructure costs by 30% while improving p95 latency by 40%. I'm particularly drawn to your work on…
+                  </p>
+                  <p className="blur-sm select-none">
+                    …and would love to bring my background in distributed systems, technical leadership, and customer-obsessed product thinking to your team. I'd welcome the opportunity to discuss how my experience aligns with your roadmap.
+                  </p>
+                  <p className="blur-sm select-none">Sincerely,<br />[Your name]</p>
+                </div>
+                <TeaserCTA hiddenLabel="Full personalized cover letter is a Pro feature" />
+              </Card>
             ) : (
             <Card icon={Mail} title="Cover letter" right={opt.cover_letter ? (
               <div className="flex gap-2">
@@ -462,8 +591,43 @@ export default function Results() {
 
           {/* COMPANY BRIEF */}
           <TabsContent value="company" className="mt-6">
-            {!proOnly ? (
+            {isFree ? (
               <ProGate title="Company Research Brief" desc="Get an AI dossier on the company, role, and smart questions to ask." onUpgrade={() => navigate("/pricing")} />
+            ) : isBasic ? (
+              <Card icon={Building2} title="Company research brief — preview">
+                <div className="space-y-5">
+                  <div>
+                    <h4 className="font-display font-bold text-lg">{opt.company || "Acme Corp"}</h4>
+                    <p className="text-sm text-muted-foreground">SaaS · 500–1000 employees</p>
+                    <p className="text-sm mt-2 leading-relaxed">
+                      A fast-growing platform helping mid-market teams automate operations across sales, finance, and customer success.
+                    </p>
+                  </div>
+                  <Section title="Values & culture">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="rounded-full bg-accent text-accent-foreground px-3 py-1 text-xs font-medium">Customer obsession</span>
+                      <span className="rounded-full bg-accent text-accent-foreground px-3 py-1 text-xs font-medium">Bias for action</span>
+                      <span className="rounded-full bg-accent text-accent-foreground px-3 py-1 text-xs font-medium blur-sm select-none">Ownership</span>
+                      <span className="rounded-full bg-accent text-accent-foreground px-3 py-1 text-xs font-medium blur-sm select-none">High standards</span>
+                    </div>
+                  </Section>
+                  <Section title="Interview talking points">
+                    <ul className="text-sm space-y-1.5 list-disc pl-5">
+                      <li>Recent product launch in the AI workflow space — discuss how your background aligns.</li>
+                      <li className="blur-sm select-none">Their Series C raise and expansion into APAC — connect to your scaling experience.</li>
+                      <li className="blur-sm select-none">Engineering blog post on platform reliability — reference relevant work.</li>
+                    </ul>
+                  </Section>
+                  <Section title="Smart questions to ask them">
+                    <ul className="text-sm space-y-1.5 list-disc pl-5 blur-sm select-none">
+                      <li>How does the team measure success in the first 90 days?</li>
+                      <li>What's the biggest technical challenge facing the team this quarter?</li>
+                      <li>How do engineering and product collaborate on roadmap decisions?</li>
+                    </ul>
+                  </Section>
+                </div>
+                <TeaserCTA hiddenLabel="Full company research brief is a Pro feature" />
+              </Card>
             ) : (
             <Card icon={Building2} title="Company research brief">
               {opt.company_brief ? (
@@ -522,8 +686,47 @@ export default function Results() {
 
           {/* SKILL GAPS */}
           <TabsContent value="gaps" className="mt-6">
-            {!proOnly ? (
+            {isFree ? (
               <ProGate title="Skill Gap Analysis" desc="See exactly which skills to learn — and where — to close the gap to your target role." onUpgrade={() => navigate("/pricing")} />
+            ) : isBasic ? (
+              <Card icon={GraduationCap} title="Skill gap analysis — preview">
+                <div className="space-y-4">
+                  {[
+                    { skill: "System Design at scale", priority: "critical", why: "JD emphasizes architecting distributed systems handling 10M+ requests/day.", time: "6–8 weeks", resources: [{ name: "Designing Data-Intensive Applications", provider: "O'Reilly", type: "book", cost: "₹1,500" }, { name: "System Design Primer", provider: "GitHub", type: "guide", cost: "Free" }], visible: true },
+                    { skill: "Kubernetes & service mesh", priority: "important", why: "Required for managing the microservices fleet they describe.", time: "4–6 weeks", resources: [{ name: "CKA Certification", provider: "Linux Foundation", type: "cert", cost: "$395" }, { name: "Istio Up & Running", provider: "O'Reilly", type: "book", cost: "₹1,800" }], visible: false },
+                    { skill: "Event-driven architecture", priority: "important", why: "Core to their async processing pipeline.", time: "3–4 weeks", resources: [{ name: "Kafka: The Definitive Guide", provider: "Confluent", type: "book", cost: "Free" }], visible: false },
+                  ].map((g, i) => {
+                    const priColor = g.priority === "critical" ? "border-destructive/40 bg-destructive/5" : "border-warning/40 bg-warning/5";
+                    const priBadge = g.priority === "critical" ? "bg-destructive text-destructive-foreground" : "bg-warning text-warning-foreground";
+                    return (
+                      <div key={i} className={`rounded-xl border ${priColor} p-4 ${!g.visible ? "blur-sm select-none pointer-events-none" : ""}`}>
+                        <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                          <div>
+                            <h4 className="font-display font-semibold">{g.skill}</h4>
+                            <p className="text-xs text-muted-foreground mt-0.5">{g.why}</p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className={`text-[10px] uppercase tracking-wide font-bold px-2 py-1 rounded ${priBadge}`}>{g.priority}</span>
+                            <span className="text-xs text-muted-foreground">~{g.time}</span>
+                          </div>
+                        </div>
+                        <div className="mt-3 grid sm:grid-cols-2 gap-2">
+                          {g.resources.map((r, ri) => (
+                            <div key={ri} className="rounded-lg border border-border bg-background p-2.5 text-sm">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="font-medium">{r.name}</span>
+                                <span className="text-xs text-muted-foreground shrink-0">{r.cost}</span>
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-0.5 capitalize">{r.type} · {r.provider}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <TeaserCTA hiddenLabel="+2 more skill gaps and curated resources hidden" />
+              </Card>
             ) : (
             <Card icon={GraduationCap} title="Skill gap analysis">
               {opt.skill_gaps?.length ? (
