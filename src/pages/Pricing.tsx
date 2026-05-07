@@ -76,14 +76,17 @@ export default function Pricing() {
     subscription_status: string;
     current_period_end: string | null;
     scans_used_month: number;
+    pending_plan: string | null;
+    payment_failed: boolean;
   } | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [downgrading, setDowngrading] = useState(false);
 
   const loadProfile = () => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("plan, subscription_status, current_period_end, scans_used_month")
+      .select("plan, subscription_status, current_period_end, scans_used_month, pending_plan, payment_failed")
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => data && setProfile(data as any));
