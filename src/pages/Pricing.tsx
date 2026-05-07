@@ -211,7 +211,21 @@ export default function Pricing() {
           </div>
         )}
 
-        <div className="grid md:grid-cols-3 gap-6">
+        {profile?.payment_failed && (
+          <div className="mb-6 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm">
+            <span className="font-semibold text-destructive">Payment failed.</span> Please update your payment method, or email{" "}
+            <a className="underline text-primary" href="mailto:support.resumeshot@gmail.com">support.resumeshot@gmail.com</a>.
+          </div>
+        )}
+
+        {profile?.pending_plan && profile.pending_plan !== currentPlan && (
+          <div className="mb-6 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
+            You'll keep <span className="capitalize font-semibold">{currentPlan}</span> access until{" "}
+            <span className="font-semibold">{profile.current_period_end ? new Date(profile.current_period_end).toLocaleDateString() : "the end of this cycle"}</span>.{" "}
+            <span className="capitalize font-semibold">{profile.pending_plan}</span> plan starts from next billing cycle.
+          </div>
+        )}
+
           {PLANS.map((plan) => {
             const isLoading = loadingTier === plan.tier;
             const isCurrent = user && plan.tier === currentPlan && (plan.tier === "free" || isActive);
