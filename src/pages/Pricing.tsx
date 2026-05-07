@@ -338,7 +338,59 @@ export default function Pricing() {
           })}
         </div>
 
-        <p className="text-center text-xs text-muted-foreground mt-10">
+        {/* FAQ */}
+        <section className="mt-20 max-w-3xl mx-auto">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <HelpCircle className="h-5 w-5 text-primary" />
+            <h2 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-center">Frequently asked questions</h2>
+          </div>
+          <Accordion type="single" collapsible className="rounded-2xl border border-border bg-card divide-y">
+            <AccordionItem value="ats" className="px-5">
+              <AccordionTrigger className="text-left">What is an ATS score?</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                ATS (Applicant Tracking System) score reflects how well your resume matches a job description on the keywords, skills,
+                and signals recruiters' software looks for. We benchmark against the JD and surface what's missing so you can fix it.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="data-use" className="px-5">
+              <AccordionTrigger className="text-left">How is my resume data used?</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Only to generate your tailored resume, ATS analysis, and AI outputs. We never sell your data and AI providers are
+                contractually blocked from training on it. See our <Link className="text-primary underline" to="/privacy-policy">Privacy Policy</Link>.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="cancel" className="px-5">
+              <AccordionTrigger className="text-left">Can I cancel anytime?</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Yes. Cancel from your dashboard or the Pricing page. Autopay stops immediately and you keep paid features
+                until the end of the current billing cycle.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="limit" className="px-5">
+              <AccordionTrigger className="text-left">What happens when I hit my scan limit?</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Your scans reset on the first day of each billing cycle. If you run out, upgrade to a higher tier or wait for the next renewal.
+                Free users get 1 scan; Basic 10/month; Pro 50/month.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="storage" className="px-5">
+              <AccordionTrigger className="text-left">Is my resume data stored?</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Yes — securely, only so you can revisit your past tailored versions. You can delete any version anytime, or close your
+                account to wipe everything within 30 days.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="basic-vs-pro" className="px-5">
+              <AccordionTrigger className="text-left">How is Basic different from Pro?</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Basic (₹49/mo) gives 10 scans, full ATS breakdown, all missing keywords and PDF download — no AI writing.
+                Pro (₹99/mo) gives 50 scans plus AI bullet rewrites, profile summary, cover letter, company brief,
+                skill gap analysis and Word/TXT/PDF downloads.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </section>
+
           Secure UPI / Card autopay via Razorpay · Cancel anytime · GST included ·{" "}
           <Link to="/terms" className="underline hover:text-primary">Terms</Link> ·{" "}
           <Link to="/privacy" className="underline hover:text-primary">Privacy</Link> ·{" "}
