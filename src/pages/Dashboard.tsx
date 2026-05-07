@@ -112,7 +112,11 @@ export default function Dashboard() {
     }
   };
 
-  const remaining: number | string = "∞";
+  const plan = profile?.plan ?? "free";
+  const limit = plan === "pro" ? 50 : plan === "basic" ? 10 : 1;
+  const used = profile?.scans_used_month ?? 0;
+  const left = Math.max(0, limit - used);
+  const isPaid = plan === "basic" || plan === "pro";
 
   const levels: { value: RewriteLevel; label: string; desc: string }[] = [
     { value: "light", label: "Light polish", desc: "Minimal edits, keep voice" },
@@ -124,14 +128,59 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container py-10 max-w-6xl">
+        {profile?.payment_failed && (
+          <div className="mb-6 rounded-xl border border-destructive/40 bg-destructive/10 p-4 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <div className="flex-1 text-sm">
+              <div className="font-semibold text-destructive">Payment failed — please update your payment method</div>
+              <div className="text-muted-foreground mt-1">
+                Your latest autopay charge didn't go through. Update your card/UPI from the{" "}
+                <Link to="/pricing" className="underline text-primary">Pricing page</Link> or email{" "}
+                <a className="underline text-primary" href="mailto:support.resumeshot@gmail.com">support.resumeshot@gmail.com</a>{" "}
+                if you need help.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {profile?.pending_plan && profile.pending_plan !== plan && (
+          <div className="mb-6 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
+            You'll keep <span className="capitalize font-semibold">{plan}</span> access until{" "}
+            <span className="font-semibold">{profile.current_period_end ? new Date(profile.current_period_end).toLocaleDateString() : "the end of this cycle"}</span>.{" "}
+            <span className="capitalize font-semibold">{profile.pending_plan}</span> plan starts from next billing cycle.
+          </div>
+        )}
+
         <div className="flex items-end justify-between flex-wrap gap-4 mb-8">
           <div>
             <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">Tailor your resume</h1>
             <p className="text-muted-foreground mt-1">Upload your resume and paste a job description to get a tailored version.</p>
           </div>
-          <div className="rounded-xl border border-border bg-gradient-card px-4 py-3 text-sm shadow-card">
-            <div className="text-xs text-muted-foreground uppercase font-semibold tracking-wide">Plan · {profile?.plan ?? "free"}</div>
-            <div className="font-display font-semibold">{remaining} optimizations left</div>
+          <div className="rounded-xl border border-border bg-gradient-card px-4 py-3 text-sm shadow-card min-w-[240px]">
+            <div className="text-xs text-muted-foreground uppercase font-semibold tracking-wide">Plan · {plan}</div>
+            <div className="font-display font-semibold">{used}/{limit} scans used</div>
+            {left <= 2 && left > 0 && isPaid && (
+              <div className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Only {left} scan{left === 1 ? "" : "s"} left this month</div>
+            )}
+            {left === 0 && plan === "free" && (
+              <div className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+                You've used your free scan.{" "}
+                <Link to="/pricing" className="underline text-primary">Upgrade for ₹49/month</Link>
+              </div>
+            )}
+            {isPaid && profile?.subscription_status !== "cancelled" && (
+              <div className="mt-2">
+                <Button onClick={handleCancel} variant="outline" size="sm" disabled={cancelling} className="h-7 text-xs">
+                  {cancelling ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <X className="h-3 w-3 mr-1" />}
+                  Cancel subscription
+                </Button>
+              </div>
+            )}
+            {profile?.subscription_status === "cancelled" && profile?.current_period_end && (
+              <div className="text-xs text-muted-foreground mt-1">
+                Your subscription will end on {new Date(profile.current_period_end).toLocaleDateString()}
+              </div>
+            )}
           </div>
         </div>
 
