@@ -42,7 +42,12 @@ export default function Terms() {
 
           <div>
             <h2 className="font-display text-xl font-semibold mt-6 mb-2">6. Acceptable Use</h2>
-            <p>You agree not to use the Service to upload content that is unlawful, misleading, infringing, or that contains malware. You will not attempt to reverse-engineer, scrape or overload the Service.</p>
+            <p>You agree not to use the Service to upload content that is unlawful, misleading, infringing, or that contains malware. You will not attempt to reverse-engineer, scrape or overload the Service, share your account, or use it to apply for jobs at scale through automated means.</p>
+          </div>
+
+          <div>
+            <h2 className="font-display text-xl font-semibold mt-6 mb-2">6a. Service availability</h2>
+            <p>We aim for high uptime but the Service is provided on a best-effort basis. We may schedule maintenance, throttle abusive traffic, or temporarily disable AI features if upstream providers (Google Gemini, Razorpay) are degraded. We are not liable for downtime caused by third-party providers.</p>
           </div>
 
           <div>

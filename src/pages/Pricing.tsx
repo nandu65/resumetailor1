@@ -1,4 +1,4 @@
-import { Check, Zap, Sparkles, ArrowLeft, Loader2, Lock, ShieldCheck, X } from "lucide-react";
+import { Check, Zap, Sparkles, ArrowLeft, Loader2, Lock, ShieldCheck, X, ArrowDown, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Link, useNavigate } from "react-router-dom";
@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { subscribeWithRazorpay } from "@/lib/razorpay";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 type Tier = "free" | "basic" | "pro";
 
@@ -75,14 +76,17 @@ export default function Pricing() {
     subscription_status: string;
     current_period_end: string | null;
     scans_used_month: number;
+    pending_plan: string | null;
+    payment_failed: boolean;
   } | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [downgrading, setDowngrading] = useState(false);
 
   const loadProfile = () => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("plan, subscription_status, current_period_end, scans_used_month")
+      .select("plan, subscription_status, current_period_end, scans_used_month, pending_plan, payment_failed")
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => data && setProfile(data as any));
@@ -146,6 +150,22 @@ export default function Pricing() {
     }
   };
 
+  const handleDowngrade = async (tier: "basic") => {
+    const cycleEnd = profile?.current_period_end ? new Date(profile.current_period_end).toLocaleDateString() : "the end of your current cycle";
+    if (!confirm(`Downgrade to Basic? You'll keep Pro access until ${cycleEnd}. Basic plan starts from next billing cycle.`)) return;
+    setDowngrading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("razorpay-change-plan", { body: { tier } });
+      if (error || (data as any)?.error) {
+        toast({ title: "Could not schedule downgrade", description: (error as any)?.message || (data as any)?.error || "Try again", variant: "destructive" });
+        return;
+      }
+      toast({ title: "Downgrade scheduled", description: `You'll keep Pro access until ${cycleEnd}. Basic plan starts from next billing cycle.` });
+      loadProfile();
+    } finally {
+      setDowngrading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -188,6 +208,21 @@ export default function Pricing() {
               {cancelling ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <X className="h-3.5 w-3.5 mr-1.5" />}
               Cancel subscription
             </Button>
+          </div>
+        )}
+
+        {profile?.payment_failed && (
+          <div className="mb-6 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm">
+            <span className="font-semibold text-destructive">Payment failed.</span> Please update your payment method, or email{" "}
+            <a className="underline text-primary" href="mailto:support.resumeshot@gmail.com">support.resumeshot@gmail.com</a>.
+          </div>
+        )}
+
+        {profile?.pending_plan && profile.pending_plan !== currentPlan && (
+          <div className="mb-6 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
+            You'll keep <span className="capitalize font-semibold">{currentPlan}</span> access until{" "}
+            <span className="font-semibold">{profile.current_period_end ? new Date(profile.current_period_end).toLocaleDateString() : "the end of this cycle"}</span>.{" "}
+            <span className="capitalize font-semibold">{profile.pending_plan}</span> plan starts from next billing cycle.
           </div>
         )}
 
@@ -262,6 +297,20 @@ export default function Pricing() {
                       <Button variant="outline" onClick={() => navigate(user ? "/dashboard" : "/auth")} className="w-full" disabled={isBlurred}>
                         {user ? "Go to dashboard" : "Get started"}
                       </Button>
+                    ) : currentPlan === "pro" && plan.tier === "basic" && isActive ? (
+                      <Button
+                        onClick={() => handleDowngrade("basic")}
+                        disabled={downgrading || profile?.pending_plan === "basic"}
+                        variant="outline"
+                        className="w-full h-12 text-base font-semibold"
+                      >
+                        {downgrading ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <ArrowDown className="h-4 w-4 mr-2" />
+                        )}
+                        {profile?.pending_plan === "basic" ? "Downgrade scheduled" : "Downgrade to Basic"}
+                      </Button>
                     ) : (
                       <Button
                         onClick={() => handleSubscribe(plan.tier as "basic" | "pro")}
@@ -279,7 +328,7 @@ export default function Pricing() {
                         ) : (
                           <Lock className="h-4 w-4 mr-2" />
                         )}
-                        {isLoading ? "Opening checkout…" : user ? `Subscribe for ${plan.price}/mo` : "Sign in to subscribe"}
+                        {isLoading ? "Opening checkout…" : user ? (currentPlan === "basic" && plan.tier === "pro" ? `Upgrade to Pro – ${plan.price}/mo` : `Subscribe for ${plan.price}/mo`) : "Sign in to subscribe"}
                       </Button>
                     )}
                   </div>
@@ -289,11 +338,64 @@ export default function Pricing() {
           })}
         </div>
 
+        {/* FAQ */}
+        <section className="mt-20 max-w-3xl mx-auto">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <HelpCircle className="h-5 w-5 text-primary" />
+            <h2 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-center">Frequently asked questions</h2>
+          </div>
+          <Accordion type="single" collapsible className="rounded-2xl border border-border bg-card divide-y">
+            <AccordionItem value="ats" className="px-5">
+              <AccordionTrigger className="text-left">What is an ATS score?</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                ATS (Applicant Tracking System) score reflects how well your resume matches a job description on the keywords, skills,
+                and signals recruiters' software looks for. We benchmark against the JD and surface what's missing so you can fix it.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="data-use" className="px-5">
+              <AccordionTrigger className="text-left">How is my resume data used?</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Only to generate your tailored resume, ATS analysis, and AI outputs. We never sell your data and AI providers are
+                contractually blocked from training on it. See our <Link className="text-primary underline" to="/privacy-policy">Privacy Policy</Link>.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="cancel" className="px-5">
+              <AccordionTrigger className="text-left">Can I cancel anytime?</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Yes. Cancel from your dashboard or the Pricing page. Autopay stops immediately and you keep paid features
+                until the end of the current billing cycle.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="limit" className="px-5">
+              <AccordionTrigger className="text-left">What happens when I hit my scan limit?</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Your scans reset on the first day of each billing cycle. If you run out, upgrade to a higher tier or wait for the next renewal.
+                Free users get 1 scan; Basic 10/month; Pro 50/month.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="storage" className="px-5">
+              <AccordionTrigger className="text-left">Is my resume data stored?</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Yes — securely, only so you can revisit your past tailored versions. You can delete any version anytime, or close your
+                account to wipe everything within 30 days.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="basic-vs-pro" className="px-5">
+              <AccordionTrigger className="text-left">How is Basic different from Pro?</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Basic (₹49/mo) gives 10 scans, full ATS breakdown, all missing keywords and PDF download — no AI writing.
+                Pro (₹99/mo) gives 50 scans plus AI bullet rewrites, profile summary, cover letter, company brief,
+                skill gap analysis and Word/TXT/PDF downloads.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </section>
+
         <p className="text-center text-xs text-muted-foreground mt-10">
           Secure UPI / Card autopay via Razorpay · Cancel anytime · GST included ·{" "}
-          <Link to="/terms" className="underline hover:text-primary">Terms</Link> ·{" "}
-          <Link to="/privacy" className="underline hover:text-primary">Privacy</Link> ·{" "}
-          <Link to="/refund" className="underline hover:text-primary">Refund Policy</Link>
+          <Link to="/terms-of-service" className="underline hover:text-primary">Terms</Link> ·{" "}
+          <Link to="/privacy-policy" className="underline hover:text-primary">Privacy</Link> ·{" "}
+          <Link to="/refund-policy" className="underline hover:text-primary">Refund Policy</Link>
         </p>
       </div>
     </div>

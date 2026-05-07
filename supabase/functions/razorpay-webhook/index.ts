@@ -112,15 +112,19 @@ Deno.serve(async (req) => {
     switch (eventType) {
       case "subscription.activated":
       case "subscription.charged":
-      case "subscription.resumed": {
+      case "subscription.resumed":
+      case "subscription.updated": {
         if (tier) updates.plan = tier;
         updates.subscription_status = "active";
+        updates.payment_failed = false;
+        updates.pending_plan = null;
         if (sub?.current_end) {
           updates.current_period_end = new Date(sub.current_end * 1000).toISOString();
         }
-        // Reset monthly scan counter on each renewal/charge
-        updates.scans_used_month = 0;
-        updates.scan_period_start = new Date().toISOString();
+        if (eventType === "subscription.charged") {
+          updates.scans_used_month = 0;
+          updates.scan_period_start = new Date().toISOString();
+        }
         break;
       }
       case "subscription.authenticated":
@@ -131,12 +135,18 @@ Deno.serve(async (req) => {
       case "subscription.halted":
       case "subscription.paused": {
         updates.subscription_status = "halted";
+        updates.payment_failed = true;
+        break;
+      }
+      case "payment.failed": {
+        updates.payment_failed = true;
         break;
       }
       case "subscription.cancelled":
       case "subscription.completed": {
         updates.subscription_status = "cancelled";
         updates.plan = "free";
+        updates.pending_plan = null;
         break;
       }
       default:

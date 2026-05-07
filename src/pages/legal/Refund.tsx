@@ -24,10 +24,11 @@ export default function Refund() {
           <div>
             <h2 className="font-display text-xl font-semibold mt-6 mb-2">Refunds</h2>
             <ul className="list-disc pl-6 space-y-1">
-              <li><strong>7-day refund window:</strong> If you are unsatisfied within 7 days of your first paid charge and have used fewer than 3 scans on the plan, email us for a full refund.</li>
+              <li><strong>24-hour refund window:</strong> If you have not used any scan on the new plan, request a full refund within 24 hours of the charge.</li>
+              <li><strong>No refunds on used scans:</strong> Once a scan has been consumed on the plan, the cycle is non-refundable. You can still cancel future renewals anytime.</li>
               <li><strong>Failed / duplicate charges:</strong> Any duplicate or failed-but-debited charge is refunded in full within 5–7 working days.</li>
-              <li><strong>After the 7-day window or extensive usage:</strong> Subscriptions are non-refundable for the remainder of the billing cycle, but you can cancel future renewals anytime.</li>
             </ul>
+            <p className="mt-3">For all refunds, email <a className="underline text-primary" href="mailto:support.resumeshot@gmail.com">support.resumeshot@gmail.com</a> from your registered email with the date of the charge.</p>
           </div>
 
           <div>
