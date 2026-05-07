@@ -150,6 +150,22 @@ export default function Pricing() {
     }
   };
 
+  const handleDowngrade = async (tier: "basic") => {
+    const cycleEnd = profile?.current_period_end ? new Date(profile.current_period_end).toLocaleDateString() : "the end of your current cycle";
+    if (!confirm(`Downgrade to Basic? You'll keep Pro access until ${cycleEnd}. Basic plan starts from next billing cycle.`)) return;
+    setDowngrading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("razorpay-change-plan", { body: { tier } });
+      if (error || (data as any)?.error) {
+        toast({ title: "Could not schedule downgrade", description: (error as any)?.message || (data as any)?.error || "Try again", variant: "destructive" });
+        return;
+      }
+      toast({ title: "Downgrade scheduled", description: `You'll keep Pro access until ${cycleEnd}. Basic plan starts from next billing cycle.` });
+      loadProfile();
+    } finally {
+      setDowngrading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
