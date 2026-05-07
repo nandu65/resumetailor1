@@ -591,8 +591,43 @@ export default function Results() {
 
           {/* COMPANY BRIEF */}
           <TabsContent value="company" className="mt-6">
-            {!proOnly ? (
+            {isFree ? (
               <ProGate title="Company Research Brief" desc="Get an AI dossier on the company, role, and smart questions to ask." onUpgrade={() => navigate("/pricing")} />
+            ) : isBasic ? (
+              <Card icon={Building2} title="Company research brief — preview">
+                <div className="space-y-5">
+                  <div>
+                    <h4 className="font-display font-bold text-lg">{opt.company || "Acme Corp"}</h4>
+                    <p className="text-sm text-muted-foreground">SaaS · 500–1000 employees</p>
+                    <p className="text-sm mt-2 leading-relaxed">
+                      A fast-growing platform helping mid-market teams automate operations across sales, finance, and customer success.
+                    </p>
+                  </div>
+                  <Section title="Values & culture">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="rounded-full bg-accent text-accent-foreground px-3 py-1 text-xs font-medium">Customer obsession</span>
+                      <span className="rounded-full bg-accent text-accent-foreground px-3 py-1 text-xs font-medium">Bias for action</span>
+                      <span className="rounded-full bg-accent text-accent-foreground px-3 py-1 text-xs font-medium blur-sm select-none">Ownership</span>
+                      <span className="rounded-full bg-accent text-accent-foreground px-3 py-1 text-xs font-medium blur-sm select-none">High standards</span>
+                    </div>
+                  </Section>
+                  <Section title="Interview talking points">
+                    <ul className="text-sm space-y-1.5 list-disc pl-5">
+                      <li>Recent product launch in the AI workflow space — discuss how your background aligns.</li>
+                      <li className="blur-sm select-none">Their Series C raise and expansion into APAC — connect to your scaling experience.</li>
+                      <li className="blur-sm select-none">Engineering blog post on platform reliability — reference relevant work.</li>
+                    </ul>
+                  </Section>
+                  <Section title="Smart questions to ask them">
+                    <ul className="text-sm space-y-1.5 list-disc pl-5 blur-sm select-none">
+                      <li>How does the team measure success in the first 90 days?</li>
+                      <li>What's the biggest technical challenge facing the team this quarter?</li>
+                      <li>How do engineering and product collaborate on roadmap decisions?</li>
+                    </ul>
+                  </Section>
+                </div>
+                <TeaserCTA hiddenLabel="Full company research brief is a Pro feature" />
+              </Card>
             ) : (
             <Card icon={Building2} title="Company research brief">
               {opt.company_brief ? (
