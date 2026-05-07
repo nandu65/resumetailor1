@@ -686,8 +686,47 @@ export default function Results() {
 
           {/* SKILL GAPS */}
           <TabsContent value="gaps" className="mt-6">
-            {!proOnly ? (
+            {isFree ? (
               <ProGate title="Skill Gap Analysis" desc="See exactly which skills to learn — and where — to close the gap to your target role." onUpgrade={() => navigate("/pricing")} />
+            ) : isBasic ? (
+              <Card icon={GraduationCap} title="Skill gap analysis — preview">
+                <div className="space-y-4">
+                  {[
+                    { skill: "System Design at scale", priority: "critical", why: "JD emphasizes architecting distributed systems handling 10M+ requests/day.", time: "6–8 weeks", resources: [{ name: "Designing Data-Intensive Applications", provider: "O'Reilly", type: "book", cost: "₹1,500" }, { name: "System Design Primer", provider: "GitHub", type: "guide", cost: "Free" }], visible: true },
+                    { skill: "Kubernetes & service mesh", priority: "important", why: "Required for managing the microservices fleet they describe.", time: "4–6 weeks", resources: [{ name: "CKA Certification", provider: "Linux Foundation", type: "cert", cost: "$395" }, { name: "Istio Up & Running", provider: "O'Reilly", type: "book", cost: "₹1,800" }], visible: false },
+                    { skill: "Event-driven architecture", priority: "important", why: "Core to their async processing pipeline.", time: "3–4 weeks", resources: [{ name: "Kafka: The Definitive Guide", provider: "Confluent", type: "book", cost: "Free" }], visible: false },
+                  ].map((g, i) => {
+                    const priColor = g.priority === "critical" ? "border-destructive/40 bg-destructive/5" : "border-warning/40 bg-warning/5";
+                    const priBadge = g.priority === "critical" ? "bg-destructive text-destructive-foreground" : "bg-warning text-warning-foreground";
+                    return (
+                      <div key={i} className={`rounded-xl border ${priColor} p-4 ${!g.visible ? "blur-sm select-none pointer-events-none" : ""}`}>
+                        <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                          <div>
+                            <h4 className="font-display font-semibold">{g.skill}</h4>
+                            <p className="text-xs text-muted-foreground mt-0.5">{g.why}</p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className={`text-[10px] uppercase tracking-wide font-bold px-2 py-1 rounded ${priBadge}`}>{g.priority}</span>
+                            <span className="text-xs text-muted-foreground">~{g.time}</span>
+                          </div>
+                        </div>
+                        <div className="mt-3 grid sm:grid-cols-2 gap-2">
+                          {g.resources.map((r, ri) => (
+                            <div key={ri} className="rounded-lg border border-border bg-background p-2.5 text-sm">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="font-medium">{r.name}</span>
+                                <span className="text-xs text-muted-foreground shrink-0">{r.cost}</span>
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-0.5 capitalize">{r.type} · {r.provider}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <TeaserCTA hiddenLabel="+2 more skill gaps and curated resources hidden" />
+              </Card>
             ) : (
             <Card icon={GraduationCap} title="Skill gap analysis">
               {opt.skill_gaps?.length ? (
