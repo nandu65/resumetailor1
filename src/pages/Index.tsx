@@ -346,9 +346,10 @@ const Index = () => {
           <div>© {new Date().getFullYear()} ResumeShot. Crafted to help you get hired.</div>
           <nav className="flex flex-wrap gap-x-5 gap-y-2">
             <Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
-            <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
-            <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
-            <Link to="/refund" className="hover:text-primary transition-colors">Refund &amp; Cancellation</Link>
+            <Link to="/terms-of-service" className="hover:text-primary transition-colors">Terms of Service</Link>
+            <Link to="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+            <Link to="/refund-policy" className="hover:text-primary transition-colors">Refund Policy</Link>
+            <a href="mailto:support.resumeshot@gmail.com" className="hover:text-primary transition-colors">Support</a>
           </nav>
         </div>
       </footer>
