@@ -154,6 +154,24 @@ export default function Results() {
     </div>
   );
 
+  // Inline upgrade strip shown beneath a partially-blurred preview (Basic users)
+  const TeaserCTA = ({ hiddenLabel, target = "Pro" }: { hiddenLabel: string; target?: string }) => (
+    <div className="mt-4 rounded-xl border border-primary/40 bg-gradient-card p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between">
+      <div className="flex items-center gap-3">
+        <div className="h-9 w-9 rounded-lg bg-gradient-primary text-primary-foreground flex items-center justify-center shadow-glow shrink-0">
+          <Lock className="h-4 w-4" />
+        </div>
+        <div>
+          <div className="text-sm font-semibold">{hiddenLabel}</div>
+          <div className="text-xs text-muted-foreground">Upgrade to {target} to unlock the full output.</div>
+        </div>
+      </div>
+      <Button size="sm" onClick={() => navigate("/pricing")} className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow shrink-0">
+        Upgrade to {target}
+      </Button>
+    </div>
+  );
+
   const deltaCopy = (() => {
     if (delta == null) return null;
     if (delta >= 5) return { tone: "up" as const, text: `+${delta} improvement vs your last version`, sub: "Your tailoring made a measurable difference." };
