@@ -87,6 +87,13 @@ export default function Auth() {
                 <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-md">
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}
                 </Button>
+                <button
+                  type="button"
+                  onClick={() => { setForgotEmail(email); setForgotOpen(true); }}
+                  className="block w-full text-center text-xs text-muted-foreground hover:text-primary"
+                >
+                  Forgot password?
+                </button>
               </form>
             </TabsContent>
 
