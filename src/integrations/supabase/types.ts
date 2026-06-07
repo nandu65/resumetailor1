@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      leads: {
+        Row: {
+          created_at: string
+          email: string
+          granted: boolean
+          id: string
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          granted?: boolean
+          id?: string
+          source?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          granted?: boolean
+          id?: string
+          source?: string
+        }
+        Relationships: []
+      }
       optimizations: {
         Row: {
           ats_score: number | null
