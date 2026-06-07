@@ -440,6 +440,8 @@ const Index = () => {
           </nav>
         </div>
       </footer>
+
+      <ExitIntentPopup />
     </div>
   );
 };
