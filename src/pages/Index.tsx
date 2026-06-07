@@ -130,6 +130,69 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Indian testimonials */}
+      <section className="bg-secondary/40 border-y border-border">
+        <div className="container py-20">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-accent px-4 py-1.5 text-xs font-medium text-accent-foreground mb-4">
+              <Star className="h-3.5 w-3.5 fill-current" /> Real results from real users
+            </div>
+            <h2 className="font-display text-4xl font-bold tracking-tight">From rejected to recruited</h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {[
+              { name: "Priya S", city: "Bangalore", role: "Software Engineer", quote: "My ATS score went from 41 to 86 in minutes. Got 3 interview calls the same week!", initials: "PS" },
+              { name: "Rahul M", city: "Delhi", role: "MBA Graduate", quote: "Finally understood why my resume was getting rejected. ResumeShot fixed it instantly.", initials: "RM" },
+              { name: "Sneha K", city: "Mumbai", role: "Marketing Professional", quote: "Worth every rupee. Landed my dream job within 2 weeks of using ResumeShot.", initials: "SK" },
+            ].map((t) => (
+              <div key={t.name} className="rounded-2xl border border-border bg-background p-7 shadow-card hover:shadow-elegant hover:-translate-y-0.5 transition-all">
+                <Quote className="h-6 w-6 text-primary/40 mb-3" />
+                <div className="flex gap-0.5 mb-3">
+                  {[...Array(5)].map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-warning text-warning" />)}
+                </div>
+                <p className="text-sm leading-relaxed">"{t.quote}"</p>
+                <div className="mt-5 flex items-center gap-3 pt-4 border-t border-border">
+                  <div className="h-10 w-10 rounded-full bg-gradient-primary text-primary-foreground flex items-center justify-center font-bold text-sm shadow-glow">
+                    {t.initials}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-sm">{t.name}, {t.city}</div>
+                    <div className="text-xs text-muted-foreground">{t.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Privacy / security trust section */}
+      <section className="container py-20">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-accent px-4 py-1.5 text-xs font-medium text-accent-foreground mb-4">
+            <ShieldCheck className="h-3.5 w-3.5" /> Privacy-first by design
+          </div>
+          <h2 className="font-display text-4xl font-bold tracking-tight">Your privacy is our priority</h2>
+          <p className="mt-4 text-muted-foreground">We treat your resume like our own — locked down, encrypted, and never sold.</p>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
+          {[
+            { icon: Trash2, t: "Never stored permanently", d: "Your resume is processed in memory and removed from active use after your session." },
+            { icon: Clock, t: "Auto-deleted after 24 hours", d: "Raw uploads and intermediate AI inputs are purged within 24 hours, automatically." },
+            { icon: KeyRound, t: "256-bit AES encryption", d: "TLS 1.3 in transit, AES-256 at rest. The same encryption banks use." },
+            { icon: ShieldOff, t: "Never sold to third parties", d: "No ads, no data brokers, no AI training on your content. Ever." },
+          ].map(({ icon: Icon, t, d }) => (
+            <div key={t} className="rounded-2xl border border-border bg-gradient-card p-6 shadow-card hover:shadow-elegant transition-all">
+              <div className="h-11 w-11 rounded-xl bg-gradient-primary text-primary-foreground flex items-center justify-center shadow-glow mb-4">
+                <Icon className="h-5 w-5" />
+              </div>
+              <h3 className="font-display font-semibold">{t}</h3>
+              <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{d}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Pro toolkit showcase */}
       <section className="bg-secondary/40 border-y border-border">
         <div className="container py-24">
