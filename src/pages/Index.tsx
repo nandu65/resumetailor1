@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, FileText, Target, Zap, CheckCircle2, BarChart3, ShieldCheck, Mail, Layers, GitCompare, Gauge, SlidersHorizontal, Download, Building2, GraduationCap, Star, Quote, Lock, RefreshCw, Clock, Users, TrendingUp } from "lucide-react";
+import { ArrowRight, Sparkles, FileText, Target, Zap, CheckCircle2, BarChart3, ShieldCheck, Mail, Layers, GitCompare, Gauge, SlidersHorizontal, Download, Building2, GraduationCap, Star, Quote, Lock, RefreshCw, Clock, Users, TrendingUp, ShieldOff, KeyRound, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { ExitIntentPopup } from "@/components/ExitIntentPopup";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
 
 const Index = () => {
   return (
@@ -64,6 +66,13 @@ const Index = () => {
           <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto text-balance animate-fade-in-up">
             Paste any job description and we'll tailor your resume to beat ATS filters and impress recruiters — in seconds.
           </p>
+
+          {/* Social proof counter */}
+          <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-accent/60 px-4 py-2 text-sm font-semibold animate-fade-in">
+            <TrendingUp className="h-4 w-4 text-primary" />
+            <AnimatedCounter to={2000} suffix="+" /> <span className="text-muted-foreground font-medium">resumes optimized</span>
+          </div>
+
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3 animate-fade-in-up">
             <Button asChild size="lg" className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow h-12 px-7 text-base">
               <Link to="/auth">Upload Resume <ArrowRight className="ml-1 h-4 w-4" /></Link>
@@ -72,7 +81,22 @@ const Index = () => {
               <Link to="/dashboard">See dashboard</Link>
             </Button>
           </div>
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground">
+
+          {/* Trust badges */}
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+            {[
+              { icon: "🔒", text: "Your resume data is never shared" },
+              { icon: "⚡", text: "Results in 30 seconds" },
+              { icon: "🇮🇳", text: "Built for Indian job seekers" },
+            ].map((b) => (
+              <div key={b.text} className="inline-flex items-center gap-2 rounded-full border border-border bg-background/70 backdrop-blur px-3.5 py-1.5 text-xs font-medium shadow-sm">
+                <span className="text-sm">{b.icon}</span>
+                <span>{b.text}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> No credit card required</span>
             <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> 1 free optimization</span>
             <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> ATS-tested format</span>
