@@ -124,12 +124,13 @@ export const FloatingResume = () => {
 
           {/* Scanning line */}
           <div
-            className="absolute left-0 right-0 h-[2px] pointer-events-none"
+            className="absolute left-0 right-0 top-0 h-[2px] pointer-events-none hidden sm:block"
             style={{
               background:
                 "linear-gradient(90deg, transparent, hsl(var(--primary)), transparent)",
               boxShadow: "0 0 12px hsl(var(--primary))",
               animation: "scan-line 3s ease-in-out infinite",
+              willChange: "transform, opacity",
             }}
           />
         </div>
