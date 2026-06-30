@@ -217,24 +217,38 @@ export const FloatingResume = () => {
       </div>
 
       <style>{`
+        .resume-card {
+          width: 260px;
+          height: 360px;
+        }
+        @media (min-width: 640px) {
+          .resume-card { width: 320px; height: 420px; }
+        }
+        @media (min-width: 1024px) {
+          .resume-card { width: 360px; height: 470px; }
+        }
         @keyframes resume-spin {
           0%   { transform: rotateY(0deg)   rotateX(8deg); }
           100% { transform: rotateY(360deg) rotateX(8deg); }
         }
         @keyframes scan-line {
-          0%   { top: 0%;   opacity: 0; }
+          0%   { transform: translateY(0);     opacity: 0; }
           10%  { opacity: 1; }
           90%  { opacity: 1; }
-          100% { top: 100%; opacity: 0; }
+          100% { transform: translateY(420px); opacity: 0; }
         }
         @keyframes halo-pulse {
           0%, 100% { transform: scale(1);   opacity: 0.6; }
           50%      { transform: scale(1.1); opacity: 1;   }
         }
         @media (prefers-reduced-motion: reduce) {
-          [style*="resume-spin"], [style*="halo-pulse"], [style*="scan-line"] {
+          .resume-card, .halo, .floating-resume-root * {
             animation: none !important;
           }
+        }
+        /* Lighter load on small touch screens to keep scrolling smooth */
+        @media (max-width: 639px) {
+          .resume-card { animation-duration: 30s; opacity: 0.55 !important; }
         }
       `}</style>
     </div>
