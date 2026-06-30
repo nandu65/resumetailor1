@@ -6,27 +6,28 @@ export const FloatingResume = () => {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
+      className="floating-resume-root pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
       style={{ perspective: "1600px" }}
     >
-      {/* Glow halo */}
+      {/* Glow halo — hidden on mobile to avoid blur repaint cost */}
       <div
-        className="absolute h-[460px] w-[460px] rounded-full blur-3xl"
+        className="halo hidden sm:block absolute h-[460px] w-[460px] rounded-full blur-3xl"
         style={{
           background:
             "radial-gradient(circle, hsl(var(--primary) / 0.25), transparent 70%)",
           animation: "halo-pulse 6s ease-in-out infinite",
+          willChange: "transform, opacity",
         }}
       />
 
       <div
-        className="relative"
+        className="resume-card relative"
         style={{
-          width: "360px",
-          height: "470px",
           transformStyle: "preserve-3d",
-          animation: "resume-spin 16s linear infinite",
+          animation: "resume-spin 18s linear infinite",
           opacity: 0.85,
+          willChange: "transform",
+          backfaceVisibility: "hidden",
         }}
       >
         {/* ============ FRONT: Resume ============ */}
