@@ -31,11 +31,10 @@ export const FloatingResume = () => {
         className="resume-card relative pointer-events-auto cursor-pointer"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onClick={() => setIsManual((prev) => {
-          const nextFlipped = !isFlipped;
-          setIsFlipped(nextFlipped);
-          return true;
-        })}
+        onClick={() => {
+          setIsFlipped((f) => !f);
+          setIsManual(true);
+        }}
         style={{
           transformStyle: "preserve-3d",
           opacity: 0.85,
