@@ -27,7 +27,6 @@ export const FloatingResume = () => {
           animation: "resume-spin 18s linear infinite",
           opacity: 0.85,
           willChange: "transform",
-          backfaceVisibility: "hidden",
         }}
       >
         {/* ============ FRONT: Resume ============ */}
