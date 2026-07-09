@@ -1,8 +1,15 @@
+import { useState } from "react";
+
 /**
  * Decorative 3D rotating resume card behind the hero text.
  * Realistic resume content on the front, ATS score dashboard on the back.
+ * Users can pause the auto-spin on hover and click to flip manually.
  */
 export const FloatingResume = () => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [isManual, setIsManual] = useState(false);
+
   return (
     <div
       aria-hidden
@@ -21,12 +28,27 @@ export const FloatingResume = () => {
       />
 
       <div
-        className="resume-card relative"
+        className="resume-card relative pointer-events-auto cursor-pointer"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={() => {
+          setIsFlipped((f) => !f);
+          setIsManual(true);
+        }}
         style={{
           transformStyle: "preserve-3d",
-          animation: "resume-spin 18s linear infinite",
           opacity: 0.85,
           willChange: "transform",
+          ...(isManual
+            ? {
+                transform: `rotateY(${isFlipped ? 180 : 0}deg) rotateX(8deg)`,
+                transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+                animation: "none",
+              }
+            : {
+                animation: "resume-spin 18s linear infinite",
+                animationPlayState: isHovered ? "paused" : "running",
+              }),
         }}
       >
         {/* ============ FRONT: Resume ============ */}
