@@ -28,12 +28,28 @@ export const FloatingResume = () => {
       />
 
       <div
-        className="resume-card relative"
+        className="resume-card relative pointer-events-auto cursor-pointer"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={() => setIsManual((prev) => {
+          const nextFlipped = !isFlipped;
+          setIsFlipped(nextFlipped);
+          return true;
+        })}
         style={{
           transformStyle: "preserve-3d",
-          animation: "resume-spin 18s linear infinite",
           opacity: 0.85,
           willChange: "transform",
+          ...(isManual
+            ? {
+                transform: `rotateY(${isFlipped ? 180 : 0}deg) rotateX(8deg)`,
+                transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+                animation: "none",
+              }
+            : {
+                animation: "resume-spin 18s linear infinite",
+                animationPlayState: isHovered ? "paused" : "running",
+              }),
         }}
       >
         {/* ============ FRONT: Resume ============ */}
