@@ -1,9 +1,14 @@
+import { useState } from "react";
+
 /**
  * Decorative 3D rotating resume card behind the hero text.
  * Realistic resume content on the front, ATS score dashboard on the back.
+ * Users can pause the auto-spin on hover and click to flip manually.
  */
 export const FloatingResume = () => {
-  return (
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [isManual, setIsManual] = useState(false);
     <div
       aria-hidden
       className="floating-resume-root pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
