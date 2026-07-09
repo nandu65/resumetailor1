@@ -34,6 +34,7 @@ export const FloatingResume = () => {
           className="absolute inset-0 rounded-2xl border border-primary/20 shadow-2xl overflow-hidden"
           style={{
             backfaceVisibility: "hidden",
+            transform: "rotateY(0deg)",
             background:
               "linear-gradient(160deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%)",
           }}
