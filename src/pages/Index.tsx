@@ -240,20 +240,34 @@ const Index = () => {
       {/* How it works */}
       <section className="bg-secondary/40 border-y border-border">
         <div className="container py-24">
-          <div className="text-center max-w-2xl mx-auto mb-14">
+          <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="font-display text-4xl font-bold tracking-tight">Three steps to a tailored resume</h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {[
-              { t: "Upload", d: "Drop your resume as PDF, DOCX, or paste the text." },
-              { t: "Paste JD", d: "Add the job description you're applying for." },
-              { t: "Download", d: "Get your tailored resume and ATS report instantly." },
-            ].map((s, i) => (
-              <div key={i} className="relative rounded-2xl bg-background border border-border p-8 shadow-card">
-                <h3 className="font-display font-semibold text-xl">{s.t}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{s.d}</p>
-              </div>
-            ))}
+
+          <div className="relative max-w-4xl mx-auto">
+            {/* Connecting line — desktop */}
+            <div className="hidden md:block absolute top-8 left-[16.67%] right-[16.67%] h-1 rounded-full bg-gradient-to-r from-primary via-primary to-primary" />
+            {/* Connecting line — mobile */}
+            <div className="md:hidden absolute top-10 left-1/2 -translate-x-1/2 w-1 h-[calc(100%-5rem)] rounded-full bg-gradient-to-b from-primary to-primary" />
+
+            <div className="grid md:grid-cols-3 gap-10 md:gap-8">
+              {[
+                { t: "Upload", d: "Drop your resume as PDF, DOCX, or paste the text." },
+                { t: "Paste JD", d: "Add the job description you're applying for." },
+                { t: "Download", d: "Get your tailored resume and ATS report instantly." },
+              ].map((s, i) => (
+                <div key={i} className="relative flex flex-col items-center text-center">
+                  {/* Numbered green circle */}
+                  <div className="relative z-10 h-16 w-16 rounded-full bg-gradient-primary text-primary-foreground flex items-center justify-center font-display text-2xl font-extrabold shadow-glow ring-4 ring-background">
+                    {i + 1}
+                  </div>
+                  <div className="mt-6 rounded-2xl bg-background border border-border p-7 shadow-card w-full">
+                    <h3 className="font-display font-semibold text-xl">{s.t}</h3>
+                    <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{s.d}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
