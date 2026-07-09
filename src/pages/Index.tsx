@@ -245,13 +245,12 @@ const Index = () => {
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {[
-              { n: "01", t: "Upload", d: "Drop your resume as PDF, DOCX, or paste the text." },
-              { n: "02", t: "Paste JD", d: "Add the job description you're applying for." },
-              { n: "03", t: "Download", d: "Get your tailored resume and ATS report instantly." },
-            ].map((s) => (
-              <div key={s.n} className="relative rounded-2xl bg-background border border-border p-8 shadow-card">
-                <div className="font-display text-5xl font-extrabold text-muted-foreground/50">{s.n}</div>
-                <h3 className="mt-3 font-display font-semibold text-xl">{s.t}</h3>
+              { t: "Upload", d: "Drop your resume as PDF, DOCX, or paste the text." },
+              { t: "Paste JD", d: "Add the job description you're applying for." },
+              { t: "Download", d: "Get your tailored resume and ATS report instantly." },
+            ].map((s, i) => (
+              <div key={i} className="relative rounded-2xl bg-background border border-border p-8 shadow-card">
+                <h3 className="font-display font-semibold text-xl">{s.t}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{s.d}</p>
               </div>
             ))}
