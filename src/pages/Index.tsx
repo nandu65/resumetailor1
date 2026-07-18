@@ -475,7 +475,7 @@ const Index = () => {
       </section>
 
       {/* Pricing */}
-      <section className="container py-24">
+      <section data-tour="pricing" className="container py-24">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <h2 className="font-display text-4xl font-bold tracking-tight">Simple, fair pricing</h2>
           <p className="mt-4 text-muted-foreground">Try it free. Upgrade when you need more.</p>
