@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, FileText, Target, Zap, CheckCircle2, BarChart3, ShieldCheck, Mail, Layers, GitCompare, Gauge, SlidersHorizontal, Download, Building2, GraduationCap, Star, Quote, Lock, RefreshCw, Clock, Users, TrendingUp, ShieldOff, KeyRound, Trash2 } from "lucide-react";
+import { ArrowRight, Sparkles, FileText, Target, Zap, CheckCircle2, BarChart3, ShieldCheck, Mail, Layers, GitCompare, Gauge, SlidersHorizontal, Download, Building2, GraduationCap, Star, Quote, Lock, RefreshCw, Clock, Users, TrendingUp, ShieldOff, KeyRound, Trash2, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -288,6 +288,7 @@ const Index = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
+              { icon: Wand2, title: "AI Resume Builder", desc: "Answer a few prompts — AI writes a polished resume in your pick of 3 templates.", tag: "New", to: "/tools/resume-builder" },
               { icon: Mail, title: "Cover Letter Generator", desc: "Tailored cover letter from your resume + JD in one click.", tag: "AI", to: "/tools/cover-letter" },
               { icon: Layers, title: "Multiple Resume Versions", desc: "Save & revisit a tailored copy for every job you apply to.", tag: "Saved", to: "/dashboard" },
               { icon: GitCompare, title: "Before / After Diff", desc: "See exactly what changed with word-level highlighting.", tag: "Visual", to: "/tools/diff" },
