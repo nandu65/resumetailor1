@@ -371,7 +371,7 @@ const Index = () => {
             <Button asChild variant="outline" className="w-full mt-8"><Link to="/auth">Start free</Link></Button>
           </div>
           <div className="relative rounded-2xl border-2 border-primary bg-gradient-card p-8 shadow-glow">
-            <div className="absolute -top-3 right-6 rounded-full bg-gradient-primary text-primary-foreground text-xs font-semibold px-3 py-1">Lifetime · 90% off</div>
+            <div className="absolute -top-3 right-6 rounded-full bg-gradient-primary text-primary-foreground text-xs font-semibold px-3 py-1">90% off</div>
             <div className="text-sm font-semibold text-primary">Pro</div>
             <div className="mt-2 flex items-baseline gap-2">
               <span className="font-display text-4xl font-bold">₹99</span>
