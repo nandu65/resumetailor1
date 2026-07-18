@@ -141,25 +141,48 @@ const Index = () => {
           <div className="text-center text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-8">
             Our users have been hired at
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 md:gap-x-14 max-w-4xl mx-auto">
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-6 md:gap-x-12 max-w-4xl mx-auto">
             {[
-              { name: "Razorpay", slug: "razorpay", color: "#0C2451", text: "text-[#0C2451]" },
-              { name: "Swiggy", slug: "swiggy", color: "#FC8019", text: "text-[#FC8019]" },
-              { name: "Flipkart", slug: "flipkart", color: "#2874F0", text: "text-[#2874F0]" },
-              { name: "Zomato", slug: "zomato", color: "#E23744", text: "text-[#E23744]" },
-              { name: "CRED", slug: "cred", color: "currentColor", text: "text-foreground" },
+              { name: "Razorpay", color: "#0C2451", accent: "#3395FF" },
+              { name: "Swiggy",   color: "#FC8019", accent: "#FFB37A" },
+              { name: "Flipkart", color: "#2874F0", accent: "#FFE500" },
+              { name: "Zomato",   color: "#E23744", accent: "#FF7E82" },
+              { name: "CRED",     color: "#0F0F0F", accent: "#7A7A7A" },
             ].map((c) => (
               <div
                 key={c.name}
-                className={`flex items-center gap-2 grayscale hover:grayscale-0 opacity-70 hover:opacity-100 transition-all duration-300 ${c.text}`}
+                className="flex items-center gap-2.5 opacity-90 hover:opacity-100 hover:-translate-y-0.5 transition-all duration-300"
+                style={{ color: c.color }}
+                title={c.name}
               >
-                <img
-                  src={`https://cdn.simpleicons.org/${c.slug}/${c.color.replace('#','')}`}
-                  alt={`${c.name} logo`}
-                  className="h-7 md:h-8 w-auto"
-                  loading="lazy"
-                />
-                <span className="font-display font-extrabold text-2xl md:text-3xl tracking-tight">
+                {/* Inline SVG brand chip — no network, always colored, retina-crisp */}
+                <svg
+                  width="34"
+                  height="34"
+                  viewBox="0 0 40 40"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8 md:h-9 md:w-9 shrink-0"
+                  aria-hidden="true"
+                >
+                  <rect width="40" height="40" rx="9" fill={c.color} />
+                  <rect x="4" y="4" width="32" height="32" rx="6" fill={c.accent} fillOpacity="0.18" />
+                  <text
+                    x="50%"
+                    y="54%"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fontFamily="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto"
+                    fontWeight="900"
+                    fontSize="20"
+                    fill="#ffffff"
+                  >
+                    {c.name.charAt(0)}
+                  </text>
+                </svg>
+                <span
+                  className="font-display font-extrabold text-2xl md:text-3xl tracking-tight leading-none"
+                  style={{ color: c.color }}
+                >
                   {c.name}
                 </span>
               </div>
