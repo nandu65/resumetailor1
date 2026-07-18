@@ -148,7 +148,57 @@ export function OnboardingTour({
     return { style: { top, left, width: cardW }, centered: false, placement };
   }, [rect, step?.placement]);
 
-  if (!open || !step) return null;
+  if (!open) return null;
+
+  if (showChoice) {
+    return createPortal(
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in" onClick={closeAll}>
+        <div
+          className="relative w-full max-w-lg rounded-2xl bg-background border border-primary/30 shadow-2xl overflow-hidden animate-scale-in"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="h-1 bg-gradient-to-r from-primary via-primary/60 to-primary" />
+          <button
+            onClick={closeAll}
+            aria-label="Close"
+            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground p-1.5 rounded-md hover:bg-muted transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <div className="px-6 pt-6 pb-6 text-center">
+            <div className="text-4xl mb-2">🎯</div>
+            <h3 className="font-display font-bold text-2xl leading-tight">What would you like to do first?</h3>
+            <p className="text-sm text-muted-foreground mt-2">Pick a path — you can always come back for the other.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-6 pb-6">
+            <button
+              onClick={() => { closeAll(); navigate("/try-now"); }}
+              className="group text-left rounded-xl border-2 border-border hover:border-primary bg-card hover:bg-primary/5 p-5 transition-all hover:shadow-glow"
+            >
+              <div className="flex items-center justify-center w-11 h-11 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <FileSearch className="h-5 w-5" />
+              </div>
+              <div className="mt-3 font-display font-bold">Check ATS score</div>
+              <div className="text-xs text-muted-foreground mt-1">Scan an existing resume against a job description.</div>
+            </button>
+            <button
+              onClick={() => { closeAll(); navigate("/tools/resume-builder"); }}
+              className="group text-left rounded-xl border-2 border-primary bg-gradient-primary/5 hover:bg-primary/10 p-5 transition-all hover:shadow-glow"
+            >
+              <div className="flex items-center justify-center w-11 h-11 rounded-lg bg-gradient-primary text-primary-foreground">
+                <Wand2 className="h-5 w-5" />
+              </div>
+              <div className="mt-3 font-display font-bold">Build my resume</div>
+              <div className="text-xs text-muted-foreground mt-1">AI-generated resume in 3 recruiter-ready templates.</div>
+            </button>
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
+  if (!step) return null;
 
   const pad = 10;
   const spotlight = rect
