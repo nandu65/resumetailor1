@@ -101,6 +101,14 @@ export function OnboardingTour({
 
   useEffect(() => { if (open) setI(0); }, [open]);
 
+  // Scroll to top when reaching the final (celebration) step so the user sees the whole page
+  useEffect(() => {
+    if (!open) return;
+    if (i === steps.length - 1) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [open, i, steps.length]);
+
   const finish = useCallback(() => {
     try { localStorage.setItem(STORAGE_KEY, "1"); } catch {}
     onClose();

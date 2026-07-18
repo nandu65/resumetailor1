@@ -498,7 +498,7 @@ const Index = () => {
             <div className="mt-2 flex items-baseline gap-2">
               <span className="font-display text-4xl font-bold">₹99</span>
               <span className="text-base text-muted-foreground line-through">₹999</span>
-              <span className="text-xs text-muted-foreground font-normal">one-time</span>
+              <span className="text-xs text-muted-foreground font-normal">/ month</span>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">One job offer pays for this <span className="font-semibold text-foreground">1000x over.</span></p>
             <ul className="mt-6 space-y-3 text-sm">
