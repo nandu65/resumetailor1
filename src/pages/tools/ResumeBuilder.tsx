@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2 } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,7 +10,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import {
-  TEMPLATES, TemplateId, ResumeData, ResumePreview, downloadResumePdfFromData,
+  TEMPLATES, TemplateId, ResumeData, ResumePreview,
+  downloadResumePdfFromData, downloadResumeDocxFromData, buildResumeDataVerbatim,
 } from "@/lib/resumeTemplates";
 
 type Exp = { company: string; role: string; location: string; start: string; end: string; description: string };
