@@ -141,20 +141,27 @@ const Index = () => {
           <div className="text-center text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-8">
             Our users have been hired at
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 md:gap-x-16 max-w-4xl mx-auto opacity-80">
+          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 md:gap-x-14 max-w-4xl mx-auto">
             {[
-              { name: "Razorpay", color: "text-[#0C2451]", accent: "•" },
-              { name: "Swiggy", color: "text-[#FC8019]", accent: "◆" },
-              { name: "Flipkart", color: "text-[#2874F0]", accent: "★" },
-              { name: "Zomato", color: "text-[#E23744]", accent: "▼" },
-              { name: "CRED", color: "text-foreground", accent: "◉" },
+              { name: "Razorpay", slug: "razorpay", color: "#0C2451", text: "text-[#0C2451]" },
+              { name: "Swiggy", slug: "swiggy", color: "#FC8019", text: "text-[#FC8019]" },
+              { name: "Flipkart", slug: "flipkart", color: "#2874F0", text: "text-[#2874F0]" },
+              { name: "Zomato", slug: "zomato", color: "#E23744", text: "text-[#E23744]" },
+              { name: "CRED", slug: "cred", color: "currentColor", text: "text-foreground" },
             ].map((c) => (
               <div
                 key={c.name}
-                className={`font-display font-extrabold text-2xl md:text-3xl tracking-tight ${c.color} grayscale hover:grayscale-0 transition-all duration-300 flex items-center gap-1.5`}
+                className={`flex items-center gap-2 grayscale hover:grayscale-0 opacity-70 hover:opacity-100 transition-all duration-300 ${c.text}`}
               >
-                <span className="text-lg opacity-70">{c.accent}</span>
-                {c.name}
+                <img
+                  src={`https://cdn.simpleicons.org/${c.slug}/${c.color.replace('#','')}`}
+                  alt={`${c.name} logo`}
+                  className="h-7 md:h-8 w-auto"
+                  loading="lazy"
+                />
+                <span className="font-display font-extrabold text-2xl md:text-3xl tracking-tight">
+                  {c.name}
+                </span>
               </div>
             ))}
           </div>
