@@ -148,9 +148,19 @@ Deno.serve(async (req) => {
         totalScans30d: totalScans,
         avgScore: scoreCount ? Math.round(scoreSum / scoreCount) : 0,
         paymentFailed: failed,
+        aiCostInr30d: +aiTotalCost.toFixed(2),
+        aiCalls30d: aiTotalCalls,
+        aiInputTokens30d: aiTotalInput,
+        aiOutputTokens30d: aiTotalOutput,
+        aiErrors30d: aiErrors,
       },
       timeseries: days,
       abTest: funnel,
+      aiCost: {
+        byFeature: aiFeatureRows,
+        byPlan: aiPlanRows,
+        series: aiCostSeries,
+      },
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ error: (e as Error).message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
