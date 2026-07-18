@@ -69,6 +69,7 @@ Apply the rubric strictly and return the JSON.`;
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
       GEMINI_API_KEY;
 
+    const startedAt = Date.now();
     const geminiRes = await fetch(geminiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -104,6 +105,28 @@ Apply the rubric strictly and return the JSON.`;
     }
 
     const data = await geminiRes.json();
+    const usage = data?.usageMetadata ?? {};
+    const inputTokens = usage.promptTokenCount ?? estimateTokens(SYSTEM_PROMPT + userPrompt);
+    const outputTokens = usage.candidatesTokenCount ?? estimateTokens(
+      data?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? ""
+    );
+    // Resolve caller (optional — anonymous /try flow allowed)
+    let callerId: string | null = null;
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader) {
+      try {
+        const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
+        const { data: u } = await sb.auth.getUser();
+        callerId = u?.user?.id ?? null;
+      } catch { /* ignore */ }
+    }
+    logAiUsage({
+      userId: callerId,
+      feature: "ats-score",
+      model: "gemini-2.5-flash",
+      inputTokens, outputTokens,
+      durationMs: Date.now() - startedAt,
+    });
     const text =
       data?.candidates?.[0]?.content?.parts?.[0]?.text ??
       data?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ??
