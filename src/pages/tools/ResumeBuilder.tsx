@@ -24,6 +24,50 @@ const EMPTY_RESUME: ResumeData = {
   summary: "", experience: [], education: [], projects: [], skills: [], certifications: [],
 };
 
+const SAMPLE_RESUME: ResumeData = {
+  name: "Alex Morgan",
+  title: "Senior Software Engineer",
+  email: "alex@example.com",
+  phone: "+1 555 010 2244",
+  location: "San Francisco, CA",
+  links: [
+    { label: "LinkedIn", url: "linkedin.com/in/alex" },
+    { label: "GitHub", url: "github.com/alex" },
+  ],
+  summary: "Full-stack engineer with 6+ years building scalable web platforms in React, Node, and cloud-native services. Shipped products used by millions.",
+  experience: [
+    {
+      company: "Acme Corp", role: "Senior Software Engineer", location: "Remote",
+      start: "Jan 2022", end: "Present",
+      bullets: [
+        "Led migration of monolith to microservices, cutting deploy time by 70%.",
+        "Architected real-time analytics pipeline processing 5M events/day.",
+        "Mentored 6 engineers; introduced code-review standards adopted org-wide.",
+      ],
+    },
+    {
+      company: "Northwind Labs", role: "Software Engineer", location: "New York, NY",
+      start: "Jun 2019", end: "Dec 2021",
+      bullets: [
+        "Built customer dashboard in React + TypeScript, boosting retention 18%.",
+        "Owned CI/CD in GitHub Actions; reduced flaky failures from 12% to 1%.",
+      ],
+    },
+  ],
+  education: [
+    { school: "UC Berkeley", degree: "B.S. Computer Science", location: "Berkeley, CA", start: "2015", end: "2019", details: "GPA 3.8 · Dean's List" },
+  ],
+  projects: [
+    { name: "OpenChart", tech: "React, D3", bullets: ["OSS charting lib with 3k+ GitHub stars."] },
+  ],
+  skills: [
+    { category: "Frontend", items: ["React", "TypeScript", "Tailwind"] },
+    { category: "Backend", items: ["Node.js", "PostgreSQL", "Redis"] },
+    { category: "Cloud", items: ["AWS", "Docker", "Kubernetes"] },
+  ],
+  certifications: ["AWS Solutions Architect Associate"],
+};
+
 export default function ResumeBuilder() {
   const { user } = useAuth();
   const [basics, setBasics] = useState({ name: "", title: "", email: "", phone: "", location: "", linkedin: "", github: "", portfolio: "" });
@@ -387,14 +431,33 @@ export default function ResumeBuilder() {
                   </div>
                 )}
               </div>
-              <div className="grid grid-cols-3 gap-2">
-                {TEMPLATES.map(t => (
-                  <button key={t.id} type="button" onClick={() => setTemplate(t.id)}
-                    className={`text-left rounded-xl border-2 p-3 transition-all ${template === t.id ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/40"}`}>
-                    <div className="font-display font-semibold text-sm">{t.name}</div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5">{t.desc}</div>
-                  </button>
-                ))}
+              <div className="grid grid-cols-3 gap-3">
+                {TEMPLATES.map(t => {
+                  const selected = template === t.id;
+                  return (
+                    <button key={t.id} type="button" onClick={() => setTemplate(t.id)}
+                      className={`group text-left rounded-xl border-2 overflow-hidden transition-all ${selected ? "border-primary shadow-glow ring-2 ring-primary/30" : "border-border hover:border-primary/50"}`}>
+                      {/* Thumbnail: render actual template scaled down */}
+                      <div className="relative aspect-[3/4] bg-white overflow-hidden border-b border-border">
+                        <div
+                          className="absolute top-0 left-0 origin-top-left pointer-events-none select-none"
+                          style={{ width: "800px", transform: "scale(0.18)" }}
+                        >
+                          <ResumePreview template={t.id} data={resume ?? SAMPLE_RESUME} />
+                        </div>
+                        {selected && (
+                          <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded shadow">
+                            SELECTED
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-2 bg-background">
+                        <div className="font-display font-semibold text-xs">{t.name}</div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{t.desc}</div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
