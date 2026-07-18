@@ -116,6 +116,19 @@ export function OnboardingTour({
     setShowChoice(true);
   }, []);
 
+  const scrollToTourSection = useCallback((key: "try-now" | "resume-builder") => {
+    const doScroll = () => {
+      const el = document.querySelector(`[data-tour="${key}"]`) as HTMLElement | null;
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    if (window.location.pathname !== "/") {
+      navigate("/");
+      setTimeout(doScroll, 350);
+    } else {
+      doScroll();
+    }
+  }, [navigate]);
+
 
   useEffect(() => {
     if (!open) return;
@@ -172,7 +185,7 @@ export function OnboardingTour({
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-6 pb-6">
             <button
-              onClick={() => { closeAll(); navigate("/try-now"); }}
+              onClick={() => { closeAll(); scrollToTourSection("try-now"); }}
               className="group text-left rounded-xl border-2 border-border hover:border-primary bg-card hover:bg-primary/5 p-5 transition-all hover:shadow-glow"
             >
               <div className="flex items-center justify-center w-11 h-11 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
@@ -182,7 +195,7 @@ export function OnboardingTour({
               <div className="text-xs text-muted-foreground mt-1">Scan an existing resume against a job description.</div>
             </button>
             <button
-              onClick={() => { closeAll(); navigate("/tools/resume-builder"); }}
+              onClick={() => { closeAll(); scrollToTourSection("resume-builder"); }}
               className="group text-left rounded-xl border-2 border-primary bg-gradient-primary/5 hover:bg-primary/10 p-5 transition-all hover:shadow-glow"
             >
               <div className="flex items-center justify-center w-11 h-11 rounded-lg bg-gradient-primary text-primary-foreground">
