@@ -8,6 +8,7 @@ import { subscribeWithRazorpay } from "@/lib/razorpay";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { getPricingVariant, PRO_PRICES, trackPricingEvent } from "@/lib/abTest";
 
 type Tier = "free" | "basic" | "pro";
 
@@ -50,7 +51,7 @@ const PLANS: Array<{
   {
     tier: "pro",
     name: "Pro",
-    price: "₹99",
+    price: "₹99", // overridden at render time by A/B variant
     cadence: "/month · autopay",
     tagline: "Land your next role",
     highlight: true,
@@ -94,8 +95,11 @@ export default function Pricing() {
 
   useEffect(() => {
     loadProfile();
+    trackPricingEvent("view");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  const proPrice = PRO_PRICES[getPricingVariant()].display;
 
   const currentPlan: Tier = (profile?.plan as Tier) ?? "free";
   const isActive = profile?.subscription_status === "active";
@@ -107,9 +111,11 @@ export default function Pricing() {
       return;
     }
     setLoadingTier(tier);
+    trackPricingEvent("click", tier);
     try {
       const result = await subscribeWithRazorpay({ tier, prefill: { email: user.email ?? undefined } });
       if (result.success) {
+        trackPricingEvent("success", tier);
         toast({
           title: "Subscription started 🎉",
           description: "Your plan will activate within a few seconds once payment confirms.",
@@ -260,7 +266,7 @@ export default function Pricing() {
                     </div>
                     <div className="font-display text-2xl font-bold mb-1">{plan.name}</div>
                     <div className="flex items-baseline gap-1.5 mb-5">
-                      <span className="font-display text-4xl font-extrabold">{plan.price}</span>
+                      <span className="font-display text-4xl font-extrabold">{plan.tier === "pro" ? proPrice : plan.price}</span>
                       <span className="text-sm text-muted-foreground">{plan.cadence}</span>
                     </div>
 
@@ -328,7 +334,7 @@ export default function Pricing() {
                         ) : (
                           <Lock className="h-4 w-4 mr-2" />
                         )}
-                        {isLoading ? "Opening checkout…" : user ? (currentPlan === "basic" && plan.tier === "pro" ? `Upgrade to Pro – ${plan.price}/mo` : `Subscribe for ${plan.price}/mo`) : "Sign in to subscribe"}
+                        {isLoading ? "Opening checkout…" : user ? (currentPlan === "basic" && plan.tier === "pro" ? `Upgrade to Pro – ${plan.tier === "pro" ? proPrice : plan.price}/mo` : `Subscribe for ${plan.tier === "pro" ? proPrice : plan.price}/mo`) : "Sign in to subscribe"}
                       </Button>
                     )}
                   </div>
