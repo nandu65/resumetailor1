@@ -38,11 +38,9 @@ export default function ResumeBuilder() {
   const [resume, setResume] = useState<ResumeData | null>(null);
   const [mode, setMode] = useState<"ai" | "verbatim">("ai");
 
-  // Sync edits made directly in the preview back into the form fields
-  const skipSyncRef = useRef(true);
+  // Sync edits made in the live preview back into the form fields
   useEffect(() => {
     if (!resume) return;
-    if (skipSyncRef.current) { skipSyncRef.current = false; return; }
     const linkByLabel = (label: string) =>
       resume.links?.find(l => l.label?.toLowerCase() === label.toLowerCase())?.url || "";
     setBasics(b => ({
@@ -73,9 +71,6 @@ export default function ResumeBuilder() {
     setSkills((resume.skills || []).join("\n"));
     setCertifications((resume.certifications || []).join("\n"));
   }, [resume]);
-
-  // When resume is (re)generated, don't overwrite the form on that first change
-  const setResumeFresh = (r: ResumeData) => { skipSyncRef.current = true; setResume(r); };
 
   const addExp = () => setExperience([...experience, { company: "", role: "", location: "", start: "", end: "", description: "" }]);
   const addEdu = () => setEducation([...education, { school: "", degree: "", location: "", start: "", end: "", details: "" }]);
