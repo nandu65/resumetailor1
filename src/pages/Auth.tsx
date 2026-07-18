@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -83,7 +84,7 @@ export default function Auth() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="si-pw">Password</Label>
-                  <Input id="si-pw" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                  <PasswordInput id="si-pw" required value={password} onChange={(e) => setPassword(e.target.value)} />
                 </div>
                 <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-md">
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}
@@ -106,7 +107,7 @@ export default function Auth() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="su-pw">Password</Label>
-                  <Input id="su-pw" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" />
+                  <PasswordInput id="su-pw" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" />
                 </div>
                 <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-md">
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create account"}

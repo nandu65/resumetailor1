@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -53,11 +54,11 @@ export default function ResetPassword() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="np">New password</Label>
-              <Input id="np" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} disabled={!ready} />
+              <PasswordInput id="np" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} disabled={!ready} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="cp">Confirm password</Label>
-              <Input id="cp" type="password" required minLength={6} value={confirm} onChange={(e) => setConfirm(e.target.value)} disabled={!ready} />
+              <PasswordInput id="cp" required minLength={6} value={confirm} onChange={(e) => setConfirm(e.target.value)} disabled={!ready} />
             </div>
             <Button type="submit" disabled={loading || !ready} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-md">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update password"}

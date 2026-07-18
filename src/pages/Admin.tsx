@@ -9,6 +9,7 @@ import { Loader2, Users, IndianRupee, Crown, Shield, LogOut, TrendingDown, Activ
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -99,9 +100,22 @@ export default function Admin() {
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2"><Label>Email</Label><Input value={ADMIN_EMAIL} disabled /></div>
               <div className="space-y-2"><Label htmlFor="pwd">Password</Label>
-                <Input id="pwd" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoFocus />
+                <PasswordInput id="pwd" required value={password} onChange={(e) => setPassword(e.target.value)} autoFocus />
               </div>
               <Button type="submit" className="w-full" disabled={signingIn}>{signingIn ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}</Button>
+              <button
+                type="button"
+                onClick={async () => {
+                  const { error } = await supabase.auth.resetPasswordForEmail(ADMIN_EMAIL, {
+                    redirectTo: `${window.location.origin}/reset-password`,
+                  });
+                  if (error) toast({ title: "Failed to send", description: error.message, variant: "destructive" });
+                  else toast({ title: "Reset link sent", description: `Check the inbox for ${ADMIN_EMAIL}.` });
+                }}
+                className="block w-full text-center text-xs text-muted-foreground hover:text-primary"
+              >
+                Forgot admin password?
+              </button>
             </form>
           </CardContent>
         </Card>
