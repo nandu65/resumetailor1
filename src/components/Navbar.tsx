@@ -17,6 +17,15 @@ export function Navbar() {
           ResumeShot <span className="text-primary">AI</span>
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2">
+          <Button
+            variant="ghost" size="sm"
+            title="Take the product tour"
+            onClick={() => { resetTour(); window.dispatchEvent(new CustomEvent("tour:start")); if (window.location.pathname !== "/") window.location.href = "/"; }}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <HelpCircle className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Tour</span>
+          </Button>
           <Button asChild variant="ghost" size="sm">
             <Link to="/pricing">Pricing</Link>
           </Button>
