@@ -111,9 +111,11 @@ export default function Pricing() {
       return;
     }
     setLoadingTier(tier);
+    trackPricingEvent("click", tier);
     try {
       const result = await subscribeWithRazorpay({ tier, prefill: { email: user.email ?? undefined } });
       if (result.success) {
+        trackPricingEvent("success", tier);
         toast({
           title: "Subscription started 🎉",
           description: "Your plan will activate within a few seconds once payment confirms.",
