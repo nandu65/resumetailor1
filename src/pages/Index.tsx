@@ -36,7 +36,7 @@ const Index = () => {
 
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-hero">
+      <section data-tour="hero" className="relative overflow-hidden bg-hero">
         <div className="absolute inset-0 bg-mesh pointer-events-none" />
         <FloatingResume />
         <div className="container relative pt-20 pb-28 text-center">
