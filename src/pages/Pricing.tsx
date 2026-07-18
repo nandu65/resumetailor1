@@ -334,7 +334,7 @@ export default function Pricing() {
                         ) : (
                           <Lock className="h-4 w-4 mr-2" />
                         )}
-                        {isLoading ? "Opening checkout…" : user ? (currentPlan === "basic" && plan.tier === "pro" ? `Upgrade to Pro – ${plan.price}/mo` : `Subscribe for ${plan.price}/mo`) : "Sign in to subscribe"}
+                        {isLoading ? "Opening checkout…" : user ? (currentPlan === "basic" && plan.tier === "pro" ? `Upgrade to Pro – ${plan.tier === "pro" ? proPrice : plan.price}/mo` : `Subscribe for ${plan.tier === "pro" ? proPrice : plan.price}/mo`) : "Sign in to subscribe"}
                       </Button>
                     )}
                   </div>
