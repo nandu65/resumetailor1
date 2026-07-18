@@ -135,6 +135,32 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Trusted By logos */}
+      <section className="border-b border-border bg-background">
+        <div className="container py-12">
+          <div className="text-center text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-8">
+            Our users have been hired at
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 md:gap-x-16 max-w-4xl mx-auto opacity-80">
+            {[
+              { name: "Razorpay", color: "text-[#0C2451]", accent: "•" },
+              { name: "Swiggy", color: "text-[#FC8019]", accent: "◆" },
+              { name: "Flipkart", color: "text-[#2874F0]", accent: "★" },
+              { name: "Zomato", color: "text-[#E23744]", accent: "▼" },
+              { name: "CRED", color: "text-foreground", accent: "◉" },
+            ].map((c) => (
+              <div
+                key={c.name}
+                className={`font-display font-extrabold text-2xl md:text-3xl tracking-tight ${c.color} grayscale hover:grayscale-0 transition-all duration-300 flex items-center gap-1.5`}
+              >
+                <span className="text-lg opacity-70">{c.accent}</span>
+                {c.name}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Privacy / security trust section */}
       <section className="container py-20">
         <div className="text-center max-w-2xl mx-auto mb-12">
