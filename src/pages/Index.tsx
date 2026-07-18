@@ -78,6 +78,113 @@ const Index = () => {
       {/* Try before signup */}
       <TryNow />
 
+      {/* AI Resume Builder — Easy as 1-2-3 */}
+      <section className="relative overflow-hidden border-y border-border bg-gradient-to-b from-background via-accent/20 to-background">
+        <div className="container py-20">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary mb-4">
+              <Sparkles className="h-3.5 w-3.5" /> New · AI Resume Builder
+            </div>
+            <h2 className="font-display text-4xl md:text-5xl font-extrabold tracking-tight">
+              <span className="text-primary">Easy</span> as <span className="text-foreground">1-2-3</span>
+            </h2>
+            <p className="mt-4 text-muted-foreground">No resume? No problem. Build a recruiter-ready one in under 3 minutes — powered by AI.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {[
+              {
+                n: 1,
+                title: "Select a template",
+                desc: "Pick from 3 ATS-tested designs — Modern, Classic, or Compact.",
+                visual: (
+                  <div className="flex gap-2 items-end justify-center h-32">
+                    {[
+                      { h: "h-24", bar: "bg-emerald-600" },
+                      { h: "h-28", bar: "bg-primary", ring: true },
+                      { h: "h-24", bar: "bg-neutral-700" },
+                    ].map((t, i) => (
+                      <div key={i} className={`${t.h} w-16 rounded-md bg-white border shadow-sm p-1.5 flex flex-col gap-1 ${t.ring ? "ring-2 ring-primary ring-offset-2" : ""}`}>
+                        <div className={`h-2 w-full rounded ${t.bar}`} />
+                        <div className="h-1 w-3/4 bg-neutral-200 rounded" />
+                        <div className="h-1 w-full bg-neutral-200 rounded" />
+                        <div className="h-1 w-5/6 bg-neutral-200 rounded" />
+                        <div className="h-1 w-2/3 bg-neutral-200 rounded" />
+                      </div>
+                    ))}
+                  </div>
+                ),
+              },
+              {
+                n: 2,
+                title: "Fill your details",
+                desc: "AI rewrites your input into strong, metric-driven bullet points.",
+                visual: (
+                  <div className="space-y-2 h-32 flex flex-col justify-center">
+                    {["Software Engineer at Razorpay", "Led migration to microservices", "Reduced latency by 42%"].map((t, i) => (
+                      <div key={i} className="flex items-center gap-2 rounded-lg border bg-white px-3 py-2 shadow-sm">
+                        <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
+                          <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                        </div>
+                        <div className="text-[11px] font-medium text-neutral-700 truncate">{t}</div>
+                        <span className="ml-auto text-[9px] font-bold text-primary uppercase tracking-wider">AI</span>
+                      </div>
+                    ))}
+                  </div>
+                ),
+              },
+              {
+                n: 3,
+                title: "Download & apply",
+                desc: "Export a polished PDF you can send the same day.",
+                visual: (
+                  <div className="relative h-32 flex items-center justify-center">
+                    <div className="h-28 w-20 rounded-md bg-white border shadow-md p-1.5 flex flex-col gap-1">
+                      <div className="h-2 w-full rounded bg-primary" />
+                      <div className="h-1 w-3/4 bg-neutral-200 rounded" />
+                      <div className="h-1 w-full bg-neutral-200 rounded" />
+                      <div className="h-1 w-5/6 bg-neutral-200 rounded" />
+                      <div className="h-1 w-2/3 bg-neutral-200 rounded" />
+                      <div className="h-1 w-4/5 bg-neutral-200 rounded" />
+                    </div>
+                    <div className="absolute -right-1 top-4 rounded-full bg-primary text-primary-foreground h-11 w-11 flex items-center justify-center shadow-glow">
+                      <Download className="h-5 w-5" />
+                    </div>
+                    <div className="absolute right-6 bottom-3 rounded-full bg-emerald-600 text-white text-[9px] font-bold px-2 py-1 shadow">.PDF</div>
+                  </div>
+                ),
+              },
+            ].map((step) => (
+              <div key={step.n} className="group relative rounded-2xl border border-border bg-gradient-card p-6 shadow-card hover:shadow-elegant hover:-translate-y-1 transition-all duration-300">
+                <div className="rounded-xl bg-accent/40 border border-border p-4 mb-5">
+                  {step.visual}
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-full bg-gradient-primary text-primary-foreground flex items-center justify-center font-bold shadow-glow">
+                    {step.n}
+                  </div>
+                  <h3 className="font-display font-bold text-lg">{step.title}</h3>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 flex flex-col items-center gap-3">
+            <Button asChild size="lg" className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow h-12 px-8 text-base rounded-full">
+              <Link to="/tools/resume-builder">
+                Build my resume now <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> 3 ATS-tested templates</span>
+              <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> AI-written bullets</span>
+              <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> Instant PDF export</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features */}
       <section className="container py-24">
         <div className="text-center max-w-2xl mx-auto mb-16">
