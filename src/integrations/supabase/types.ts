@@ -113,6 +113,36 @@ export type Database = {
         }
         Relationships: []
       }
+      pricing_experiments: {
+        Row: {
+          created_at: string
+          event: string
+          id: string
+          session_id: string | null
+          tier: string | null
+          user_id: string | null
+          variant: string
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          id?: string
+          session_id?: string | null
+          tier?: string | null
+          user_id?: string | null
+          variant: string
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          id?: string
+          session_id?: string | null
+          tier?: string | null
+          user_id?: string | null
+          variant?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
