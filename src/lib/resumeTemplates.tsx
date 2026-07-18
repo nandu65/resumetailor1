@@ -789,9 +789,13 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
 
 /* ---------- DOCX export (editable in Word / Google Docs) ---------- */
 export async function downloadResumeDocxFromData(data: ResumeData, template: TemplateId) {
-  const isClassic = template === "classic";
-  const font = isClassic ? "Times New Roman" : "Calibri";
-  const accent = template === "modern" ? "065F46" : "111111";
+  const serifTpls: TemplateId[] = ["classic", "executive"];
+  const font = serifTpls.includes(template) ? "Times New Roman" : "Calibri";
+  const accentMap: Record<TemplateId, string> = {
+    modern: "065F46", classic: "111111", compact: "1F1F1F",
+    executive: "92400E", creative: "4F46E5", minimal: "404040",
+  };
+  const accent = accentMap[template] ?? "111111";
 
   const P = (text: string, opts: { bold?: boolean; italic?: boolean; size?: number; color?: string; align?: any } = {}) =>
     new Paragraph({
