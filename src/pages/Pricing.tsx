@@ -266,7 +266,7 @@ export default function Pricing() {
                     </div>
                     <div className="font-display text-2xl font-bold mb-1">{plan.name}</div>
                     <div className="flex items-baseline gap-1.5 mb-5">
-                      <span className="font-display text-4xl font-extrabold">{plan.price}</span>
+                      <span className="font-display text-4xl font-extrabold">{plan.tier === "pro" ? proPrice : plan.price}</span>
                       <span className="text-sm text-muted-foreground">{plan.cadence}</span>
                     </div>
 
