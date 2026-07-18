@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, ArrowLeft, X, Sparkles, PartyPopper } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ArrowRight, ArrowLeft, X, Sparkles, PartyPopper, FileSearch, Wand2 } from "lucide-react";
 
 export type TourStep = {
   target?: string; // CSS selector (data-tour="..."). Omit for a centered welcome/finale card.
