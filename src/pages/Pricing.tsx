@@ -8,6 +8,7 @@ import { subscribeWithRazorpay } from "@/lib/razorpay";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { getPricingVariant, PRO_PRICES, trackPricingEvent } from "@/lib/abTest";
 
 type Tier = "free" | "basic" | "pro";
 
@@ -50,7 +51,7 @@ const PLANS: Array<{
   {
     tier: "pro",
     name: "Pro",
-    price: "₹99",
+    price: "₹99", // overridden at render time by A/B variant
     cadence: "/month · autopay",
     tagline: "Land your next role",
     highlight: true,
@@ -94,8 +95,11 @@ export default function Pricing() {
 
   useEffect(() => {
     loadProfile();
+    trackPricingEvent("view");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  const proPrice = PRO_PRICES[getPricingVariant()].display;
 
   const currentPlan: Tier = (profile?.plan as Tier) ?? "free";
   const isActive = profile?.subscription_status === "active";
