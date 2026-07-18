@@ -21,12 +21,15 @@ export interface ResumeData {
   certifications: string[];
 }
 
-export type TemplateId = "modern" | "classic" | "compact";
+export type TemplateId = "modern" | "classic" | "compact" | "executive" | "creative" | "minimal";
 
 export const TEMPLATES: { id: TemplateId; name: string; desc: string }[] = [
   { id: "modern", name: "Modern", desc: "Sidebar accent, great for tech & design" },
   { id: "classic", name: "Classic ATS", desc: "Clean single column, safest for ATS" },
   { id: "compact", name: "Compact", desc: "One-page dense, ideal for grads" },
+  { id: "executive", name: "Executive", desc: "Elegant serif with strong header — senior roles" },
+  { id: "creative", name: "Creative", desc: "Bold indigo banner, two-column — design & marketing" },
+  { id: "minimal", name: "Minimal", desc: "Ultra-clean typography, generous whitespace" },
 ];
 
 /* ---------- Inline editable primitive ---------- */
@@ -441,12 +444,267 @@ function CompactPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
   );
 }
 
+/* ---------- Executive: elegant serif, right-aligned metadata ---------- */
+function ExecutivePreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
+  const on = (patch: Partial<ResumeData>) => update?.(patch);
+  return (
+    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg p-8 font-serif text-[11px] leading-snug" style={{ aspectRatio: "8.5 / 11" }}>
+      <div className="pb-3 mb-4 border-b-4 border-amber-800">
+        <Editable as="div" value={r.name || "Your Name"} onChange={update && (v => on({ name: v }))} className="font-bold text-3xl tracking-tight text-amber-900" />
+        <div className="flex justify-between items-end mt-1">
+          <Editable as="div" value={r.title} onChange={update && (v => on({ title: v }))} className="italic text-[12px] text-neutral-700" />
+          <div className="text-right text-[9px] text-neutral-600">
+            <Editable as="div" value={r.email} onChange={update && (v => on({ email: v }))} />
+            <Editable as="div" value={r.phone} onChange={update && (v => on({ phone: v }))} />
+            <Editable as="div" value={r.location} onChange={update && (v => on({ location: v }))} />
+          </div>
+        </div>
+      </div>
+      {(r.summary || update) && (
+        <section className="mb-3">
+          <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-800 mb-1">Profile</h3>
+          <Editable as="p" multiline value={r.summary} onChange={update && (v => on({ summary: v }))} className="whitespace-pre-wrap" />
+        </section>
+      )}
+      {r.experience?.length > 0 && (
+        <section className="mb-3">
+          <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-800 mb-1">Professional Experience</h3>
+          {r.experience.map((e, i) => {
+            const upd = makeExpUpdater(update, r, i);
+            return (
+              <div key={i} className="mb-2">
+                <div className="flex justify-between gap-2">
+                  <span className="font-bold flex-1"><Editable value={e.role} onChange={update && (v => upd({ role: v }))} /></span>
+                  <span className="text-[10px] italic text-neutral-600 whitespace-nowrap"><Editable value={e.start} onChange={update && (v => upd({ start: v }))} /> – <Editable value={e.end} onChange={update && (v => upd({ end: v }))} /></span>
+                </div>
+                <div className="italic text-[10px] text-neutral-700"><Editable value={e.company} onChange={update && (v => upd({ company: v }))} />{e.location ? ", " : ""}<Editable value={e.location} onChange={update && (v => upd({ location: v }))} /></div>
+                <BulletsEditor bullets={e.bullets || []} onChange={update && (v => upd({ bullets: v }))} className="list-disc pl-4 mt-0.5" />
+              </div>
+            );
+          })}
+        </section>
+      )}
+      {r.education?.length > 0 && (
+        <section className="mb-3">
+          <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-800 mb-1">Education</h3>
+          {r.education.map((e, i) => {
+            const upd = makeEduUpdater(update, r, i);
+            return (
+              <div key={i} className="mb-1">
+                <div className="flex justify-between gap-2">
+                  <span className="font-bold flex-1"><Editable value={e.degree} onChange={update && (v => upd({ degree: v }))} />, <Editable value={e.school} onChange={update && (v => upd({ school: v }))} /></span>
+                  <span className="text-[10px] italic text-neutral-600 whitespace-nowrap"><Editable value={e.start} onChange={update && (v => upd({ start: v }))} /> – <Editable value={e.end} onChange={update && (v => upd({ end: v }))} /></span>
+                </div>
+                <Editable as="div" value={e.details} onChange={update && (v => upd({ details: v }))} className="text-[10px]" />
+              </div>
+            );
+          })}
+        </section>
+      )}
+      {r.skills?.length > 0 && (
+        <section className="mb-2">
+          <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-800 mb-1">Core Competencies</h3>
+          {r.skills.map((s, i) => {
+            const upd = makeSkillUpdater(update, r, i);
+            return (
+              <div key={i}><span className="font-bold"><Editable value={s.category} onChange={update && (v => upd({ category: v }))} />:</span> <Editable value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} /></div>
+            );
+          })}
+        </section>
+      )}
+      {r.certifications?.length > 0 && (
+        <section>
+          <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-800 mb-1">Certifications</h3>
+          <Editable value={r.certifications.join(" • ")} onChange={update && (v => on({ certifications: v.split("•").map(x => x.trim()).filter(Boolean) }))} />
+        </section>
+      )}
+    </div>
+  );
+}
+
+/* ---------- Creative: bold indigo header banner, two-column ---------- */
+function CreativePreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
+  const on = (patch: Partial<ResumeData>) => update?.(patch);
+  return (
+    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg overflow-hidden font-sans text-[11px] leading-snug" style={{ aspectRatio: "8.5 / 11" }}>
+      <div className="p-5 bg-gradient-to-r from-indigo-700 via-indigo-600 to-fuchsia-600 text-white">
+        <Editable as="div" value={r.name || "Your Name"} onChange={update && (v => on({ name: v }))} className="font-extrabold text-2xl tracking-tight" />
+        <Editable as="div" value={r.title} onChange={update && (v => on({ title: v }))} className="text-indigo-100 text-[11px]" />
+        <div className="flex flex-wrap gap-x-3 mt-2 text-[10px] text-indigo-50">
+          <Editable value={r.email} onChange={update && (v => on({ email: v }))} />
+          <Editable value={r.phone} onChange={update && (v => on({ phone: v }))} />
+          <Editable value={r.location} onChange={update && (v => on({ location: v }))} />
+          {r.links?.map((l, i) => (
+            <Editable key={i} value={l.url} onChange={update && (v => on({ links: r.links.map((x, j) => j === i ? { ...x, url: v } : x) }))} />
+          ))}
+        </div>
+      </div>
+      <div className="grid grid-cols-[65%_35%] gap-4 p-5">
+        <div>
+          {(r.summary || update) && (
+            <section className="mb-3">
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-indigo-700 mb-1">About</h3>
+              <Editable as="p" multiline value={r.summary} onChange={update && (v => on({ summary: v }))} className="whitespace-pre-wrap text-[10px]" />
+            </section>
+          )}
+          {r.experience?.length > 0 && (
+            <section className="mb-3">
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-indigo-700 mb-1">Experience</h3>
+              {r.experience.map((e, i) => {
+                const upd = makeExpUpdater(update, r, i);
+                return (
+                  <div key={i} className="mb-2 pl-3 border-l-2 border-indigo-200">
+                    <div className="font-semibold text-[11px]"><Editable value={e.role} onChange={update && (v => upd({ role: v }))} /> · <span className="text-indigo-700"><Editable value={e.company} onChange={update && (v => upd({ company: v }))} /></span></div>
+                    <div className="text-[9px] text-neutral-500"><Editable value={e.start} onChange={update && (v => upd({ start: v }))} /> – <Editable value={e.end} onChange={update && (v => upd({ end: v }))} /></div>
+                    <BulletsEditor bullets={e.bullets || []} onChange={update && (v => upd({ bullets: v }))} className="list-disc pl-4 mt-0.5 text-[10px]" />
+                  </div>
+                );
+              })}
+            </section>
+          )}
+          {r.projects?.length > 0 && (
+            <section>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-indigo-700 mb-1">Projects</h3>
+              {r.projects.map((p, i) => {
+                const upd = makeProjUpdater(update, r, i);
+                return (
+                  <div key={i} className="mb-1.5">
+                    <div className="font-semibold text-[11px]"><Editable value={p.name} onChange={update && (v => upd({ name: v }))} /> <span className="text-neutral-500 font-normal text-[9px]">— <Editable value={p.tech} onChange={update && (v => upd({ tech: v }))} /></span></div>
+                    <BulletsEditor bullets={p.bullets || []} onChange={update && (v => upd({ bullets: v }))} className="list-disc pl-4 text-[10px]" />
+                  </div>
+                );
+              })}
+            </section>
+          )}
+        </div>
+        <div>
+          {r.skills?.length > 0 && (
+            <section className="mb-3">
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-indigo-700 mb-1">Skills</h3>
+              {r.skills.map((s, i) => {
+                const upd = makeSkillUpdater(update, r, i);
+                return (
+                  <div key={i} className="mb-1.5">
+                    <Editable as="div" value={s.category} onChange={update && (v => upd({ category: v }))} className="font-semibold text-[10px]" />
+                    <div className="flex flex-wrap gap-1 mt-0.5">
+                      {s.items.map((it, k) => (
+                        <span key={k} className="text-[9px] px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200">{it}</span>
+                      ))}
+                    </div>
+                    <Editable as="div" value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} className="text-[9px] text-neutral-400 mt-0.5" />
+                  </div>
+                );
+              })}
+            </section>
+          )}
+          {r.education?.length > 0 && (
+            <section className="mb-3">
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-indigo-700 mb-1">Education</h3>
+              {r.education.map((e, i) => {
+                const upd = makeEduUpdater(update, r, i);
+                return (
+                  <div key={i} className="mb-1">
+                    <Editable as="div" value={e.degree} onChange={update && (v => upd({ degree: v }))} className="font-semibold text-[10px]" />
+                    <Editable as="div" value={e.school} onChange={update && (v => upd({ school: v }))} className="text-[10px]" />
+                    <div className="text-[9px] text-neutral-500"><Editable value={e.start} onChange={update && (v => upd({ start: v }))} />–<Editable value={e.end} onChange={update && (v => upd({ end: v }))} /></div>
+                  </div>
+                );
+              })}
+            </section>
+          )}
+          {r.certifications?.length > 0 && (
+            <section>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-indigo-700 mb-1">Certs</h3>
+              <Editable as="div" multiline value={r.certifications.join("\n")} onChange={update && (v => on({ certifications: v.split("\n").map(x => x.trim()).filter(Boolean) }))} className="text-[10px] whitespace-pre-wrap" />
+            </section>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Minimal: airy, mono-weight, generous whitespace ---------- */
+function MinimalPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
+  const on = (patch: Partial<ResumeData>) => update?.(patch);
+  const H = (t: string) => <h3 className="text-[9px] font-semibold uppercase tracking-[0.3em] text-neutral-400 mb-2">{t}</h3>;
+  return (
+    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg p-10 font-sans text-[11px] leading-relaxed" style={{ aspectRatio: "8.5 / 11" }}>
+      <div className="mb-6">
+        <Editable as="div" value={r.name || "Your Name"} onChange={update && (v => on({ name: v }))} className="font-light text-3xl tracking-tight text-neutral-900" />
+        <Editable as="div" value={r.title} onChange={update && (v => on({ title: v }))} className="text-neutral-500 text-[11px] mt-1" />
+        <div className="mt-2 text-[10px] text-neutral-500">
+          <Editable value={[r.email, r.phone, r.location, ...(r.links?.map(l => l.url) ?? [])].filter(Boolean).join("   ·   ")}
+            onChange={update && (v => {
+              const parts = v.split("·").map(s => s.trim()).filter(Boolean);
+              const [email, phone, location, ...linkUrls] = parts;
+              on({ email: email || "", phone: phone || "", location: location || "",
+                links: linkUrls.map((url, i) => ({ label: r.links?.[i]?.label || "Link", url })) });
+            })} />
+        </div>
+      </div>
+      {(r.summary || update) && (
+        <section className="mb-5">{H("Summary")}<Editable as="p" multiline value={r.summary} onChange={update && (v => on({ summary: v }))} className="whitespace-pre-wrap text-[11px]" /></section>
+      )}
+      {r.experience?.length > 0 && (
+        <section className="mb-5">{H("Experience")}
+          {r.experience.map((e, i) => {
+            const upd = makeExpUpdater(update, r, i);
+            return (
+              <div key={i} className="mb-3 grid grid-cols-[80px_1fr] gap-4">
+                <div className="text-[9px] text-neutral-400 pt-0.5"><Editable value={e.start} onChange={update && (v => upd({ start: v }))} /><br /><Editable value={e.end} onChange={update && (v => upd({ end: v }))} /></div>
+                <div>
+                  <div className="font-medium text-[11px]"><Editable value={e.role} onChange={update && (v => upd({ role: v }))} /></div>
+                  <div className="text-neutral-500 text-[10px]"><Editable value={e.company} onChange={update && (v => upd({ company: v }))} /></div>
+                  <BulletsEditor bullets={e.bullets || []} onChange={update && (v => upd({ bullets: v }))} className="list-disc pl-4 mt-1 text-[10px] space-y-0.5" />
+                </div>
+              </div>
+            );
+          })}
+        </section>
+      )}
+      {r.education?.length > 0 && (
+        <section className="mb-5">{H("Education")}
+          {r.education.map((e, i) => {
+            const upd = makeEduUpdater(update, r, i);
+            return (
+              <div key={i} className="mb-1 grid grid-cols-[80px_1fr] gap-4">
+                <div className="text-[9px] text-neutral-400 pt-0.5"><Editable value={e.start} onChange={update && (v => upd({ start: v }))} />–<Editable value={e.end} onChange={update && (v => upd({ end: v }))} /></div>
+                <div>
+                  <div className="font-medium text-[11px]"><Editable value={e.degree} onChange={update && (v => upd({ degree: v }))} /></div>
+                  <div className="text-neutral-500 text-[10px]"><Editable value={e.school} onChange={update && (v => upd({ school: v }))} /></div>
+                </div>
+              </div>
+            );
+          })}
+        </section>
+      )}
+      {r.skills?.length > 0 && (
+        <section>{H("Skills")}
+          {r.skills.map((s, i) => {
+            const upd = makeSkillUpdater(update, r, i);
+            return (
+              <div key={i} className="grid grid-cols-[80px_1fr] gap-4 mb-1">
+                <div className="text-[10px] text-neutral-500"><Editable value={s.category} onChange={update && (v => upd({ category: v }))} /></div>
+                <div className="text-[10px]"><Editable value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} /></div>
+              </div>
+            );
+          })}
+        </section>
+      )}
+    </div>
+  );
+}
+
 export function ResumePreview({
   template, data, onChange,
 }: { template: TemplateId; data: ResumeData; onChange?: (data: ResumeData) => void }) {
   const update: UpdateFn = onChange ? (patch) => onChange({ ...data, ...patch }) : undefined;
   if (template === "modern") return <ModernPreview r={data} update={update} />;
   if (template === "compact") return <CompactPreview r={data} update={update} />;
+  if (template === "executive") return <ExecutivePreview r={data} update={update} />;
+  if (template === "creative") return <CreativePreview r={data} update={update} />;
+  if (template === "minimal") return <MinimalPreview r={data} update={update} />;
   return <ClassicPreview r={data} update={update} />;
 }
 
@@ -456,8 +714,12 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
   const margin = 48;
-  const accent: [number, number, number] = template === "modern" ? [6, 95, 70] : template === "classic" ? [20, 20, 20] : [40, 40, 40];
-  const font = template === "classic" ? "times" : "helvetica";
+  const accentMap: Record<TemplateId, [number, number, number]> = {
+    modern: [6, 95, 70], classic: [20, 20, 20], compact: [40, 40, 40],
+    executive: [146, 64, 14], creative: [79, 70, 229], minimal: [64, 64, 64],
+  };
+  const accent: [number, number, number] = accentMap[template] ?? [40, 40, 40];
+  const font = template === "classic" || template === "executive" ? "times" : "helvetica";
   let y = margin;
 
   const ensure = (h = 14) => { if (y + h > pageH - margin) { doc.addPage(); y = margin; } };
@@ -527,9 +789,13 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
 
 /* ---------- DOCX export (editable in Word / Google Docs) ---------- */
 export async function downloadResumeDocxFromData(data: ResumeData, template: TemplateId) {
-  const isClassic = template === "classic";
-  const font = isClassic ? "Times New Roman" : "Calibri";
-  const accent = template === "modern" ? "065F46" : "111111";
+  const serifTpls: TemplateId[] = ["classic", "executive"];
+  const font = serifTpls.includes(template) ? "Times New Roman" : "Calibri";
+  const accentMap: Record<TemplateId, string> = {
+    modern: "065F46", classic: "111111", compact: "1F1F1F",
+    executive: "92400E", creative: "4F46E5", minimal: "404040",
+  };
+  const accent = accentMap[template] ?? "111111";
 
   const P = (text: string, opts: { bold?: boolean; italic?: boolean; size?: number; color?: string; align?: any } = {}) =>
     new Paragraph({
