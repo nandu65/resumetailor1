@@ -21,12 +21,15 @@ export interface ResumeData {
   certifications: string[];
 }
 
-export type TemplateId = "modern" | "classic" | "compact";
+export type TemplateId = "modern" | "classic" | "compact" | "executive" | "creative" | "minimal";
 
 export const TEMPLATES: { id: TemplateId; name: string; desc: string }[] = [
   { id: "modern", name: "Modern", desc: "Sidebar accent, great for tech & design" },
   { id: "classic", name: "Classic ATS", desc: "Clean single column, safest for ATS" },
   { id: "compact", name: "Compact", desc: "One-page dense, ideal for grads" },
+  { id: "executive", name: "Executive", desc: "Elegant serif with strong header — senior roles" },
+  { id: "creative", name: "Creative", desc: "Bold indigo banner, two-column — design & marketing" },
+  { id: "minimal", name: "Minimal", desc: "Ultra-clean typography, generous whitespace" },
 ];
 
 /* ---------- Inline editable primitive ---------- */
