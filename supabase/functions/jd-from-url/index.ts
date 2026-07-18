@@ -1,4 +1,6 @@
 // Fetch a job posting URL and extract a clean job description using Gemini.
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { logAiUsage, estimateTokens } from "../_shared/aiUsage.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -53,6 +55,7 @@ Deno.serve(async (req) => {
 
     const prompt = `From the raw web page text below, extract ONLY the job description. Remove navigation, cookie banners, ads, "similar jobs", footers, and application forms. Preserve responsibilities, requirements, skills, tech stack, benefits. Return strict JSON: {"title": string|null, "company": string|null, "jobDescription": string}. Keep jobDescription as plain text with newlines between sections.\n\nPAGE TEXT:\n${text}`;
 
+    const startedAt = Date.now();
     const gr = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + geminiKey, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -70,6 +73,26 @@ Deno.serve(async (req) => {
     const raw = gj?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
     let parsed: any = {};
     try { parsed = JSON.parse(raw); } catch { parsed = { jobDescription: text }; }
+
+    // Log usage
+    let callerId: string | null = null;
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader) {
+      try {
+        const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
+        const { data: u } = await sb.auth.getUser();
+        callerId = u?.user?.id ?? null;
+      } catch { /* ignore */ }
+    }
+    const usage = gj?.usageMetadata ?? {};
+    logAiUsage({
+      userId: callerId,
+      feature: "jd-from-url",
+      model: "gemini-2.5-flash",
+      inputTokens: usage.promptTokenCount ?? estimateTokens(prompt),
+      outputTokens: usage.candidatesTokenCount ?? estimateTokens(raw),
+      durationMs: Date.now() - startedAt,
+    });
 
     return new Response(JSON.stringify({
       title: parsed.title ?? null,

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { logAiUsage, estimateTokens } from "../_shared/aiUsage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -44,14 +45,18 @@ serve(async (req) => {
       .from("optimizations").select("*").eq("id", optimizationId).maybeSingle();
     if (optErr || !opt) throw new Error("Optimization not found");
 
+    const startedAt = Date.now();
+    const model = "google/gemini-2.5-flash";
+    const sysMsg = `You write tailored cover letters that hiring managers love. Tone: ${tone}. Use 3-4 short paragraphs. Open with hook, body shows fit using specific resume points + JD keywords, close with confident call to action. Plain prose, no markdown, no placeholders like [Company].`;
+    const userMsg = `RESUME:\n${opt.resume_text}\n\nJOB DESCRIPTION:\n${opt.job_description}\n\nCompany: ${opt.company || "the company"}\nRole: ${opt.role || "this role"}\n\nWrite the cover letter.`;
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model,
         messages: [
-          { role: "system", content: `You write tailored cover letters that hiring managers love. Tone: ${tone}. Use 3-4 short paragraphs. Open with hook, body shows fit using specific resume points + JD keywords, close with confident call to action. Plain prose, no markdown, no placeholders like [Company].` },
-          { role: "user", content: `RESUME:\n${opt.resume_text}\n\nJOB DESCRIPTION:\n${opt.job_description}\n\nCompany: ${opt.company || "the company"}\nRole: ${opt.role || "this role"}\n\nWrite the cover letter.` },
+          { role: "system", content: sysMsg },
+          { role: "user", content: userMsg },
         ],
       }),
     });
@@ -65,6 +70,15 @@ serve(async (req) => {
     const aiData = await aiResp.json();
     const coverLetter = aiData.choices?.[0]?.message?.content?.trim();
     if (!coverLetter) throw new Error("No cover letter returned");
+    const usage = aiData?.usage ?? {};
+    logAiUsage({
+      userId: userData.user.id,
+      feature: "cover-letter",
+      model,
+      inputTokens: usage.prompt_tokens ?? estimateTokens(sysMsg + userMsg),
+      outputTokens: usage.completion_tokens ?? estimateTokens(coverLetter),
+      durationMs: Date.now() - startedAt,
+    });
 
     await supabase.from("optimizations").update({ cover_letter: coverLetter }).eq("id", optimizationId);
 

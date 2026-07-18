@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { logAiUsage, estimateTokens } from "../_shared/aiUsage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,11 +31,13 @@ serve(async (req) => {
     const { data: opt } = await supabase.from("optimizations").select("*").eq("id", optimizationId).maybeSingle();
     if (!opt) throw new Error("Optimization not found");
 
+    const startedAt = Date.now();
+    const model = "google/gemini-2.5-flash";
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model,
         messages: [
           { role: "system", content: "You are a career coach. Identify skill gaps between a resume and a target role, and recommend SPECIFIC, real, well-known courses, certifications, or learning resources. Prefer concrete names (e.g. 'AWS Certified Solutions Architect', 'Coursera: Deep Learning Specialization by Andrew Ng', 'freeCodeCamp Responsive Web Design')." },
           { role: "user", content: `RESUME:\n${opt.resume_text}\n\nJOB DESCRIPTION:\n${opt.job_description}\n\nMissing keywords from prior analysis: ${(opt.missing_keywords || []).join(", ")}\n\nIdentify skill gaps and recommend learning paths.` },
@@ -93,6 +96,15 @@ serve(async (req) => {
     const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
     if (!toolCall) throw new Error("No analysis returned");
     const result = JSON.parse(toolCall.function.arguments);
+    const usage = aiData?.usage ?? {};
+    logAiUsage({
+      userId: userData.user.id,
+      feature: "skill-gap",
+      model,
+      inputTokens: usage.prompt_tokens ?? estimateTokens((opt.resume_text || "") + (opt.job_description || "")),
+      outputTokens: usage.completion_tokens ?? estimateTokens(toolCall.function.arguments),
+      durationMs: Date.now() - startedAt,
+    });
 
     await supabase.from("optimizations").update({ skill_gaps: result.gaps }).eq("id", optimizationId);
 

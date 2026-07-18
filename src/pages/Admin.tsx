@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Users, IndianRupee, Crown, Shield, LogOut, TrendingDown, Activity, Target, AlertCircle, FlaskConical } from "lucide-react";
+import { Loader2, Users, IndianRupee, Crown, Shield, LogOut, TrendingDown, Activity, Target, AlertCircle, FlaskConical, Sparkles, Cpu, Zap } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -30,9 +30,16 @@ interface AdminData {
     mrrINR: number; activeSubs: number; cancelled: number;
     churnRate: number; conversionRate: number; totalScans30d: number;
     avgScore: number; paymentFailed: number;
+    aiCostInr30d?: number; aiCalls30d?: number;
+    aiInputTokens30d?: number; aiOutputTokens30d?: number; aiErrors30d?: number;
   };
   timeseries: { date: string; signups: number; scans: number }[];
   abTest: Record<"a49" | "b99" | "c149", { view: number; click: number; success: number }>;
+  aiCost?: {
+    byFeature: { feature: string; calls: number; input: number; output: number; cost: number; errors: number; avgCost: number }[];
+    byPlan: { plan: string; calls: number; input: number; output: number; cost: number; avgCost: number }[];
+    series: { date: string; cost: number }[];
+  };
 }
 
 const VARIANT_LABEL: Record<string, string> = { a49: "₹49", b99: "₹99", c149: "₹149" };
@@ -225,6 +232,94 @@ export default function Admin() {
                       <TableCell className={winner?.variant === r.variant && r.view > 5 ? "font-bold text-primary" : ""}>{r.convRate}%</TableCell>
                     </TableRow>
                   ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* AI Spend */}
+        <div className="grid gap-4 md:grid-cols-4">
+          <Kpi label="AI Cost (30d)" value={`₹${(m?.aiCostInr30d ?? 0).toLocaleString("en-IN")}`} icon={<Sparkles className="h-4 w-4" />} />
+          <Kpi label="AI Calls (30d)" value={(m?.aiCalls30d ?? 0).toLocaleString()} icon={<Zap className="h-4 w-4" />} />
+          <Kpi label="Tokens In / Out" value={`${((m?.aiInputTokens30d ?? 0) / 1000).toFixed(1)}k / ${((m?.aiOutputTokens30d ?? 0) / 1000).toFixed(1)}k`} icon={<Cpu className="h-4 w-4" />} />
+          <Kpi label="AI Errors" value={m?.aiErrors30d ?? 0} icon={<AlertCircle className="h-4 w-4" />} tone={(m?.aiErrors30d ?? 0) > 0 ? "warn" : undefined} />
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Card className="lg:col-span-2">
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /> AI Cost per Day (₹, last 30d)</CardTitle></CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={240}>
+                <AreaChart data={data?.aiCost?.series ?? []}>
+                  <defs>
+                    <linearGradient id="aicost" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.5} /><stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} /></linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(d) => d.slice(5)} />
+                  <YAxis tick={{ fontSize: 10 }} />
+                  <Tooltip contentStyle={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} formatter={(v: any) => `₹${v}`} />
+                  <Area type="monotone" dataKey="cost" stroke="hsl(var(--primary))" fill="url(#aicost)" name="Cost (₹)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle className="text-base">Cost by Plan</CardTitle></CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead>Plan</TableHead><TableHead>Calls</TableHead><TableHead>Cost</TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  {(data?.aiCost?.byPlan ?? []).map((r) => (
+                    <TableRow key={r.plan}>
+                      <TableCell><Badge variant={r.plan === "free" || r.plan === "anonymous" ? "secondary" : "default"}>{r.plan}</Badge></TableCell>
+                      <TableCell>{r.calls}</TableCell>
+                      <TableCell className={r.plan === "free" && r.cost > (data?.metrics.mrrINR ?? 0) * 0.1 ? "text-amber-500 font-semibold" : ""}>₹{r.cost}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Cpu className="h-4 w-4 text-primary" /> Cost by Feature (30d)</CardTitle></CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={data?.aiCost?.byFeature ?? []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="feature" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip contentStyle={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} formatter={(v: any, n: any) => n === "cost" ? `₹${v}` : v} />
+                <Bar dataKey="calls" fill="hsl(var(--muted))" name="Calls" />
+                <Bar dataKey="cost" fill="hsl(var(--primary))" name="Cost (₹)" />
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="overflow-x-auto mt-4">
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead>Feature</TableHead><TableHead>Calls</TableHead><TableHead>Input tokens</TableHead>
+                  <TableHead>Output tokens</TableHead><TableHead>Avg cost</TableHead><TableHead>Total cost</TableHead><TableHead>Errors</TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  {(data?.aiCost?.byFeature ?? []).map((r) => (
+                    <TableRow key={r.feature}>
+                      <TableCell className="font-semibold">{r.feature}</TableCell>
+                      <TableCell>{r.calls}</TableCell>
+                      <TableCell>{r.input.toLocaleString()}</TableCell>
+                      <TableCell>{r.output.toLocaleString()}</TableCell>
+                      <TableCell>₹{r.avgCost}</TableCell>
+                      <TableCell className="font-semibold">₹{r.cost}</TableCell>
+                      <TableCell className={r.errors > 0 ? "text-amber-500" : "text-muted-foreground"}>{r.errors}</TableCell>
+                    </TableRow>
+                  ))}
+                  {(!data?.aiCost?.byFeature || data.aiCost.byFeature.length === 0) && (
+                    <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">No AI usage logged yet.</TableCell></TableRow>
+                  )}
                 </TableBody>
               </Table>
             </div>

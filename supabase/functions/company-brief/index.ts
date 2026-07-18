@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { logAiUsage, estimateTokens } from "../_shared/aiUsage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,11 +41,13 @@ serve(async (req) => {
       }
     }
 
+    const startedAt = Date.now();
+    const model = "google/gemini-2.5-flash";
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model,
         messages: [
           { role: "system", content: "You produce concise, structured company research briefs to help job applicants prepare. Be specific. If information is unknown, infer reasonably or omit." },
           { role: "user", content: `Company: ${company || "(infer from page)"}\nRole: ${role || "(infer)"}\n${url ? `Source URL: ${url}` : ""}\n\nPAGE CONTENT (may be partial):\n${pageText || "(no page content provided — use general knowledge)"}\n\nProduce a research brief.` },
@@ -85,6 +88,15 @@ serve(async (req) => {
     const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
     if (!toolCall) throw new Error("No brief returned");
     const brief = JSON.parse(toolCall.function.arguments);
+    const usage = aiData?.usage ?? {};
+    logAiUsage({
+      userId: userData.user.id,
+      feature: "company-brief",
+      model,
+      inputTokens: usage.prompt_tokens ?? estimateTokens(pageText + (company || "") + (role || "")),
+      outputTokens: usage.completion_tokens ?? estimateTokens(toolCall.function.arguments),
+      durationMs: Date.now() - startedAt,
+    });
 
     if (optimizationId) {
       await supabase.from("optimizations").update({ company_brief: brief }).eq("id", optimizationId);
