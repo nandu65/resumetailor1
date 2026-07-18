@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { ArrowRight, Sparkles, FileText, Target, Zap, CheckCircle2, BarChart3, ShieldCheck, Mail, Layers, GitCompare, Gauge, SlidersHorizontal, Download, Building2, GraduationCap, Star, Quote, Lock, RefreshCw, Clock, Users, TrendingUp, ShieldOff, KeyRound, Trash2, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
@@ -7,6 +8,7 @@ import { ExitIntentPopup } from "@/components/ExitIntentPopup";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { FloatingResume } from "@/components/FloatingResume";
 import { TryNow } from "@/components/TryNow";
+import { OnboardingTour, shouldAutoStartTour } from "@/components/OnboardingTour";
 import razorpayLogo from "@/assets/razorpay.png.asset.json";
 import swiggyLogo from "@/assets/swiggy.png.asset.json";
 import flipkartLogo from "@/assets/flipkart.png.asset.json";
@@ -14,9 +16,21 @@ import zomatoLogo from "@/assets/zomato.png.asset.json";
 import credLogo from "@/assets/cred.png.asset.json";
 
 const Index = () => {
+  const [tourOpen, setTourOpen] = useState(false);
+  useEffect(() => {
+    const start = () => setTourOpen(true);
+    window.addEventListener("tour:start", start);
+    // Auto-start once for new users, after layout settles
+    if (shouldAutoStartTour()) {
+      const t = setTimeout(() => setTourOpen(true), 900);
+      return () => { clearTimeout(t); window.removeEventListener("tour:start", start); };
+    }
+    return () => window.removeEventListener("tour:start", start);
+  }, []);
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      <OnboardingTour open={tourOpen} onClose={() => setTourOpen(false)} />
 
 
 
