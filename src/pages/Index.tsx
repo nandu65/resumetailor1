@@ -90,10 +90,10 @@ const Index = () => {
       </section>
 
       {/* Try before signup */}
-      <TryNow />
+      <div data-tour="try-now"><TryNow /></div>
 
       {/* AI Resume Builder — Easy as 1-2-3 */}
-      <section className="relative overflow-hidden border-y border-border bg-gradient-to-b from-background via-accent/20 to-background">
+      <section data-tour="resume-builder" className="relative overflow-hidden border-y border-border bg-gradient-to-b from-background via-accent/20 to-background">
         <div className="container py-20">
           <div className="text-center max-w-2xl mx-auto mb-14">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary mb-4">
