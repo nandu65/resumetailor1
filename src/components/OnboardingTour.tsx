@@ -107,10 +107,6 @@ export function OnboardingTour({
     onClose();
   }, [onClose]);
 
-  const finish = useCallback(() => {
-    try { localStorage.setItem(STORAGE_KEY, "1"); } catch {}
-    onClose();
-  }, [onClose]);
 
   useEffect(() => {
     if (!open) return;
