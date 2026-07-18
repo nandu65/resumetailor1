@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { Sparkles, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { resetTour } from "@/components/OnboardingTour";
 
 export function Navbar() {
   const { user } = useAuth();
