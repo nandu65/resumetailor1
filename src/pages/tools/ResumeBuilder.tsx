@@ -189,6 +189,52 @@ export default function ResumeBuilder() {
           </div>
         )}
 
+        {/* Starter chooser */}
+        <div className="mb-6 rounded-2xl border-2 border-border bg-gradient-card p-6 shadow-card">
+          <div className="text-center mb-4">
+            <h2 className="font-display text-xl font-bold">Are you uploading an existing resume?</h2>
+            <p className="text-sm text-muted-foreground mt-1">Import it and we'll pre-fill everything — or start fresh below.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              className={`relative text-left rounded-xl border-2 p-5 transition-all ${starter === "uploaded" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/50"}`}
+            >
+              <div className="absolute -top-2 left-4 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-primary text-primary-foreground">Recommended · saves time</div>
+              <div className="flex items-center gap-2 font-display font-semibold">
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Upload className="h-4 w-4 text-primary" />}
+                Yes, upload my resume
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">PDF, DOCX, or TXT. AI extracts your info so you can review, edit, and enhance it.</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setStarter("scratch")}
+              className={`text-left rounded-xl border-2 p-5 transition-all ${starter === "scratch" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/50"}`}
+            >
+              <div className="flex items-center gap-2 font-display font-semibold">
+                <FilePlus2 className="h-4 w-4 text-primary" />
+                No, start from scratch
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">Fill in the form below — we'll guide you section by section.</div>
+            </button>
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".pdf,.docx,.txt"
+            className="hidden"
+            onChange={e => { const f = e.target.files?.[0]; if (f) onUpload(f); }}
+          />
+          {!user && (
+            <p className="text-[11px] text-muted-foreground text-center mt-3">
+              <Link to="/auth" className="underline text-primary">Sign in</Link> to upload and parse an existing resume.
+            </p>
+          )}
+        </div>
+
         <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6">
           {/* FORM */}
           <div className="space-y-6">
