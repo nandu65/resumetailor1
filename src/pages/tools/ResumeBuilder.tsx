@@ -36,14 +36,28 @@ export default function ResumeBuilder() {
   const [template, setTemplate] = useState<TemplateId>("modern");
   const [loading, setLoading] = useState(false);
   const [resume, setResume] = useState<ResumeData | null>(null);
+  const [mode, setMode] = useState<"ai" | "verbatim">("ai");
 
   const addExp = () => setExperience([...experience, { company: "", role: "", location: "", start: "", end: "", description: "" }]);
   const addEdu = () => setEducation([...education, { school: "", degree: "", location: "", start: "", end: "", details: "" }]);
   const addProj = () => setProjects([...projects, { name: "", tech: "", description: "" }]);
 
+  const buildRawInput = () => ({
+    ...basics,
+    summary, experience, education, projects, skills, certifications,
+  });
+
   const generate = async () => {
-    if (!user) return toast.error("Sign in to generate a resume");
     if (!basics.name.trim()) return toast.error("Add your name at minimum");
+
+    // Verbatim mode: no AI, no auth required — build directly from user input
+    if (mode === "verbatim") {
+      setResume(buildResumeDataVerbatim(buildRawInput()));
+      toast.success("Resume built from your exact text. Click any field in the preview to edit.");
+      return;
+    }
+
+    if (!user) return toast.error("Sign in to use AI polish");
     setLoading(true);
     try {
       const profile = {
@@ -68,7 +82,7 @@ export default function ResumeBuilder() {
         return;
       }
       setResume({ ...EMPTY_RESUME, ...(data as any).resume });
-      toast.success("Resume generated!");
+      toast.success("Resume generated! Click any field in the preview to edit.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
@@ -76,7 +90,8 @@ export default function ResumeBuilder() {
     }
   };
 
-  const download = () => resume && downloadResumePdfFromData(resume, template);
+  const downloadPdf = () => resume && downloadResumePdfFromData(resume, template);
+  const downloadDocx = () => resume && downloadResumeDocxFromData(resume, template);
 
   return (
     <div className="min-h-screen bg-background">
