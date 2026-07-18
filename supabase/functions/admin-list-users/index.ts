@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceKey);
     const { data: profiles, error } = await admin
       .from("profiles")
-      .select("user_id,email,display_name,plan,subscription_status,scans_used_month,current_period_end,created_at")
+      .select("user_id,email,display_name,plan,subscription_status,scans_used_month,current_period_end,created_at,payment_failed")
       .order("created_at", { ascending: false });
     if (error) throw error;
 
@@ -36,17 +36,83 @@ Deno.serve(async (req) => {
     (plans || []).forEach((p: any) => { priceMap[p.tier] = p.amount_paise; });
 
     let revenuePaise = 0;
+    let cancelled = 0;
+    let failed = 0;
     const counts = { free: 0, basic: 0, pro: 0 };
     (profiles || []).forEach((p: any) => {
       if (counts[p.plan as keyof typeof counts] !== undefined) counts[p.plan as keyof typeof counts]++;
       if (p.subscription_status === "active" && priceMap[p.plan]) revenuePaise += priceMap[p.plan];
+      if (p.subscription_status === "cancelled") cancelled++;
+      if (p.payment_failed) failed++;
     });
+
+    // Time series: signups per day (last 30d)
+    const now = new Date();
+    const days: { date: string; signups: number; scans: number }[] = [];
+    const dayIndex: Record<string, number> = {};
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(now); d.setUTCDate(d.getUTCDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      dayIndex[key] = days.length;
+      days.push({ date: key, signups: 0, scans: 0 });
+    }
+    (profiles || []).forEach((p: any) => {
+      const k = new Date(p.created_at).toISOString().slice(0, 10);
+      if (dayIndex[k] !== undefined) days[dayIndex[k]].signups++;
+    });
+
+    // Scan volume from optimizations
+    const since = new Date(now); since.setUTCDate(since.getUTCDate() - 29);
+    const { data: opts } = await admin
+      .from("optimizations")
+      .select("created_at,ats_score")
+      .gte("created_at", since.toISOString());
+    let totalScans = 0;
+    let scoreSum = 0, scoreCount = 0;
+    (opts || []).forEach((o: any) => {
+      totalScans++;
+      const k = new Date(o.created_at).toISOString().slice(0, 10);
+      if (dayIndex[k] !== undefined) days[dayIndex[k]].scans++;
+      if (typeof o.ats_score === "number") { scoreSum += o.ats_score; scoreCount++; }
+    });
+
+    // Funnel + A/B test results
+    const { data: events } = await admin
+      .from("pricing_experiments")
+      .select("variant,event,created_at")
+      .gte("created_at", since.toISOString());
+    const funnel: Record<string, { view: number; click: number; success: number }> = {
+      a49: { view: 0, click: 0, success: 0 },
+      b99: { view: 0, click: 0, success: 0 },
+      c149: { view: 0, click: 0, success: 0 },
+    };
+    (events || []).forEach((e: any) => {
+      if (funnel[e.variant] && funnel[e.variant][e.event as keyof typeof funnel["a49"]] !== undefined) {
+        funnel[e.variant][e.event as "view" | "click" | "success"]++;
+      }
+    });
+
+    const activeSubs = counts.basic + counts.pro;
+    const churnRate = activeSubs + cancelled > 0 ? (cancelled / (activeSubs + cancelled)) * 100 : 0;
+    const conversionRate = (profiles?.length || 0) > 0 ? (activeSubs / (profiles?.length || 1)) * 100 : 0;
 
     return new Response(JSON.stringify({
       users: profiles,
       total: profiles?.length || 0,
       counts,
       monthlyRevenueINR: revenuePaise / 100,
+      metrics: {
+        mrrINR: revenuePaise / 100,
+        activeSubs,
+        cancelled,
+        churnRate: +churnRate.toFixed(1),
+        conversionRate: +conversionRate.toFixed(1),
+        totalScans30d: totalScans,
+        avgScore: scoreCount ? Math.round(scoreSum / scoreCount) : 0,
+        paymentFailed: failed,
+      },
+      timeseries: days,
+      abTest: funnel,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ error: (e as Error).message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
