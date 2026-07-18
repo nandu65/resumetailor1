@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Users, IndianRupee, Crown, Shield, LogOut, TrendingDown, Activity, Target, AlertCircle, FlaskConical } from "lucide-react";
+import { Loader2, Users, IndianRupee, Crown, Shield, LogOut, TrendingDown, Activity, Target, AlertCircle, FlaskConical, Sparkles, Cpu, Zap } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -30,9 +30,16 @@ interface AdminData {
     mrrINR: number; activeSubs: number; cancelled: number;
     churnRate: number; conversionRate: number; totalScans30d: number;
     avgScore: number; paymentFailed: number;
+    aiCostInr30d?: number; aiCalls30d?: number;
+    aiInputTokens30d?: number; aiOutputTokens30d?: number; aiErrors30d?: number;
   };
   timeseries: { date: string; signups: number; scans: number }[];
   abTest: Record<"a49" | "b99" | "c149", { view: number; click: number; success: number }>;
+  aiCost?: {
+    byFeature: { feature: string; calls: number; input: number; output: number; cost: number; errors: number; avgCost: number }[];
+    byPlan: { plan: string; calls: number; input: number; output: number; cost: number; avgCost: number }[];
+    series: { date: string; cost: number }[];
+  };
 }
 
 const VARIANT_LABEL: Record<string, string> = { a49: "₹49", b99: "₹99", c149: "₹149" };
