@@ -176,42 +176,67 @@ const Index = () => {
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-5 max-w-5xl mx-auto">
               {[
-                { name: "Razorpay", accent: "#0C2451", tone: "light" },
-                { name: "Swiggy",   accent: "#FC8019", tone: "light" },
-                { name: "Flipkart", accent: "#2874F0", tone: "light", sub: "ⓕ" },
-                { name: "Zomato",   accent: "#E23744", tone: "light" },
-                { name: "CRED",     accent: "#FFFFFF", tone: "dark" },
-              ].map((c) => (
-                <div
-                  key={c.name}
-                  className={`group relative flex h-20 md:h-24 items-center justify-center rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
-                    c.tone === "dark"
-                      ? "bg-neutral-950 border-neutral-800 hover:border-neutral-700"
-                      : "bg-white border-border hover:border-primary/30"
-                  }`}
-                  title={c.name}
-                >
-                  {/* glow */}
+                { name: "Razorpay", domain: "razorpay.com", accent: "#0C2451", tone: "light" },
+                { name: "Swiggy",   domain: "swiggy.com",   accent: "#FC8019", tone: "light" },
+                { name: "Flipkart", domain: "flipkart.com", accent: "#2874F0", tone: "light" },
+                { name: "Zomato",   domain: "zomato.com",   accent: "#E23744", tone: "light" },
+                { name: "CRED",     domain: "cred.club",    accent: "#FFFFFF", tone: "dark" },
+              ].map((c) => {
+                const token = import.meta.env.VITE_LOVABLE_CONNECTOR_LOGO_DEV_API_KEY;
+                const logoUrl = token
+                  ? `https://img.logo.dev/${c.domain}?token=${token}&size=200&format=png&retina=true`
+                  : null;
+                return (
                   <div
-                    aria-hidden
-                    className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"
-                    style={{ background: `radial-gradient(circle at center, ${c.accent}22, transparent 70%)` }}
-                  />
-                  <span
-                    className="relative font-display font-extrabold text-lg md:text-xl tracking-tight select-none"
-                    style={{ color: c.accent, letterSpacing: c.name === "CRED" ? "0.15em" : "-0.02em" }}
-                  >
-                    {c.name}
-                  </span>
-                  {/* corner tick */}
-                  <span
-                    aria-hidden
-                    className={`absolute top-2 right-2 h-1.5 w-1.5 rounded-full ${
-                      c.tone === "dark" ? "bg-white/30" : "bg-foreground/20"
+                    key={c.name}
+                    className={`group relative flex h-20 md:h-24 items-center justify-center rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
+                      c.tone === "dark"
+                        ? "bg-neutral-950 border-neutral-800 hover:border-neutral-700"
+                        : "bg-white border-border hover:border-primary/30"
                     }`}
-                  />
-                </div>
-              ))}
+                    title={c.name}
+                  >
+                    {/* glow */}
+                    <div
+                      aria-hidden
+                      className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"
+                      style={{ background: `radial-gradient(circle at center, ${c.accent}22, transparent 70%)` }}
+                    />
+                    {logoUrl ? (
+                      <img
+                        src={logoUrl}
+                        alt={`${c.name} logo`}
+                        loading="lazy"
+                        decoding="async"
+                        className="relative max-h-10 md:max-h-12 w-auto object-contain px-3 transition-transform duration-300 group-hover:scale-105"
+                        onError={(e) => {
+                          // Fallback to wordmark if logo.dev fails
+                          const img = e.currentTarget;
+                          const fallback = img.nextElementSibling as HTMLElement | null;
+                          img.style.display = "none";
+                          if (fallback) fallback.style.display = "inline-block";
+                        }}
+                      />
+                    ) : null}
+                    <span
+                      className="relative font-display font-extrabold text-lg md:text-xl tracking-tight select-none"
+                      style={{
+                        color: c.accent,
+                        letterSpacing: c.name === "CRED" ? "0.15em" : "-0.02em",
+                        display: logoUrl ? "none" : "inline-block",
+                      }}
+                    >
+                      {c.name}
+                    </span>
+                    <span
+                      aria-hidden
+                      className={`absolute top-2 right-2 h-1.5 w-1.5 rounded-full ${
+                        c.tone === "dark" ? "bg-white/30" : "bg-foreground/20"
+                      }`}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -508,6 +533,9 @@ const Index = () => {
             <Link to="/refund-policy" className="hover:text-primary transition-colors">Refund Policy</Link>
             <a href="mailto:support.resumeshot@gmail.com" className="hover:text-primary transition-colors">Support</a>
           </nav>
+        </div>
+        <div className="container mt-3 text-center text-xs text-muted-foreground/70">
+          Logos provided by <a href="https://logo.dev" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary transition-colors">Logo.dev</a>
         </div>
       </footer>
 
