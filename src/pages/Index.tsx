@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { ArrowRight, Sparkles, FileText, Target, Zap, CheckCircle2, BarChart3, ShieldCheck, Mail, Layers, GitCompare, Gauge, SlidersHorizontal, Download, Building2, GraduationCap, Star, Quote, Lock, RefreshCw, Clock, Users, TrendingUp, ShieldOff, KeyRound, Trash2, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
@@ -7,6 +8,7 @@ import { ExitIntentPopup } from "@/components/ExitIntentPopup";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { FloatingResume } from "@/components/FloatingResume";
 import { TryNow } from "@/components/TryNow";
+import { OnboardingTour, shouldAutoStartTour } from "@/components/OnboardingTour";
 import razorpayLogo from "@/assets/razorpay.png.asset.json";
 import swiggyLogo from "@/assets/swiggy.png.asset.json";
 import flipkartLogo from "@/assets/flipkart.png.asset.json";
@@ -14,15 +16,27 @@ import zomatoLogo from "@/assets/zomato.png.asset.json";
 import credLogo from "@/assets/cred.png.asset.json";
 
 const Index = () => {
+  const [tourOpen, setTourOpen] = useState(false);
+  useEffect(() => {
+    const start = () => setTourOpen(true);
+    window.addEventListener("tour:start", start);
+    // Auto-start once for new users, after layout settles
+    if (shouldAutoStartTour()) {
+      const t = setTimeout(() => setTourOpen(true), 900);
+      return () => { clearTimeout(t); window.removeEventListener("tour:start", start); };
+    }
+    return () => window.removeEventListener("tour:start", start);
+  }, []);
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      <OnboardingTour open={tourOpen} onClose={() => setTourOpen(false)} />
 
 
 
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-hero">
+      <section data-tour="hero" className="relative overflow-hidden bg-hero">
         <div className="absolute inset-0 bg-mesh pointer-events-none" />
         <FloatingResume />
         <div className="container relative pt-20 pb-28 text-center">
@@ -76,10 +90,10 @@ const Index = () => {
       </section>
 
       {/* Try before signup */}
-      <TryNow />
+      <div data-tour="try-now"><TryNow /></div>
 
       {/* AI Resume Builder — Easy as 1-2-3 */}
-      <section className="relative overflow-hidden border-y border-border bg-gradient-to-b from-background via-accent/20 to-background">
+      <section data-tour="resume-builder" className="relative overflow-hidden border-y border-border bg-gradient-to-b from-background via-accent/20 to-background">
         <div className="container py-20">
           <div className="text-center max-w-2xl mx-auto mb-14">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary mb-4">
@@ -461,7 +475,7 @@ const Index = () => {
       </section>
 
       {/* Pricing */}
-      <section className="container py-24">
+      <section data-tour="pricing" className="container py-24">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <h2 className="font-display text-4xl font-bold tracking-tight">Simple, fair pricing</h2>
           <p className="mt-4 text-muted-foreground">Try it free. Upgrade when you need more.</p>
