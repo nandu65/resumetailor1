@@ -714,8 +714,12 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
   const margin = 48;
-  const accent: [number, number, number] = template === "modern" ? [6, 95, 70] : template === "classic" ? [20, 20, 20] : [40, 40, 40];
-  const font = template === "classic" ? "times" : "helvetica";
+  const accentMap: Record<TemplateId, [number, number, number]> = {
+    modern: [6, 95, 70], classic: [20, 20, 20], compact: [40, 40, 40],
+    executive: [146, 64, 14], creative: [79, 70, 229], minimal: [64, 64, 64],
+  };
+  const accent: [number, number, number] = accentMap[template] ?? [40, 40, 40];
+  const font = template === "classic" || template === "executive" ? "times" : "helvetica";
   let y = margin;
 
   const ensure = (h = 14) => { if (y + h > pageH - margin) { doc.addPage(); y = margin; } };
