@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2 } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,7 +10,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import {
-  TEMPLATES, TemplateId, ResumeData, ResumePreview, downloadResumePdfFromData,
+  TEMPLATES, TemplateId, ResumeData, ResumePreview,
+  downloadResumePdfFromData, downloadResumeDocxFromData, buildResumeDataVerbatim,
 } from "@/lib/resumeTemplates";
 
 type Exp = { company: string; role: string; location: string; start: string; end: string; description: string };
@@ -35,14 +36,28 @@ export default function ResumeBuilder() {
   const [template, setTemplate] = useState<TemplateId>("modern");
   const [loading, setLoading] = useState(false);
   const [resume, setResume] = useState<ResumeData | null>(null);
+  const [mode, setMode] = useState<"ai" | "verbatim">("ai");
 
   const addExp = () => setExperience([...experience, { company: "", role: "", location: "", start: "", end: "", description: "" }]);
   const addEdu = () => setEducation([...education, { school: "", degree: "", location: "", start: "", end: "", details: "" }]);
   const addProj = () => setProjects([...projects, { name: "", tech: "", description: "" }]);
 
+  const buildRawInput = () => ({
+    ...basics,
+    summary, experience, education, projects, skills, certifications,
+  });
+
   const generate = async () => {
-    if (!user) return toast.error("Sign in to generate a resume");
     if (!basics.name.trim()) return toast.error("Add your name at minimum");
+
+    // Verbatim mode: no AI, no auth required — build directly from user input
+    if (mode === "verbatim") {
+      setResume(buildResumeDataVerbatim(buildRawInput()));
+      toast.success("Resume built from your exact text. Click any field in the preview to edit.");
+      return;
+    }
+
+    if (!user) return toast.error("Sign in to use AI polish");
     setLoading(true);
     try {
       const profile = {
@@ -67,7 +82,7 @@ export default function ResumeBuilder() {
         return;
       }
       setResume({ ...EMPTY_RESUME, ...(data as any).resume });
-      toast.success("Resume generated!");
+      toast.success("Resume generated! Click any field in the preview to edit.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
@@ -75,7 +90,8 @@ export default function ResumeBuilder() {
     }
   };
 
-  const download = () => resume && downloadResumePdfFromData(resume, template);
+  const downloadPdf = () => resume && downloadResumePdfFromData(resume, template);
+  const downloadDocx = () => resume && downloadResumeDocxFromData(resume, template);
 
   return (
     <div className="min-h-screen bg-background">
@@ -210,21 +226,43 @@ export default function ResumeBuilder() {
               </div>
             </section>
 
+            <div className="rounded-2xl border border-border bg-gradient-card p-4 shadow-card">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">How should we build it?</Label>
+              <div className="grid sm:grid-cols-2 gap-2 mt-2">
+                <button type="button" onClick={() => setMode("ai")}
+                  className={`text-left rounded-xl border-2 p-3 transition-all ${mode === "ai" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/40"}`}>
+                  <div className="flex items-center gap-1.5 font-display font-semibold text-sm"><Sparkles className="h-3.5 w-3.5 text-primary" /> AI polish</div>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">Rewrites your notes into strong action bullets. Requires sign-in.</div>
+                </button>
+                <button type="button" onClick={() => setMode("verbatim")}
+                  className={`text-left rounded-xl border-2 p-3 transition-all ${mode === "verbatim" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/40"}`}>
+                  <div className="flex items-center gap-1.5 font-display font-semibold text-sm"><FileEdit className="h-3.5 w-3.5 text-primary" /> Use my exact text</div>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">Keeps every word you pasted. Splits each new line into a bullet.</div>
+                </button>
+              </div>
+            </div>
+
             <Button onClick={generate} disabled={loading} size="lg"
               className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow h-12">
-              {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Building your resume...</> : <><Sparkles className="h-4 w-4 mr-2" /> Generate Resume</>}
+              {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Building your resume...</> :
+                mode === "ai" ? <><Sparkles className="h-4 w-4 mr-2" /> Generate with AI</> : <><FileEdit className="h-4 w-4 mr-2" /> Build resume from my text</>}
             </Button>
           </div>
 
           {/* PREVIEW */}
           <div className="lg:sticky lg:top-6 lg:self-start space-y-4">
             <div className="rounded-2xl border border-border bg-gradient-card p-4 shadow-card">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Template</div>
                 {resume && (
-                  <Button onClick={download} size="sm" className="bg-gradient-primary text-primary-foreground hover:opacity-90">
-                    <Download className="h-3.5 w-3.5 mr-1.5" /> Download PDF
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button onClick={downloadDocx} size="sm" variant="outline">
+                      <Download className="h-3.5 w-3.5 mr-1.5" /> DOCX
+                    </Button>
+                    <Button onClick={downloadPdf} size="sm" className="bg-gradient-primary text-primary-foreground hover:opacity-90">
+                      <Download className="h-3.5 w-3.5 mr-1.5" /> PDF
+                    </Button>
+                  </div>
                 )}
               </div>
               <div className="grid grid-cols-3 gap-2">
@@ -239,7 +277,13 @@ export default function ResumeBuilder() {
             </div>
 
             {resume ? (
-              <ResumePreview template={template} data={resume} />
+              <>
+                <div className="text-[11px] text-muted-foreground px-1">
+                  <FileEdit className="inline h-3 w-3 mr-1 -mt-0.5" />
+                  Tip: click any text in the preview below to edit it directly. Changes flow into the PDF & DOCX exports.
+                </div>
+                <ResumePreview template={template} data={resume} onChange={setResume} />
+              </>
             ) : (
               <div className="rounded-2xl border-2 border-dashed border-border bg-background/50 p-12 text-center">
                 <FileText className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
