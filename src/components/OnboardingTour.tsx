@@ -116,6 +116,19 @@ export function OnboardingTour({
     setShowChoice(true);
   }, []);
 
+  const scrollToTourSection = useCallback((key: "try-now" | "resume-builder") => {
+    const doScroll = () => {
+      const el = document.querySelector(`[data-tour="${key}"]`) as HTMLElement | null;
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    if (window.location.pathname !== "/") {
+      navigate("/");
+      setTimeout(doScroll, 350);
+    } else {
+      doScroll();
+    }
+  }, [navigate]);
+
 
   useEffect(() => {
     if (!open) return;
