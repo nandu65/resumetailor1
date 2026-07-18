@@ -96,17 +96,25 @@ export function OnboardingTour({
   onClose: () => void;
 }) {
   const [i, setI] = useState(0);
+  const [showChoice, setShowChoice] = useState(false);
+  const navigate = useNavigate();
   const step = steps[i];
-  const rect = useTargetRect(open ? step?.target : undefined);
+  const rect = useTargetRect(open && !showChoice ? step?.target : undefined);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { if (open) setI(0); }, [open]);
+  useEffect(() => { if (open) { setI(0); setShowChoice(false); } }, [open]);
+
+  const closeAll = useCallback(() => {
+    try { localStorage.setItem(STORAGE_KEY, "1"); } catch {}
+    setShowChoice(false);
+    onClose();
+  }, [onClose]);
 
   const finish = useCallback(() => {
     try { localStorage.setItem(STORAGE_KEY, "1"); } catch {}
     window.scrollTo({ top: 0, behavior: "smooth" });
-    onClose();
-  }, [onClose]);
+    setShowChoice(true);
+  }, []);
 
 
   useEffect(() => {
