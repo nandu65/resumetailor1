@@ -24,6 +24,50 @@ const EMPTY_RESUME: ResumeData = {
   summary: "", experience: [], education: [], projects: [], skills: [], certifications: [],
 };
 
+const SAMPLE_RESUME: ResumeData = {
+  name: "Alex Morgan",
+  title: "Senior Software Engineer",
+  email: "alex@example.com",
+  phone: "+1 555 010 2244",
+  location: "San Francisco, CA",
+  links: [
+    { label: "LinkedIn", url: "linkedin.com/in/alex" },
+    { label: "GitHub", url: "github.com/alex" },
+  ],
+  summary: "Full-stack engineer with 6+ years building scalable web platforms in React, Node, and cloud-native services. Shipped products used by millions.",
+  experience: [
+    {
+      company: "Acme Corp", role: "Senior Software Engineer", location: "Remote",
+      start: "Jan 2022", end: "Present",
+      bullets: [
+        "Led migration of monolith to microservices, cutting deploy time by 70%.",
+        "Architected real-time analytics pipeline processing 5M events/day.",
+        "Mentored 6 engineers; introduced code-review standards adopted org-wide.",
+      ],
+    },
+    {
+      company: "Northwind Labs", role: "Software Engineer", location: "New York, NY",
+      start: "Jun 2019", end: "Dec 2021",
+      bullets: [
+        "Built customer dashboard in React + TypeScript, boosting retention 18%.",
+        "Owned CI/CD in GitHub Actions; reduced flaky failures from 12% to 1%.",
+      ],
+    },
+  ],
+  education: [
+    { school: "UC Berkeley", degree: "B.S. Computer Science", location: "Berkeley, CA", start: "2015", end: "2019", details: "GPA 3.8 · Dean's List" },
+  ],
+  projects: [
+    { name: "OpenChart", tech: "React, D3", bullets: ["OSS charting lib with 3k+ GitHub stars."] },
+  ],
+  skills: [
+    { category: "Frontend", items: ["React", "TypeScript", "Tailwind"] },
+    { category: "Backend", items: ["Node.js", "PostgreSQL", "Redis"] },
+    { category: "Cloud", items: ["AWS", "Docker", "Kubernetes"] },
+  ],
+  certifications: ["AWS Solutions Architect Associate"],
+};
+
 export default function ResumeBuilder() {
   const { user } = useAuth();
   const [basics, setBasics] = useState({ name: "", title: "", email: "", phone: "", location: "", linkedin: "", github: "", portfolio: "" });
