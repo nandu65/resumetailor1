@@ -38,6 +38,47 @@ export default function ResumeBuilder() {
   const [loading, setLoading] = useState(false);
   const [resume, setResume] = useState<ResumeData | null>(null);
   const [mode, setMode] = useState<"ai" | "verbatim">("ai");
+  const [starter, setStarter] = useState<"choose" | "scratch" | "uploaded">("choose");
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const onUpload = async (file: File) => {
+    if (!user) return toast.error("Sign in to upload and parse your resume");
+    setUploading(true);
+    try {
+      const text = await extractTextFromFile(file);
+      if (!text.trim()) throw new Error("Couldn't read text from that file");
+      const { data, error } = await supabase.functions.invoke("parse-resume", { body: { text } });
+      if (error || (data as any)?.error) throw new Error((data as any)?.error || error?.message || "Parse failed");
+      const p = (data as any).parsed || {};
+      setBasics({
+        name: p.name || "", title: p.title || "", email: p.email || "", phone: p.phone || "",
+        location: p.location || "", linkedin: p.linkedin || "", github: p.github || "", portfolio: p.portfolio || "",
+      });
+      setSummary(p.summary || "");
+      setExperience((p.experience || []).length ? p.experience.map((e: any) => ({
+        company: e.company || "", role: e.role || "", location: e.location || "",
+        start: e.start || "", end: e.end || "", description: (e.bullets || []).join("\n"),
+      })) : [{ company: "", role: "", location: "", start: "", end: "", description: "" }]);
+      setEducation((p.education || []).length ? p.education.map((e: any) => ({
+        school: e.school || "", degree: e.degree || "", location: e.location || "",
+        start: e.start || "", end: e.end || "", details: e.details || "",
+      })) : [{ school: "", degree: "", location: "", start: "", end: "", details: "" }]);
+      setProjects((p.projects || []).map((x: any) => ({
+        name: x.name || "", tech: x.tech || "", description: (x.bullets || []).join("\n"),
+      })));
+      setSkills((p.skills || []).join("\n"));
+      setCertifications((p.certifications || []).join("\n"));
+      setStarter("uploaded");
+      toast.success("Resume imported — review the fields below, then generate.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to import resume");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
 
   // Sync edits made in the live preview back into the form fields
   useEffect(() => {
