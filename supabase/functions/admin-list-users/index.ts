@@ -92,6 +92,44 @@ Deno.serve(async (req) => {
       }
     });
 
+    // AI usage aggregation (last 30d)
+    const { data: aiLogs } = await admin
+      .from("ai_usage_logs")
+      .select("feature,plan,model,input_tokens,output_tokens,cost_inr,created_at,status")
+      .gte("created_at", since.toISOString());
+
+    const aiByFeature: Record<string, { calls: number; input: number; output: number; cost: number; errors: number }> = {};
+    const aiByPlan: Record<string, { calls: number; input: number; output: number; cost: number }> = {
+      free: { calls: 0, input: 0, output: 0, cost: 0 },
+      basic: { calls: 0, input: 0, output: 0, cost: 0 },
+      pro: { calls: 0, input: 0, output: 0, cost: 0 },
+      anonymous: { calls: 0, input: 0, output: 0, cost: 0 },
+    };
+    const aiByDay: Record<string, number> = {};
+    let aiTotalCost = 0, aiTotalInput = 0, aiTotalOutput = 0, aiTotalCalls = 0, aiErrors = 0;
+    (aiLogs || []).forEach((l: any) => {
+      const cost = Number(l.cost_inr) || 0;
+      const inp = l.input_tokens || 0;
+      const outp = l.output_tokens || 0;
+      aiTotalCost += cost; aiTotalInput += inp; aiTotalOutput += outp; aiTotalCalls++;
+      if (l.status === "error") aiErrors++;
+      const f = l.feature || "unknown";
+      if (!aiByFeature[f]) aiByFeature[f] = { calls: 0, input: 0, output: 0, cost: 0, errors: 0 };
+      aiByFeature[f].calls++; aiByFeature[f].input += inp; aiByFeature[f].output += outp; aiByFeature[f].cost += cost;
+      if (l.status === "error") aiByFeature[f].errors++;
+      const planKey = l.plan || "anonymous";
+      if (!aiByPlan[planKey]) aiByPlan[planKey] = { calls: 0, input: 0, output: 0, cost: 0 };
+      aiByPlan[planKey].calls++; aiByPlan[planKey].input += inp; aiByPlan[planKey].output += outp; aiByPlan[planKey].cost += cost;
+      const k = new Date(l.created_at).toISOString().slice(0, 10);
+      aiByDay[k] = (aiByDay[k] || 0) + cost;
+    });
+    const aiCostSeries = days.map((d) => ({ date: d.date, cost: +(aiByDay[d.date] || 0).toFixed(4) }));
+    const aiFeatureRows = Object.entries(aiByFeature)
+      .map(([feature, v]) => ({ feature, ...v, cost: +v.cost.toFixed(4), avgCost: +(v.cost / Math.max(1, v.calls)).toFixed(4) }))
+      .sort((a, b) => b.cost - a.cost);
+    const aiPlanRows = Object.entries(aiByPlan)
+      .map(([plan, v]) => ({ plan, ...v, cost: +v.cost.toFixed(4), avgCost: +(v.cost / Math.max(1, v.calls)).toFixed(4) }));
+
     const activeSubs = counts.basic + counts.pro;
     const churnRate = activeSubs + cancelled > 0 ? (cancelled / (activeSubs + cancelled)) * 100 : 0;
     const conversionRate = (profiles?.length || 0) > 0 ? (activeSubs / (profiles?.length || 1)) * 100 : 0;
