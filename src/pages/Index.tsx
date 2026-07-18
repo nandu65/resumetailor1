@@ -70,6 +70,9 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Try before signup */}
+      <TryNow />
+
       {/* Features */}
       <section className="container py-24">
         <div className="text-center max-w-2xl mx-auto mb-16">
