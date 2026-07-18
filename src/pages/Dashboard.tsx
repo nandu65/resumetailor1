@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Upload, FileText, Loader2, Sparkles, History, Building2, AlertTriangle, X } from "lucide-react";
+import { Upload, FileText, Loader2, Sparkles, History, Building2, AlertTriangle, X, Link2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -35,6 +35,30 @@ export default function Dashboard() {
   } | null>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [cancelling, setCancelling] = useState(false);
+  const [jdUrl, setJdUrl] = useState("");
+  const [importingUrl, setImportingUrl] = useState(false);
+
+  const handleImportUrl = async () => {
+    const url = jdUrl.trim();
+    if (!url) return toast.error("Paste a job posting URL");
+    if (!/^https?:\/\//i.test(url)) return toast.error("URL must start with http:// or https://");
+    setImportingUrl(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("jd-from-url", { body: { url } });
+      if (error || (data as any)?.error) {
+        toast.error((data as any)?.error || (error as any)?.message || "Could not fetch URL");
+        return;
+      }
+      const d = data as { jobDescription: string; title?: string | null; company?: string | null };
+      setJobDescription(d.jobDescription);
+      if (d.title && !title) setTitle([d.company, d.title].filter(Boolean).join(" – "));
+      toast.success("Job description imported");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Import failed");
+    } finally {
+      setImportingUrl(false);
+    }
+  };
 
   const loadProfile = () => {
     if (!user) return;
@@ -227,12 +251,28 @@ export default function Dashboard() {
               <div className="h-9 w-9 rounded-lg bg-accent flex items-center justify-center text-accent-foreground"><Sparkles className="h-4 w-4" /></div>
               <div>
                 <h2 className="font-display font-semibold">Job Description</h2>
-                <p className="text-xs text-muted-foreground">Paste the role you're applying for</p>
+                <p className="text-xs text-muted-foreground">Paste text or import from a URL</p>
               </div>
+            </div>
+
+            <div className="mb-3 flex gap-2">
+              <div className="relative flex-1">
+                <Link2 className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={jdUrl}
+                  onChange={(e) => setJdUrl(e.target.value)}
+                  placeholder="Paste job URL (LinkedIn, company site…)"
+                  className="pl-8 h-9 text-sm"
+                  onKeyDown={(e) => e.key === "Enter" && handleImportUrl()}
+                />
+              </div>
+              <Button onClick={handleImportUrl} disabled={importingUrl} size="sm" variant="outline" className="h-9">
+                {importingUrl ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Download className="h-3.5 w-3.5 mr-1" /> Import</>}
+              </Button>
             </div>
             <Textarea value={jobDescription} onChange={(e) => setJobDescription(e.target.value)}
               placeholder="Paste the full job description here — the more detail, the better the tailoring..."
-              className="min-h-[280px]" />
+              className="min-h-[240px]" />
 
             <div className="mt-4">
               <Label htmlFor="title" className="text-xs">Version name (optional)</Label>
