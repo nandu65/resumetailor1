@@ -7,6 +7,11 @@ import { ExitIntentPopup } from "@/components/ExitIntentPopup";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { FloatingResume } from "@/components/FloatingResume";
 import { TryNow } from "@/components/TryNow";
+import razorpayLogo from "@/assets/razorpay.png.asset.json";
+import swiggyLogo from "@/assets/swiggy.png.asset.json";
+import flipkartLogo from "@/assets/flipkart.png.asset.json";
+import zomatoLogo from "@/assets/zomato.png.asset.json";
+import credLogo from "@/assets/cred.png.asset.json";
 
 const Index = () => {
   return (
