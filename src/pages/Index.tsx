@@ -6,6 +6,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { ExitIntentPopup } from "@/components/ExitIntentPopup";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { FloatingResume } from "@/components/FloatingResume";
+import { TryNow } from "@/components/TryNow";
 
 const Index = () => {
   return (
