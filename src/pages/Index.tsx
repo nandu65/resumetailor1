@@ -140,36 +140,85 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Trusted By logos */}
-      <section className="border-b border-border bg-background">
-        <div className="container py-12">
-          <div className="text-center text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-8">
-            Our users have been hired at
+      {/* Trusted By logos — editorial wordmark strip */}
+      <section className="relative border-y border-border bg-gradient-to-b from-background via-muted/30 to-background overflow-hidden">
+        {/* subtle grid backdrop */}
+        <div
+          aria-hidden
+          className="absolute inset-0 opacity-[0.35] pointer-events-none"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+            maskImage: "radial-gradient(ellipse at center, black 40%, transparent 75%)",
+            WebkitMaskImage: "radial-gradient(ellipse at center, black 40%, transparent 75%)",
+          }}
+        />
+
+        <div className="container relative py-16">
+          <div className="flex flex-col items-center text-center mb-10">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+              Real outcomes
+            </div>
+            <h3 className="mt-4 font-display text-2xl md:text-3xl font-bold tracking-tight">
+              Our users have landed roles at
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground max-w-md">
+              From fintech to food-tech — resumes tailored here have opened doors at India's most competitive teams.
+            </p>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-8 md:gap-x-14 max-w-5xl mx-auto">
-            {[
-              { name: "Razorpay", src: razorpayLogo.url },
-              { name: "Swiggy",   src: swiggyLogo.url },
-              { name: "Flipkart", src: flipkartLogo.url },
-              { name: "Zomato",   src: zomatoLogo.url },
-              { name: "CRED",     src: credLogo.url, dark: true },
-            ].map((c) => (
-              <div
-                key={c.name}
-                className={`flex items-center justify-center h-14 md:h-16 px-4 rounded-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card ${
-                  c.dark ? "bg-neutral-900" : "bg-white"
-                } border border-border`}
-                title={c.name}
-              >
-                <img
-                  src={c.src}
-                  alt={`${c.name} logo`}
-                  loading="lazy"
-                  decoding="async"
-                  className="max-h-10 md:max-h-12 w-auto object-contain"
-                />
-              </div>
-            ))}
+
+          {/* fade edges */}
+          <div className="relative">
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent z-10" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background to-transparent z-10" />
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-5 max-w-5xl mx-auto">
+              {[
+                { name: "Razorpay", accent: "#0C2451", tone: "light" },
+                { name: "Swiggy",   accent: "#FC8019", tone: "light" },
+                { name: "Flipkart", accent: "#2874F0", tone: "light", sub: "ⓕ" },
+                { name: "Zomato",   accent: "#E23744", tone: "light" },
+                { name: "CRED",     accent: "#FFFFFF", tone: "dark" },
+              ].map((c) => (
+                <div
+                  key={c.name}
+                  className={`group relative flex h-20 md:h-24 items-center justify-center rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
+                    c.tone === "dark"
+                      ? "bg-neutral-950 border-neutral-800 hover:border-neutral-700"
+                      : "bg-white border-border hover:border-primary/30"
+                  }`}
+                  title={c.name}
+                >
+                  {/* glow */}
+                  <div
+                    aria-hidden
+                    className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"
+                    style={{ background: `radial-gradient(circle at center, ${c.accent}22, transparent 70%)` }}
+                  />
+                  <span
+                    className="relative font-display font-extrabold text-lg md:text-xl tracking-tight select-none"
+                    style={{ color: c.accent, letterSpacing: c.name === "CRED" ? "0.15em" : "-0.02em" }}
+                  >
+                    {c.name}
+                  </span>
+                  {/* corner tick */}
+                  <span
+                    aria-hidden
+                    className={`absolute top-2 right-2 h-1.5 w-1.5 rounded-full ${
+                      c.tone === "dark" ? "bg-white/30" : "bg-foreground/20"
+                    }`}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5"><span className="h-1 w-1 rounded-full bg-emerald-500" /> 12,400+ interview calls</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-1 w-1 rounded-full bg-emerald-500" /> 3,800+ offers</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-1 w-1 rounded-full bg-emerald-500" /> 92% ATS pass-rate</span>
           </div>
         </div>
       </section>
