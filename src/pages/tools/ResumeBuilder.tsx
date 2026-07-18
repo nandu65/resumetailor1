@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2 } from "lucide-react";
+import { extractTextFromFile } from "@/lib/extractText";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,6 +38,47 @@ export default function ResumeBuilder() {
   const [loading, setLoading] = useState(false);
   const [resume, setResume] = useState<ResumeData | null>(null);
   const [mode, setMode] = useState<"ai" | "verbatim">("ai");
+  const [starter, setStarter] = useState<"choose" | "scratch" | "uploaded">("choose");
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const onUpload = async (file: File) => {
+    if (!user) return toast.error("Sign in to upload and parse your resume");
+    setUploading(true);
+    try {
+      const text = await extractTextFromFile(file);
+      if (!text.trim()) throw new Error("Couldn't read text from that file");
+      const { data, error } = await supabase.functions.invoke("parse-resume", { body: { text } });
+      if (error || (data as any)?.error) throw new Error((data as any)?.error || error?.message || "Parse failed");
+      const p = (data as any).parsed || {};
+      setBasics({
+        name: p.name || "", title: p.title || "", email: p.email || "", phone: p.phone || "",
+        location: p.location || "", linkedin: p.linkedin || "", github: p.github || "", portfolio: p.portfolio || "",
+      });
+      setSummary(p.summary || "");
+      setExperience((p.experience || []).length ? p.experience.map((e: any) => ({
+        company: e.company || "", role: e.role || "", location: e.location || "",
+        start: e.start || "", end: e.end || "", description: (e.bullets || []).join("\n"),
+      })) : [{ company: "", role: "", location: "", start: "", end: "", description: "" }]);
+      setEducation((p.education || []).length ? p.education.map((e: any) => ({
+        school: e.school || "", degree: e.degree || "", location: e.location || "",
+        start: e.start || "", end: e.end || "", details: e.details || "",
+      })) : [{ school: "", degree: "", location: "", start: "", end: "", details: "" }]);
+      setProjects((p.projects || []).map((x: any) => ({
+        name: x.name || "", tech: x.tech || "", description: (x.bullets || []).join("\n"),
+      })));
+      setSkills((p.skills || []).join("\n"));
+      setCertifications((p.certifications || []).join("\n"));
+      setStarter("uploaded");
+      toast.success("Resume imported — review the fields below, then generate.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to import resume");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
 
   // Sync edits made in the live preview back into the form fields
   useEffect(() => {
@@ -146,6 +188,52 @@ export default function ResumeBuilder() {
             <Link to="/auth" className="underline text-primary font-semibold">Sign in</Link> to generate and export your resume.
           </div>
         )}
+
+        {/* Starter chooser */}
+        <div className="mb-6 rounded-2xl border-2 border-border bg-gradient-card p-6 shadow-card">
+          <div className="text-center mb-4">
+            <h2 className="font-display text-xl font-bold">Are you uploading an existing resume?</h2>
+            <p className="text-sm text-muted-foreground mt-1">Import it and we'll pre-fill everything — or start fresh below.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              className={`relative text-left rounded-xl border-2 p-5 transition-all ${starter === "uploaded" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/50"}`}
+            >
+              <div className="absolute -top-2 left-4 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-primary text-primary-foreground">Recommended · saves time</div>
+              <div className="flex items-center gap-2 font-display font-semibold">
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Upload className="h-4 w-4 text-primary" />}
+                Yes, upload my resume
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">PDF, DOCX, or TXT. AI extracts your info so you can review, edit, and enhance it.</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setStarter("scratch")}
+              className={`text-left rounded-xl border-2 p-5 transition-all ${starter === "scratch" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/50"}`}
+            >
+              <div className="flex items-center gap-2 font-display font-semibold">
+                <FilePlus2 className="h-4 w-4 text-primary" />
+                No, start from scratch
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">Fill in the form below — we'll guide you section by section.</div>
+            </button>
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".pdf,.docx,.txt"
+            className="hidden"
+            onChange={e => { const f = e.target.files?.[0]; if (f) onUpload(f); }}
+          />
+          {!user && (
+            <p className="text-[11px] text-muted-foreground text-center mt-3">
+              <Link to="/auth" className="underline text-primary">Sign in</Link> to upload and parse an existing resume.
+            </p>
+          )}
+        </div>
 
         <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6">
           {/* FORM */}
