@@ -15,7 +15,10 @@ export function Navbar() {
           </div>
           ResumeShot <span className="text-primary">AI</span>
         </Link>
-        <nav className="flex items-center gap-2">
+        <nav className="flex items-center gap-1 sm:gap-2">
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/pricing">Pricing</Link>
+          </Button>
           {user ? (
             <>
               <Button asChild variant="ghost" size="sm"><Link to="/dashboard">Dashboard</Link></Button>
