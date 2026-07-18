@@ -38,6 +38,45 @@ export default function ResumeBuilder() {
   const [resume, setResume] = useState<ResumeData | null>(null);
   const [mode, setMode] = useState<"ai" | "verbatim">("ai");
 
+  // Sync edits made directly in the preview back into the form fields
+  const skipSyncRef = useRef(true);
+  useEffect(() => {
+    if (!resume) return;
+    if (skipSyncRef.current) { skipSyncRef.current = false; return; }
+    const linkByLabel = (label: string) =>
+      resume.links?.find(l => l.label?.toLowerCase() === label.toLowerCase())?.url || "";
+    setBasics(b => ({
+      ...b,
+      name: resume.name ?? b.name,
+      title: resume.title ?? b.title,
+      email: resume.email ?? b.email,
+      phone: resume.phone ?? b.phone,
+      location: resume.location ?? b.location,
+      linkedin: linkByLabel("LinkedIn") || b.linkedin,
+      github: linkByLabel("GitHub") || b.github,
+      portfolio: linkByLabel("Portfolio") || b.portfolio,
+    }));
+    setSummary(resume.summary ?? "");
+    setExperience((resume.experience || []).map(e => ({
+      company: e.company || "", role: e.role || "", location: e.location || "",
+      start: e.start || "", end: e.end || "",
+      description: (e.bullets || []).join("\n"),
+    })));
+    setEducation((resume.education || []).map((e: any) => ({
+      school: e.school || "", degree: e.degree || "", location: e.location || "",
+      start: e.start || "", end: e.end || "", details: e.details || "",
+    })));
+    setProjects((resume.projects || []).map(p => ({
+      name: p.name || "", tech: p.tech || "",
+      description: (p.bullets || []).join("\n"),
+    })));
+    setSkills((resume.skills || []).join("\n"));
+    setCertifications((resume.certifications || []).join("\n"));
+  }, [resume]);
+
+  // When resume is (re)generated, don't overwrite the form on that first change
+  const setResumeFresh = (r: ResumeData) => { skipSyncRef.current = true; setResume(r); };
+
   const addExp = () => setExperience([...experience, { company: "", role: "", location: "", start: "", end: "", description: "" }]);
   const addEdu = () => setEducation([...education, { school: "", degree: "", location: "", start: "", end: "", details: "" }]);
   const addProj = () => setProjects([...projects, { name: "", tech: "", description: "" }]);
