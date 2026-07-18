@@ -534,6 +534,9 @@ const Index = () => {
             <a href="mailto:support.resumeshot@gmail.com" className="hover:text-primary transition-colors">Support</a>
           </nav>
         </div>
+        <div className="container mt-3 text-center text-xs text-muted-foreground/70">
+          Logos provided by <a href="https://logo.dev" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary transition-colors">Logo.dev</a>
+        </div>
       </footer>
 
       <ExitIntentPopup />
