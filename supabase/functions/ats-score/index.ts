@@ -1,6 +1,8 @@
 // ATS scoring via Google Gemini 2.5 Flash (uses user's own GEMINI_API_KEY).
 // Deterministic: temperature=0, topP=0, fixed prompt -> same input always returns same score.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { logAiUsage, estimateTokens } from "../_shared/aiUsage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
