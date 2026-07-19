@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { resetTour } from "@/components/OnboardingTour";
+import { ThemeToggle } from "@/components/ThemeToggle";
+
 
 export function Navbar() {
   const { user } = useAuth();
