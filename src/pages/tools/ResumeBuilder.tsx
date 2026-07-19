@@ -342,9 +342,39 @@ export default function ResumeBuilder() {
                 <div><Label className="text-xs">Email</Label><Input value={basics.email} onChange={e => setBasics({ ...basics, email: e.target.value })} className="mt-1" /></div>
                 <div><Label className="text-xs">Phone</Label><Input value={basics.phone} onChange={e => setBasics({ ...basics, phone: e.target.value })} className="mt-1" /></div>
                 <div><Label className="text-xs">Location</Label><Input value={basics.location} onChange={e => setBasics({ ...basics, location: e.target.value })} placeholder="Bangalore, India" className="mt-1" /></div>
-                <div><Label className="text-xs">LinkedIn URL</Label><Input value={basics.linkedin} onChange={e => setBasics({ ...basics, linkedin: e.target.value })} className="mt-1" /></div>
-                <div><Label className="text-xs">GitHub URL</Label><Input value={basics.github} onChange={e => setBasics({ ...basics, github: e.target.value })} className="mt-1" /></div>
-                <div><Label className="text-xs">Portfolio URL</Label><Input value={basics.portfolio} onChange={e => setBasics({ ...basics, portfolio: e.target.value })} className="mt-1" /></div>
+              </div>
+
+              {/* Dynamic links */}
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-xs">Links (add what's relevant for your role — LinkedIn, GitHub, Portfolio, Behance, Google Scholar, etc.)</Label>
+                  <Button variant="outline" size="sm" onClick={() => setLinks([...links, { label: "", url: "" }])}>
+                    <Plus className="h-3.5 w-3.5 mr-1" /> Add link
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {links.map((l, i) => (
+                    <div key={i} className="grid grid-cols-[130px_1fr_auto] gap-2 items-center">
+                      <Input
+                        placeholder="Label"
+                        value={l.label}
+                        onChange={e => setLinks(links.map((x, j) => j === i ? { ...x, label: e.target.value } : x))}
+                      />
+                      <div className="relative">
+                        <Link2 className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                        <Input
+                          placeholder="https://…"
+                          value={l.url}
+                          onChange={e => setLinks(links.map((x, j) => j === i ? { ...x, url: e.target.value } : x))}
+                          className="pl-8"
+                        />
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => setLinks(links.filter((_, j) => j !== i))} disabled={links.length === 1}>
+                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="mt-3">
                 <Label className="text-xs">Short about you (optional — AI polishes this)</Label>
