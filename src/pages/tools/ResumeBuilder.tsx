@@ -69,9 +69,16 @@ const SAMPLE_RESUME: ResumeData = {
   certifications: ["AWS Solutions Architect Associate"],
 };
 
+const SAMPLE_JD = `We are hiring a Senior Software Engineer to build and scale our React + Node platform (used by 2M+ users).
+Responsibilities: architect microservices, own CI/CD, mentor engineers, drive code quality.
+Must have: 5+ years JS/TS, React, Node.js, PostgreSQL, AWS, Docker. Nice to have: Kubernetes, GraphQL, event-driven systems.`;
+
 export default function ResumeBuilder() {
   const { user } = useAuth();
-  const [basics, setBasics] = useState({ name: "", title: "", email: "", phone: "", location: "", linkedin: "", github: "", portfolio: "" });
+  const [basics, setBasics] = useState({ name: "", title: "", email: "", phone: "", location: "" });
+  const [links, setLinks] = useState<{ label: string; url: string }[]>([
+    { label: "LinkedIn", url: "" },
+  ]);
   const [summary, setSummary] = useState("");
   const [experience, setExperience] = useState<Exp[]>([{ company: "", role: "", location: "", start: "", end: "", description: "" }]);
   const [education, setEducation] = useState<Edu[]>([{ school: "", degree: "", location: "", start: "", end: "", details: "" }]);
@@ -88,6 +95,45 @@ export default function ResumeBuilder() {
   const fileRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const [showEditHint, setShowEditHint] = useState(false);
+
+  const fillSample = () => {
+    setBasics({
+      name: "Alex Morgan",
+      title: "Senior Software Engineer",
+      email: "alex.morgan@example.com",
+      phone: "+1 555 010 2244",
+      location: "San Francisco, CA",
+    });
+    setLinks([
+      { label: "LinkedIn", url: "linkedin.com/in/alexmorgan" },
+      { label: "GitHub", url: "github.com/alexmorgan" },
+      { label: "Portfolio", url: "alexmorgan.dev" },
+    ]);
+    setSummary("Full-stack engineer with 6+ years shipping scalable React + Node platforms used by millions. Passionate about clean architecture and mentoring.");
+    setExperience([
+      {
+        company: "Acme Corp", role: "Senior Software Engineer", location: "Remote",
+        start: "Jan 2022", end: "Present",
+        description: "Led migration from monolith to microservices, cut deploy time by 70%.\nBuilt real-time analytics pipeline processing 5M events/day on AWS.\nMentored 6 engineers, introduced code-review standards adopted org-wide.",
+      },
+      {
+        company: "Northwind Labs", role: "Software Engineer", location: "New York, NY",
+        start: "Jun 2019", end: "Dec 2021",
+        description: "Built customer dashboard in React + TypeScript, boosted retention by 18%.\nOwned CI/CD in GitHub Actions, reduced flaky failures from 12% to 1%.",
+      },
+    ]);
+    setEducation([
+      { school: "UC Berkeley", degree: "B.S. Computer Science", location: "Berkeley, CA", start: "2015", end: "2019", details: "GPA 3.8 · Dean's List" },
+    ]);
+    setProjects([
+      { name: "OpenChart", tech: "React, D3, TypeScript", description: "Open-source charting library with 3k+ GitHub stars and 40k weekly npm downloads." },
+    ]);
+    setSkills("Frontend: React, TypeScript, Tailwind\nBackend: Node.js, PostgreSQL, Redis\nCloud: AWS, Docker, Kubernetes");
+    setCertifications("AWS Solutions Architect Associate");
+    setTargetJd(SAMPLE_JD);
+    setStarter("scratch");
+    toast.success("Sample data loaded — click Generate to see it in every template.");
+  };
 
   const onUpload = async (file: File) => {
     if (!user) return toast.error("Sign in to upload and parse your resume");
