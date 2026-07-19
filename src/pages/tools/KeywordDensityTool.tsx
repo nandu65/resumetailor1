@@ -31,6 +31,32 @@ function saveBaseline(jd: string, score: number) {
   localStorage.setItem(`ats-baseline:${jdKey(jd)}`, String(score));
 }
 
+const SAMPLE_RESUME = `Alex Morgan — Senior Software Engineer
+San Francisco, CA · alex.morgan@example.com · linkedin.com/in/alexmorgan
+
+SUMMARY
+Full-stack engineer with 6+ years building scalable React + Node platforms used by millions. Deep AWS + PostgreSQL experience.
+
+EXPERIENCE
+Acme Corp — Senior Software Engineer (Jan 2022 – Present)
+- Led migration from monolith to microservices, cut deploy time by 70%.
+- Built real-time analytics pipeline processing 5M events/day on AWS.
+- Mentored 6 engineers; introduced code-review standards adopted org-wide.
+
+Northwind Labs — Software Engineer (Jun 2019 – Dec 2021)
+- Built customer dashboard in React + TypeScript, boosted retention by 18%.
+- Owned CI/CD in GitHub Actions, reduced flaky failures from 12% to 1%.
+
+EDUCATION
+UC Berkeley — B.S. Computer Science, 2019
+
+SKILLS
+React, TypeScript, Node.js, PostgreSQL, Redis, AWS, Docker, GraphQL`;
+
+const SAMPLE_JD = `We are hiring a Senior Software Engineer to build and scale our React + Node platform (used by 2M+ users).
+Responsibilities: architect microservices, own CI/CD, mentor engineers, drive code quality.
+Must have: 5+ years JS/TS, React, Node.js, PostgreSQL, AWS, Docker. Nice to have: Kubernetes, GraphQL, event-driven systems.`;
+
 export default function KeywordDensityTool() {
   const navigate = useNavigate();
   const [resume, setResume] = useState("");
