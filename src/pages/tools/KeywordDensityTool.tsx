@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Gauge, Target, Wand2, Sparkles, Loader2, TrendingUp, TrendingDown, Minus, Lock, Zap } from "lucide-react";
+import { Gauge, Target, Wand2, Sparkles, Loader2, TrendingUp, TrendingDown, Minus, Lock, Zap, Wand } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
