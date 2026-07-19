@@ -191,10 +191,10 @@ export default function ResumeBuilder() {
       email: resume.email ?? b.email,
       phone: resume.phone ?? b.phone,
       location: resume.location ?? b.location,
-      linkedin: linkByLabel("LinkedIn") || b.linkedin,
-      github: linkByLabel("GitHub") || b.github,
-      portfolio: linkByLabel("Portfolio") || b.portfolio,
     }));
+    if (resume.links && resume.links.length) {
+      setLinks(resume.links.map(l => ({ label: l.label || "Link", url: l.url || "" })));
+    }
     setSummary(resume.summary ?? "");
     setExperience((resume.experience || []).map(e => ({
       company: e.company || "", role: e.role || "", location: e.location || "",
