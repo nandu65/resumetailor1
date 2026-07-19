@@ -205,7 +205,7 @@ export default function ResumeBuilder() {
         return;
       }
       setResume({ ...EMPTY_RESUME, ...(data as any).resume });
-      toast.success("Resume generated! Click any field in the preview to edit.");
+      setShowEditHint(true);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
