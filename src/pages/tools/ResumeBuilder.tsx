@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2 } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown } from "lucide-react";
 import { extractTextFromFile } from "@/lib/extractText";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import {
   TEMPLATES, TemplateId, ResumeData, ResumePreview,
   downloadResumePdfFromData, downloadResumeDocxFromData, buildResumeDataVerbatim,
@@ -85,6 +86,8 @@ export default function ResumeBuilder() {
   const [starter, setStarter] = useState<"choose" | "scratch" | "uploaded">("choose");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [showEditHint, setShowEditHint] = useState(false);
 
   const onUpload = async (file: File) => {
     if (!user) return toast.error("Sign in to upload and parse your resume");
@@ -173,7 +176,7 @@ export default function ResumeBuilder() {
     // Verbatim mode: no AI, no auth required — build directly from user input
     if (mode === "verbatim") {
       setResume(buildResumeDataVerbatim(buildRawInput()));
-      toast.success("Resume built from your exact text. Click any field in the preview to edit.");
+      setShowEditHint(true);
       return;
     }
 
@@ -202,7 +205,7 @@ export default function ResumeBuilder() {
         return;
       }
       setResume({ ...EMPTY_RESUME, ...(data as any).resume });
-      toast.success("Resume generated! Click any field in the preview to edit.");
+      setShowEditHint(true);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
@@ -416,7 +419,7 @@ export default function ResumeBuilder() {
           </div>
 
           {/* PREVIEW */}
-          <div className="lg:sticky lg:top-6 lg:self-start space-y-4">
+          <div ref={previewRef} className="lg:sticky lg:top-6 lg:self-start space-y-4">
             <div className="rounded-2xl border border-border bg-gradient-card p-4 shadow-card">
               <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Template</div>
@@ -479,6 +482,69 @@ export default function ResumeBuilder() {
           </div>
         </div>
       </div>
+
+      <Dialog open={showEditHint} onOpenChange={setShowEditHint}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 font-display">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Your resume is ready!
+            </DialogTitle>
+            <DialogDescription className="pt-1">
+              Small tweaks? No need to regenerate — just <span className="font-semibold text-foreground">click any text in the live preview</span> and type. Every edit flows straight into your PDF & DOCX.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Mini animation: cursor taps into an editable line */}
+          <div className="relative rounded-xl border-2 border-dashed border-primary/40 bg-gradient-to-br from-primary/5 to-primary/0 p-5 overflow-hidden">
+            <div className="space-y-2">
+              <div className="h-2.5 w-2/3 rounded bg-muted" />
+              <div className="relative rounded-md bg-background border border-primary/50 px-2 py-1.5 shadow-sm animate-pulse">
+                <span className="text-xs font-medium text-foreground">Senior Software Engineer</span>
+                <span className="ml-0.5 inline-block h-3 w-[2px] bg-primary align-middle animate-pulse" />
+              </div>
+              <div className="h-2 w-4/5 rounded bg-muted" />
+              <div className="h-2 w-3/5 rounded bg-muted" />
+            </div>
+            <MousePointer2
+              className="absolute h-6 w-6 text-primary drop-shadow-md"
+              style={{
+                top: "38%",
+                left: "58%",
+                animation: "cursorTap 2.4s ease-in-out infinite",
+              }}
+            />
+            <style>{`
+              @keyframes cursorTap {
+                0%   { transform: translate(20px, -18px) scale(1); opacity: 0; }
+                20%  { transform: translate(10px, -8px)  scale(1); opacity: 1; }
+                55%  { transform: translate(0, 0)        scale(0.85); opacity: 1; }
+                70%  { transform: translate(0, 0)        scale(1); opacity: 1; }
+                100% { transform: translate(-20px, 18px) scale(1); opacity: 0; }
+              }
+            `}</style>
+          </div>
+
+          <p className="text-[11px] text-muted-foreground text-center -mt-1">
+            Regenerating uses credits — inline edits are free and instant.
+          </p>
+
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" onClick={() => setShowEditHint(false)}>
+              Got it
+            </Button>
+            <Button
+              onClick={() => {
+                setShowEditHint(false);
+                setTimeout(() => previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+              }}
+              className="bg-gradient-primary text-primary-foreground hover:opacity-90"
+            >
+              <ArrowDown className="h-4 w-4 mr-1.5" /> Take me to the preview
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
