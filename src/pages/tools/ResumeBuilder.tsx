@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown, Link2, Wand, CheckCircle2 } from "lucide-react";
 import { extractTextFromFile } from "@/lib/extractText";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,9 +69,16 @@ const SAMPLE_RESUME: ResumeData = {
   certifications: ["AWS Solutions Architect Associate"],
 };
 
+const SAMPLE_JD = `We are hiring a Senior Software Engineer to build and scale our React + Node platform (used by 2M+ users).
+Responsibilities: architect microservices, own CI/CD, mentor engineers, drive code quality.
+Must have: 5+ years JS/TS, React, Node.js, PostgreSQL, AWS, Docker. Nice to have: Kubernetes, GraphQL, event-driven systems.`;
+
 export default function ResumeBuilder() {
   const { user } = useAuth();
-  const [basics, setBasics] = useState({ name: "", title: "", email: "", phone: "", location: "", linkedin: "", github: "", portfolio: "" });
+  const [basics, setBasics] = useState({ name: "", title: "", email: "", phone: "", location: "" });
+  const [links, setLinks] = useState<{ label: string; url: string }[]>([
+    { label: "LinkedIn", url: "" },
+  ]);
   const [summary, setSummary] = useState("");
   const [experience, setExperience] = useState<Exp[]>([{ company: "", role: "", location: "", start: "", end: "", description: "" }]);
   const [education, setEducation] = useState<Edu[]>([{ school: "", degree: "", location: "", start: "", end: "", details: "" }]);
@@ -89,6 +96,45 @@ export default function ResumeBuilder() {
   const previewRef = useRef<HTMLDivElement>(null);
   const [showEditHint, setShowEditHint] = useState(false);
 
+  const fillSample = () => {
+    setBasics({
+      name: "Alex Morgan",
+      title: "Senior Software Engineer",
+      email: "alex.morgan@example.com",
+      phone: "+1 555 010 2244",
+      location: "San Francisco, CA",
+    });
+    setLinks([
+      { label: "LinkedIn", url: "linkedin.com/in/alexmorgan" },
+      { label: "GitHub", url: "github.com/alexmorgan" },
+      { label: "Portfolio", url: "alexmorgan.dev" },
+    ]);
+    setSummary("Full-stack engineer with 6+ years shipping scalable React + Node platforms used by millions. Passionate about clean architecture and mentoring.");
+    setExperience([
+      {
+        company: "Acme Corp", role: "Senior Software Engineer", location: "Remote",
+        start: "Jan 2022", end: "Present",
+        description: "Led migration from monolith to microservices, cut deploy time by 70%.\nBuilt real-time analytics pipeline processing 5M events/day on AWS.\nMentored 6 engineers, introduced code-review standards adopted org-wide.",
+      },
+      {
+        company: "Northwind Labs", role: "Software Engineer", location: "New York, NY",
+        start: "Jun 2019", end: "Dec 2021",
+        description: "Built customer dashboard in React + TypeScript, boosted retention by 18%.\nOwned CI/CD in GitHub Actions, reduced flaky failures from 12% to 1%.",
+      },
+    ]);
+    setEducation([
+      { school: "UC Berkeley", degree: "B.S. Computer Science", location: "Berkeley, CA", start: "2015", end: "2019", details: "GPA 3.8 · Dean's List" },
+    ]);
+    setProjects([
+      { name: "OpenChart", tech: "React, D3, TypeScript", description: "Open-source charting library with 3k+ GitHub stars and 40k weekly npm downloads." },
+    ]);
+    setSkills("Frontend: React, TypeScript, Tailwind\nBackend: Node.js, PostgreSQL, Redis\nCloud: AWS, Docker, Kubernetes");
+    setCertifications("AWS Solutions Architect Associate");
+    setTargetJd(SAMPLE_JD);
+    setStarter("scratch");
+    toast.success("Sample data loaded — click Generate to see it in every template.");
+  };
+
   const onUpload = async (file: File) => {
     if (!user) return toast.error("Sign in to upload and parse your resume");
     setUploading(true);
@@ -100,8 +146,14 @@ export default function ResumeBuilder() {
       const p = (data as any).parsed || {};
       setBasics({
         name: p.name || "", title: p.title || "", email: p.email || "", phone: p.phone || "",
-        location: p.location || "", linkedin: p.linkedin || "", github: p.github || "", portfolio: p.portfolio || "",
+        location: p.location || "",
       });
+      const parsedLinks: { label: string; url: string }[] = [];
+      if (p.linkedin) parsedLinks.push({ label: "LinkedIn", url: p.linkedin });
+      if (p.github) parsedLinks.push({ label: "GitHub", url: p.github });
+      if (p.portfolio) parsedLinks.push({ label: "Portfolio", url: p.portfolio });
+      if (Array.isArray(p.links)) p.links.forEach((l: any) => l?.url && parsedLinks.push({ label: l.label || "Link", url: l.url }));
+      setLinks(parsedLinks.length ? parsedLinks : [{ label: "LinkedIn", url: "" }]);
       setSummary(p.summary || "");
       setExperience((p.experience || []).length ? p.experience.map((e: any) => ({
         company: e.company || "", role: e.role || "", location: e.location || "",
@@ -139,10 +191,10 @@ export default function ResumeBuilder() {
       email: resume.email ?? b.email,
       phone: resume.phone ?? b.phone,
       location: resume.location ?? b.location,
-      linkedin: linkByLabel("LinkedIn") || b.linkedin,
-      github: linkByLabel("GitHub") || b.github,
-      portfolio: linkByLabel("Portfolio") || b.portfolio,
     }));
+    if (resume.links && resume.links.length) {
+      setLinks(resume.links.map(l => ({ label: l.label || "Link", url: l.url || "" })));
+    }
     setSummary(resume.summary ?? "");
     setExperience((resume.experience || []).map(e => ({
       company: e.company || "", role: e.role || "", location: e.location || "",
@@ -185,11 +237,7 @@ export default function ResumeBuilder() {
     try {
       const profile = {
         ...basics,
-        links: [
-          basics.linkedin && { label: "LinkedIn", url: basics.linkedin },
-          basics.github && { label: "GitHub", url: basics.github },
-          basics.portfolio && { label: "Portfolio", url: basics.portfolio },
-        ].filter(Boolean),
+        links: links.filter(l => l.url.trim()).map(l => ({ label: l.label.trim() || "Link", url: l.url.trim() })),
         summary,
         experience,
         education,
@@ -238,34 +286,56 @@ export default function ResumeBuilder() {
 
         {/* Starter chooser */}
         <div className="mb-6 rounded-2xl border-2 border-border bg-gradient-card p-6 shadow-card">
-          <div className="text-center mb-4">
-            <h2 className="font-display text-xl font-bold">Are you uploading an existing resume?</h2>
-            <p className="text-sm text-muted-foreground mt-1">Import it and we'll pre-fill everything — or start fresh below.</p>
+          <div className="text-center mb-5">
+            <h2 className="font-display text-xl font-bold">How would you like to start?</h2>
+            <p className="text-sm text-muted-foreground mt-1">Import an existing resume, start fresh, or preview with sample data.</p>
           </div>
-          <div className="grid sm:grid-cols-2 gap-3">
+          <div className="grid sm:grid-cols-3 gap-3">
+            {/* Upload */}
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className={`relative text-left rounded-xl border-2 p-5 transition-all ${starter === "uploaded" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/50"}`}
+              className={`group relative text-left rounded-xl border-2 p-5 pt-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow overflow-hidden ${starter === "uploaded" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/60"}`}
             >
-              <div className="absolute -top-2 left-4 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-primary text-primary-foreground">Recommended · saves time</div>
-              <div className="flex items-center gap-2 font-display font-semibold">
-                {uploading ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Upload className="h-4 w-4 text-primary" />}
-                Yes, upload my resume
+              <div className="absolute -top-px left-4 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-b bg-primary text-primary-foreground">Recommended</div>
+              <div className={`h-10 w-10 rounded-lg flex items-center justify-center mb-3 transition-all ${starter === "uploaded" ? "bg-primary text-primary-foreground shadow-glow" : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110"}`}>
+                {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
               </div>
-              <div className="text-xs text-muted-foreground mt-1">PDF, DOCX, or TXT. AI extracts your info so you can review, edit, and enhance it.</div>
+              <div className="font-display font-semibold flex items-center gap-1.5">
+                Upload my resume
+                {starter === "uploaded" && <CheckCircle2 className="h-4 w-4 text-primary" />}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1 leading-snug">PDF, DOCX, or TXT. AI extracts everything so you can review & polish.</div>
             </button>
+
+            {/* Scratch */}
             <button
               type="button"
               onClick={() => setStarter("scratch")}
-              className={`text-left rounded-xl border-2 p-5 transition-all ${starter === "scratch" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/50"}`}
+              className={`group text-left rounded-xl border-2 p-5 pt-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow ${starter === "scratch" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/60"}`}
             >
-              <div className="flex items-center gap-2 font-display font-semibold">
-                <FilePlus2 className="h-4 w-4 text-primary" />
-                No, start from scratch
+              <div className={`h-10 w-10 rounded-lg flex items-center justify-center mb-3 transition-all ${starter === "scratch" ? "bg-primary text-primary-foreground shadow-glow" : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110"}`}>
+                <FilePlus2 className="h-5 w-5" />
               </div>
-              <div className="text-xs text-muted-foreground mt-1">Fill in the form below — we'll guide you section by section.</div>
+              <div className="font-display font-semibold flex items-center gap-1.5">
+                Start from scratch
+                {starter === "scratch" && <CheckCircle2 className="h-4 w-4 text-primary" />}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1 leading-snug">Fill the form below — we guide you section by section.</div>
+            </button>
+
+            {/* Sample data */}
+            <button
+              type="button"
+              onClick={fillSample}
+              className="group text-left rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 p-5 pt-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow hover:border-primary hover:bg-primary/10"
+            >
+              <div className="h-10 w-10 rounded-lg bg-gradient-primary text-primary-foreground flex items-center justify-center mb-3 shadow-glow group-hover:scale-110 transition-transform">
+                <Wand className="h-5 w-5" />
+              </div>
+              <div className="font-display font-semibold">Try with sample data</div>
+              <div className="text-xs text-muted-foreground mt-1 leading-snug">Fill everything (incl. JD) so you can see the resume in every template instantly.</div>
             </button>
           </div>
           <input
@@ -294,9 +364,39 @@ export default function ResumeBuilder() {
                 <div><Label className="text-xs">Email</Label><Input value={basics.email} onChange={e => setBasics({ ...basics, email: e.target.value })} className="mt-1" /></div>
                 <div><Label className="text-xs">Phone</Label><Input value={basics.phone} onChange={e => setBasics({ ...basics, phone: e.target.value })} className="mt-1" /></div>
                 <div><Label className="text-xs">Location</Label><Input value={basics.location} onChange={e => setBasics({ ...basics, location: e.target.value })} placeholder="Bangalore, India" className="mt-1" /></div>
-                <div><Label className="text-xs">LinkedIn URL</Label><Input value={basics.linkedin} onChange={e => setBasics({ ...basics, linkedin: e.target.value })} className="mt-1" /></div>
-                <div><Label className="text-xs">GitHub URL</Label><Input value={basics.github} onChange={e => setBasics({ ...basics, github: e.target.value })} className="mt-1" /></div>
-                <div><Label className="text-xs">Portfolio URL</Label><Input value={basics.portfolio} onChange={e => setBasics({ ...basics, portfolio: e.target.value })} className="mt-1" /></div>
+              </div>
+
+              {/* Dynamic links */}
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-xs">Links (add what's relevant for your role — LinkedIn, GitHub, Portfolio, Behance, Google Scholar, etc.)</Label>
+                  <Button variant="outline" size="sm" onClick={() => setLinks([...links, { label: "", url: "" }])}>
+                    <Plus className="h-3.5 w-3.5 mr-1" /> Add link
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {links.map((l, i) => (
+                    <div key={i} className="grid grid-cols-[130px_1fr_auto] gap-2 items-center">
+                      <Input
+                        placeholder="Label"
+                        value={l.label}
+                        onChange={e => setLinks(links.map((x, j) => j === i ? { ...x, label: e.target.value } : x))}
+                      />
+                      <div className="relative">
+                        <Link2 className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                        <Input
+                          placeholder="https://…"
+                          value={l.url}
+                          onChange={e => setLinks(links.map((x, j) => j === i ? { ...x, url: e.target.value } : x))}
+                          className="pl-8"
+                        />
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => setLinks(links.filter((_, j) => j !== i))} disabled={links.length === 1}>
+                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="mt-3">
                 <Label className="text-xs">Short about you (optional — AI polishes this)</Label>

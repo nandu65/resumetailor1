@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Gauge, Target, Wand2, Sparkles, Loader2, TrendingUp, TrendingDown, Minus, Lock, Zap } from "lucide-react";
+import { Gauge, Target, Wand2, Sparkles, Loader2, TrendingUp, TrendingDown, Minus, Lock, Zap, Wand } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -30,6 +30,32 @@ function saveBaseline(jd: string, score: number) {
   if (typeof window === "undefined") return;
   localStorage.setItem(`ats-baseline:${jdKey(jd)}`, String(score));
 }
+
+const SAMPLE_RESUME = `Alex Morgan — Senior Software Engineer
+San Francisco, CA · alex.morgan@example.com · linkedin.com/in/alexmorgan
+
+SUMMARY
+Full-stack engineer with 6+ years building scalable React + Node platforms used by millions. Deep AWS + PostgreSQL experience.
+
+EXPERIENCE
+Acme Corp — Senior Software Engineer (Jan 2022 – Present)
+- Led migration from monolith to microservices, cut deploy time by 70%.
+- Built real-time analytics pipeline processing 5M events/day on AWS.
+- Mentored 6 engineers; introduced code-review standards adopted org-wide.
+
+Northwind Labs — Software Engineer (Jun 2019 – Dec 2021)
+- Built customer dashboard in React + TypeScript, boosted retention by 18%.
+- Owned CI/CD in GitHub Actions, reduced flaky failures from 12% to 1%.
+
+EDUCATION
+UC Berkeley — B.S. Computer Science, 2019
+
+SKILLS
+React, TypeScript, Node.js, PostgreSQL, Redis, AWS, Docker, GraphQL`;
+
+const SAMPLE_JD = `We are hiring a Senior Software Engineer to build and scale our React + Node platform (used by 2M+ users).
+Responsibilities: architect microservices, own CI/CD, mentor engineers, drive code quality.
+Must have: 5+ years JS/TS, React, Node.js, PostgreSQL, AWS, Docker. Nice to have: Kubernetes, GraphQL, event-driven systems.`;
 
 export default function KeywordDensityTool() {
   const navigate = useNavigate();
@@ -88,16 +114,30 @@ export default function KeywordDensityTool() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container py-10 max-w-5xl">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="h-12 w-12 rounded-xl bg-gradient-primary text-primary-foreground flex items-center justify-center shadow-glow">
-            <Gauge className="h-6 w-6" />
+        <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-xl bg-gradient-primary text-primary-foreground flex items-center justify-center shadow-glow">
+              <Gauge className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="font-display text-3xl font-bold tracking-tight">ATS Score & Keyword Meter</h1>
+              <p className="text-muted-foreground text-sm mt-1">
+                Powered by Gemini 2.5 Flash · Deterministic scoring · Tracks improvement vs your original
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight">ATS Score & Keyword Meter</h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Powered by Gemini 2.5 Flash · Deterministic scoring · Tracks improvement vs your original
-            </p>
-          </div>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setResume(SAMPLE_RESUME);
+              setJd(SAMPLE_JD);
+              toast({ title: "Sample loaded", description: "Try 'Analyze ATS Score' to see it in action." });
+            }}
+            className="border-primary/40 hover:border-primary hover:bg-primary/5 shrink-0"
+          >
+            <Wand className="h-4 w-4 mr-2 text-primary" />
+            Fill with sample data
+          </Button>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
