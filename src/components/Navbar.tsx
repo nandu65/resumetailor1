@@ -19,6 +19,7 @@ export function Navbar() {
           ResumeShot <span className="text-primary">AI</span>
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2">
+          <ThemeToggle />
           <Button
             variant="ghost" size="sm"
             title="Take the product tour"
