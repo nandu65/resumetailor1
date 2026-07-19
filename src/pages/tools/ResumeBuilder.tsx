@@ -237,11 +237,7 @@ export default function ResumeBuilder() {
     try {
       const profile = {
         ...basics,
-        links: [
-          basics.linkedin && { label: "LinkedIn", url: basics.linkedin },
-          basics.github && { label: "GitHub", url: basics.github },
-          basics.portfolio && { label: "Portfolio", url: basics.portfolio },
-        ].filter(Boolean),
+        links: links.filter(l => l.url.trim()).map(l => ({ label: l.label.trim() || "Link", url: l.url.trim() })),
         summary,
         experience,
         education,
