@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { ArrowRight, Sparkles, FileText, Target, Zap, CheckCircle2, BarChart3, ShieldCheck, Mail, Layers, GitCompare, Gauge, SlidersHorizontal, Download, Building2, GraduationCap, Star, Quote, Lock, RefreshCw, Clock, Users, TrendingUp, ShieldOff, KeyRound, Trash2, Wand2 } from "lucide-react";
+import { ArrowRight, Sparkles, FileText, Target, Zap, CheckCircle2, BarChart3, ShieldCheck, Mail, Layers, GitCompare, Gauge, SlidersHorizontal, Download, Building2, GraduationCap, Star, Quote, Lock, RefreshCw, Clock, Users, TrendingUp, ShieldOff, KeyRound, Trash2, Wand2, Trophy, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -418,6 +418,8 @@ const Index = () => {
               { icon: Download, title: "Multi-Format Export", desc: "Download as PDF, DOCX, plain text, or Markdown.", tag: "4 formats", to: "/dashboard" },
               { icon: Building2, title: "Company Research Brief", desc: "AI summary of the company + interview talking points.", tag: "Research", to: "/tools/company-brief" },
               { icon: GraduationCap, title: "Skill Gap Analysis", desc: "Targeted courses & certs to close the gaps fast.", tag: "Growth", to: "/tools/skill-gap" },
+              { icon: Trophy, title: "ATS Compare", desc: "Score multiple resumes against one JD side-by-side.", tag: "New", to: "/tools/ats-compare" },
+              { icon: Eye, title: "Recruiter View (6s)", desc: "See which lines a recruiter actually reads in the first pass.", tag: "New", to: "/tools/recruiter-view" },
             ].map(({ icon: Icon, title, desc, tag, to }) => (
               <Link to={to} key={title} className="group relative rounded-2xl border border-border bg-background p-6 shadow-card hover:shadow-elegant hover:-translate-y-0.5 hover:border-primary/40 transition-all duration-300 block">
                 <div className="absolute top-4 right-4 text-[10px] font-semibold uppercase tracking-wider text-primary bg-primary/10 rounded-full px-2 py-0.5">{tag}</div>
