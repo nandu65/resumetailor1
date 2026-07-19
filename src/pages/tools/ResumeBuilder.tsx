@@ -86,6 +86,8 @@ export default function ResumeBuilder() {
   const [starter, setStarter] = useState<"choose" | "scratch" | "uploaded">("choose");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [showEditHint, setShowEditHint] = useState(false);
 
   const onUpload = async (file: File) => {
     if (!user) return toast.error("Sign in to upload and parse your resume");
