@@ -86,27 +86,247 @@ export type Database = {
         }
         Relationships: []
       }
+      broadcast_recipients: {
+        Row: {
+          broadcast_id: string
+          created_at: string
+          dismissed_at: string | null
+          email: string | null
+          id: string
+          read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          broadcast_id: string
+          created_at?: string
+          dismissed_at?: string | null
+          email?: string | null
+          id?: string
+          read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          broadcast_id?: string
+          created_at?: string
+          dismissed_at?: string | null
+          email?: string | null
+          id?: string
+          read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcast_recipients_broadcast_id_fkey"
+            columns: ["broadcast_id"]
+            isOneToOne: false
+            referencedRelation: "broadcasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      broadcasts: {
+        Row: {
+          audience_count: number
+          body: string
+          created_at: string
+          created_by: string | null
+          cta_label: string | null
+          cta_url: string | null
+          ends_at: string | null
+          id: string
+          segment: Json
+          severity: string
+          starts_at: string
+          status: string
+          subject: string
+        }
+        Insert: {
+          audience_count?: number
+          body: string
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          ends_at?: string | null
+          id?: string
+          segment?: Json
+          severity?: string
+          starts_at?: string
+          status?: string
+          subject: string
+        }
+        Update: {
+          audience_count?: number
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          ends_at?: string | null
+          id?: string
+          segment?: Json
+          severity?: string
+          starts_at?: string
+          status?: string
+          subject?: string
+        }
+        Relationships: []
+      }
+      coupon_redemptions: {
+        Row: {
+          code: string
+          coupon_id: string
+          created_at: string
+          discount_paise: number
+          id: string
+          order_id: string | null
+          payment_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          code: string
+          coupon_id: string
+          created_at?: string
+          discount_paise?: number
+          id?: string
+          order_id?: string | null
+          payment_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          code?: string
+          coupon_id?: string
+          created_at?: string
+          discount_paise?: number
+          id?: string
+          order_id?: string | null
+          payment_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_redemptions_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coupons: {
+        Row: {
+          active: boolean
+          applies_to: string
+          code: string
+          created_at: string
+          created_by: string | null
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          notes: string | null
+          updated_at: string
+          used_count: number
+        }
+        Insert: {
+          active?: boolean
+          applies_to?: string
+          code: string
+          created_at?: string
+          created_by?: string | null
+          discount_type: string
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          notes?: string | null
+          updated_at?: string
+          used_count?: number
+        }
+        Update: {
+          active?: boolean
+          applies_to?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          notes?: string | null
+          updated_at?: string
+          used_count?: number
+        }
+        Relationships: []
+      }
+      feature_flags: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          id: string
+          key: string
+          plans: string[]
+          rollout_percent: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          key: string
+          plans?: string[]
+          rollout_percent?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          key?: string
+          plans?: string[]
+          rollout_percent?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           created_at: string
           email: string
           granted: boolean
           id: string
+          notes: string | null
           source: string
+          status: string
+          tags: string[]
         }
         Insert: {
           created_at?: string
           email: string
           granted?: boolean
           id?: string
+          notes?: string | null
           source?: string
+          status?: string
+          tags?: string[]
         }
         Update: {
           created_at?: string
           email?: string
           granted?: boolean
           id?: string
+          notes?: string | null
           source?: string
+          status?: string
+          tags?: string[]
         }
         Relationships: []
       }
@@ -227,6 +447,87 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount_paise: number
+          contact: string | null
+          coupon_code: string | null
+          created_at: string
+          currency: string
+          discount_paise: number
+          email: string | null
+          error_code: string | null
+          error_desc: string | null
+          id: string
+          invoice_id: string | null
+          method: string | null
+          notes: Json | null
+          order_id: string | null
+          payment_id: string | null
+          refund_id: string | null
+          refunded_paise: number
+          retried_at: string | null
+          status: string
+          subscription_id: string | null
+          tier: string | null
+          updated_at: string
+          user_id: string | null
+          variant: string | null
+        }
+        Insert: {
+          amount_paise?: number
+          contact?: string | null
+          coupon_code?: string | null
+          created_at?: string
+          currency?: string
+          discount_paise?: number
+          email?: string | null
+          error_code?: string | null
+          error_desc?: string | null
+          id?: string
+          invoice_id?: string | null
+          method?: string | null
+          notes?: Json | null
+          order_id?: string | null
+          payment_id?: string | null
+          refund_id?: string | null
+          refunded_paise?: number
+          retried_at?: string | null
+          status?: string
+          subscription_id?: string | null
+          tier?: string | null
+          updated_at?: string
+          user_id?: string | null
+          variant?: string | null
+        }
+        Update: {
+          amount_paise?: number
+          contact?: string | null
+          coupon_code?: string | null
+          created_at?: string
+          currency?: string
+          discount_paise?: number
+          email?: string | null
+          error_code?: string | null
+          error_desc?: string | null
+          id?: string
+          invoice_id?: string | null
+          method?: string | null
+          notes?: Json | null
+          order_id?: string | null
+          payment_id?: string | null
+          refund_id?: string | null
+          refunded_paise?: number
+          retried_at?: string | null
+          status?: string
+          subscription_id?: string | null
+          tier?: string | null
+          updated_at?: string
+          user_id?: string | null
+          variant?: string | null
+        }
+        Relationships: []
+      }
       pricing_experiments: {
         Row: {
           created_at: string
@@ -259,9 +560,11 @@ export type Database = {
       }
       profiles: {
         Row: {
+          acquisition_source: string | null
           banned_at: string | null
           banned_reason: string | null
           bonus_scans: number
+          country: string | null
           created_at: string
           current_period_end: string | null
           display_name: string | null
@@ -274,6 +577,8 @@ export type Database = {
           plan: string
           razorpay_customer_id: string | null
           razorpay_subscription_id: string | null
+          referral_code: string | null
+          referred_by: string | null
           scan_period_start: string
           scans_used_month: number
           status: string
@@ -281,11 +586,16 @@ export type Database = {
           tags: string[]
           updated_at: string
           user_id: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
         }
         Insert: {
+          acquisition_source?: string | null
           banned_at?: string | null
           banned_reason?: string | null
           bonus_scans?: number
+          country?: string | null
           created_at?: string
           current_period_end?: string | null
           display_name?: string | null
@@ -298,6 +608,8 @@ export type Database = {
           plan?: string
           razorpay_customer_id?: string | null
           razorpay_subscription_id?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           scan_period_start?: string
           scans_used_month?: number
           status?: string
@@ -305,11 +617,16 @@ export type Database = {
           tags?: string[]
           updated_at?: string
           user_id: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Update: {
+          acquisition_source?: string | null
           banned_at?: string | null
           banned_reason?: string | null
           bonus_scans?: number
+          country?: string | null
           created_at?: string
           current_period_end?: string | null
           display_name?: string | null
@@ -322,6 +639,8 @@ export type Database = {
           plan?: string
           razorpay_customer_id?: string | null
           razorpay_subscription_id?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           scan_period_start?: string
           scans_used_month?: number
           status?: string
@@ -329,6 +648,9 @@ export type Database = {
           tags?: string[]
           updated_at?: string
           user_id?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Relationships: []
       }
@@ -362,6 +684,36 @@ export type Database = {
         }
         Relationships: []
       }
+      referrals: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          referred_user_id: string
+          referrer_user_id: string
+          reward_granted: boolean
+          reward_scans: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          referred_user_id: string
+          referrer_user_id: string
+          reward_granted?: boolean
+          reward_scans?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          referred_user_id?: string
+          referrer_user_id?: string
+          reward_granted?: boolean
+          reward_scans?: number
+        }
+        Relationships: []
+      }
       user_presence: {
         Row: {
           last_seen: string
@@ -385,7 +737,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_referral: {
+        Args: { _code: string; _new_user: string }
+        Returns: Json
+      }
       consume_scan: { Args: { _user_id: string }; Returns: Json }
+      ensure_referral_code: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never

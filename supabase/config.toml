@@ -26,3 +26,9 @@ verify_jwt = false
 
 [functions.ats-score]
 verify_jwt = false
+
+[functions.admin-financial-ops]
+verify_jwt = false
+
+[functions.admin-growth-ops]
+verify_jwt = false

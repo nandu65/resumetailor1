@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { UserDetailDrawer } from "@/components/admin/UserDetailDrawer";
 import { AdminOpsPanels } from "@/components/admin/AdminOpsPanels";
+import { FinancialPanel } from "@/components/admin/FinancialPanel";
+import { GrowthPanel } from "@/components/admin/GrowthPanel";
 
 const ADMIN_EMAIL = "nandunaidu656565@gmail.com";
 
@@ -348,6 +350,12 @@ export default function Admin() {
 
         {/* Ops, moderation, audit */}
         <AdminOpsPanels selectUser={setSelectedUser} />
+
+        {/* Financial */}
+        <FinancialPanel />
+
+        {/* Growth */}
+        <GrowthPanel selectUser={setSelectedUser} />
 
         {/* Users table */}
         <Card>
