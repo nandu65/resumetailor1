@@ -419,7 +419,7 @@ export default function ResumeBuilder() {
           </div>
 
           {/* PREVIEW */}
-          <div className="lg:sticky lg:top-6 lg:self-start space-y-4">
+          <div ref={previewRef} className="lg:sticky lg:top-6 lg:self-start space-y-4">
             <div className="rounded-2xl border border-border bg-gradient-card p-4 shadow-card">
               <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Template</div>
