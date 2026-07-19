@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_email: string
+          created_at: string
+          details: Json | null
+          id: string
+          ip: string | null
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_email: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip?: string | null
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_email?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip?: string | null
+          target_user_id?: string | null
+        }
+        Relationships: []
+      }
       ai_usage_logs: {
         Row: {
           cost_inr: number
@@ -187,11 +217,15 @@ export type Database = {
       }
       profiles: {
         Row: {
+          banned_at: string | null
+          banned_reason: string | null
+          bonus_scans: number
           created_at: string
           current_period_end: string | null
           display_name: string | null
           email: string | null
           id: string
+          notes: string | null
           optimizations_used: number
           payment_failed: boolean
           pending_plan: string | null
@@ -200,16 +234,22 @@ export type Database = {
           razorpay_subscription_id: string | null
           scan_period_start: string
           scans_used_month: number
+          status: string
           subscription_status: string
+          tags: string[]
           updated_at: string
           user_id: string
         }
         Insert: {
+          banned_at?: string | null
+          banned_reason?: string | null
+          bonus_scans?: number
           created_at?: string
           current_period_end?: string | null
           display_name?: string | null
           email?: string | null
           id?: string
+          notes?: string | null
           optimizations_used?: number
           payment_failed?: boolean
           pending_plan?: string | null
@@ -218,16 +258,22 @@ export type Database = {
           razorpay_subscription_id?: string | null
           scan_period_start?: string
           scans_used_month?: number
+          status?: string
           subscription_status?: string
+          tags?: string[]
           updated_at?: string
           user_id: string
         }
         Update: {
+          banned_at?: string | null
+          banned_reason?: string | null
+          bonus_scans?: number
           created_at?: string
           current_period_end?: string | null
           display_name?: string | null
           email?: string | null
           id?: string
+          notes?: string | null
           optimizations_used?: number
           payment_failed?: boolean
           pending_plan?: string | null
@@ -236,7 +282,9 @@ export type Database = {
           razorpay_subscription_id?: string | null
           scan_period_start?: string
           scans_used_month?: number
+          status?: string
           subscription_status?: string
+          tags?: string[]
           updated_at?: string
           user_id?: string
         }

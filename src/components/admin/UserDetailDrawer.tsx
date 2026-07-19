@@ -1,0 +1,354 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/hooks/use-toast";
+import {
+  Loader2, Mail, KeyRound, ShieldOff, ShieldCheck, Trash2, IndianRupee, XCircle,
+  Ban, UserCheck, Copy, Plus, Minus, RotateCcw, Eye, CheckCircle2, Tag,
+} from "lucide-react";
+
+interface Props {
+  userId: string | null;
+  open: boolean;
+  onClose: () => void;
+  onChanged: () => void;
+}
+
+interface Detail {
+  profile: any;
+  auth: any;
+  optimizations: any[];
+  ai_logs: any[];
+  pricing_events: any[];
+}
+
+const STATUS_BADGE: Record<string, string> = {
+  active: "bg-green-500/15 text-green-700 dark:text-green-400",
+  suspended: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+  banned: "bg-red-500/15 text-red-700 dark:text-red-400",
+};
+
+export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
+  const [loading, setLoading] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [d, setD] = useState<Detail | null>(null);
+  const [audit, setAudit] = useState<any[]>([]);
+
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [notes, setNotes] = useState("");
+  const [tagInput, setTagInput] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
+  const [refundId, setRefundId] = useState("");
+  const [refundAmount, setRefundAmount] = useState("");
+  const [grantDelta, setGrantDelta] = useState("5");
+
+  const load = async () => {
+    if (!userId) return;
+    setLoading(true);
+    const [{ data: r1 }, { data: r2 }] = await Promise.all([
+      supabase.functions.invoke("admin-user-actions", { body: { action: "get_user_detail", user_id: userId } }),
+      supabase.functions.invoke("admin-user-actions", { body: { action: "list_audit", user_id: userId } }),
+    ]);
+    const detail = r1 as Detail;
+    setD(detail);
+    setAudit((r2 as any)?.log ?? []);
+    if (detail?.profile) {
+      setEmail(detail.profile.email ?? "");
+      setName(detail.profile.display_name ?? "");
+      setNotes(detail.profile.notes ?? "");
+      setTags(detail.profile.tags ?? []);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { if (open && userId) load(); /* eslint-disable-next-line */ }, [open, userId]);
+
+  const call = async (action: string, body: any = {}, confirmMsg?: string) => {
+    if (confirmMsg && !confirm(confirmMsg)) return;
+    setBusy(action);
+    const { data, error } = await supabase.functions.invoke("admin-user-actions", {
+      body: { action, user_id: userId, ...body },
+    });
+    setBusy(null);
+    if (error || (data as any)?.error) {
+      toast({ title: "Failed", description: error?.message || (data as any)?.error, variant: "destructive" });
+      return null;
+    }
+    toast({ title: "Done" });
+    await load();
+    onChanged();
+    return data;
+  };
+
+  const impersonate = async () => {
+    const res = await call("impersonate", {});
+    const link = (res as any)?.link;
+    if (link) {
+      await navigator.clipboard.writeText(link).catch(() => {});
+      toast({ title: "Impersonation link copied", description: "Open in incognito to view as user." });
+      window.open(link, "_blank");
+    }
+  };
+
+  const addTag = () => {
+    const t = tagInput.trim();
+    if (!t) return;
+    if (tags.includes(t)) return;
+    const next = [...tags, t];
+    setTags(next);
+    setTagInput("");
+    call("update_tags", { tags: next });
+  };
+  const removeTag = (t: string) => {
+    const next = tags.filter((x) => x !== t);
+    setTags(next);
+    call("update_tags", { tags: next });
+  };
+
+  const p = d?.profile;
+  const a = d?.auth;
+
+  return (
+    <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
+      <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle className="flex items-center gap-2 flex-wrap">
+            {p?.email ?? "User details"}
+            {p?.status && <Badge className={STATUS_BADGE[p.status]}>{p.status}</Badge>}
+            {p?.plan && <Badge variant={p.plan === "free" ? "secondary" : "default"}>{p.plan}</Badge>}
+          </SheetTitle>
+        </SheetHeader>
+
+        {loading || !d ? (
+          <div className="py-20 flex justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>
+        ) : (
+          <Tabs defaultValue="overview" className="mt-4">
+            <TabsList className="grid grid-cols-5 w-full">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="actions">Actions</TabsTrigger>
+              <TabsTrigger value="activity">Activity</TabsTrigger>
+              <TabsTrigger value="billing">Billing</TabsTrigger>
+              <TabsTrigger value="audit">Audit</TabsTrigger>
+            </TabsList>
+
+            {/* OVERVIEW */}
+            <TabsContent value="overview" className="space-y-4 mt-4">
+              <Field label="User ID"><code className="text-xs">{p?.user_id}</code>
+                <Button size="icon" variant="ghost" className="h-6 w-6 ml-1" onClick={() => navigator.clipboard.writeText(p?.user_id)}><Copy className="h-3 w-3" /></Button>
+              </Field>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1"><Label>Email</Label><Input value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+                <div className="space-y-1"><Label>Display name</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" disabled={busy === "update_profile"} onClick={() => call("update_profile", { email, display_name: name })}>
+                  {busy === "update_profile" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save profile"}
+                </Button>
+                {!a?.email_confirmed_at && (
+                  <Button size="sm" variant="outline" onClick={() => call("verify_email")}><CheckCircle2 className="h-4 w-4 mr-1" /> Verify email</Button>
+                )}
+              </div>
+
+              <Separator />
+
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <Field label="Signed up">{p?.created_at ? new Date(p.created_at).toLocaleString() : "—"}</Field>
+                <Field label="Last sign-in">{a?.last_sign_in_at ? new Date(a.last_sign_in_at).toLocaleString() : "—"}</Field>
+                <Field label="Email confirmed">{a?.email_confirmed_at ? "Yes" : "No"}</Field>
+                <Field label="Providers">{(a?.providers ?? []).join(", ") || "email"}</Field>
+                <Field label="Scans used (month)">{p?.scans_used_month}</Field>
+                <Field label="Bonus scans granted">{p?.bonus_scans ?? 0}</Field>
+                <Field label="Subscription">{p?.subscription_status}</Field>
+                <Field label="Period ends">{p?.current_period_end ? new Date(p.current_period_end).toLocaleDateString() : "—"}</Field>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1"><Tag className="h-3 w-3" /> Tags</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  {tags.map((t) => (
+                    <Badge key={t} variant="secondary" className="gap-1">
+                      {t}
+                      <button onClick={() => removeTag(t)} className="ml-1 hover:text-destructive"><XCircle className="h-3 w-3" /></button>
+                    </Badge>
+                  ))}
+                  {tags.length === 0 && <span className="text-xs text-muted-foreground">No tags</span>}
+                </div>
+                <div className="flex gap-2">
+                  <Input placeholder="VIP, chargeback risk…" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addTag()} />
+                  <Button size="sm" variant="outline" onClick={addTag}><Plus className="h-4 w-4" /></Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Internal notes</Label>
+                <Textarea rows={4} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Not visible to user…" />
+                <Button size="sm" variant="outline" onClick={() => call("update_notes", { notes })}>Save notes</Button>
+              </div>
+            </TabsContent>
+
+            {/* ACTIONS */}
+            <TabsContent value="actions" className="space-y-5 mt-4">
+              <Section title="Plan override">
+                <div className="flex gap-2 items-center">
+                  <Select value={p?.plan} onValueChange={(v) => call("update_plan", { plan: v })}>
+                    <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="free">Free</SelectItem>
+                      <SelectItem value="basic">Basic</SelectItem>
+                      <SelectItem value="pro">Pro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <span className="text-xs text-muted-foreground">Comp accounts, refunds, influencers.</span>
+                </div>
+              </Section>
+
+              <Section title="Scan quota">
+                <div className="flex gap-2 items-center">
+                  <Input type="number" className="w-24" value={grantDelta} onChange={(e) => setGrantDelta(e.target.value)} />
+                  <Button size="sm" variant="outline" onClick={() => call("grant_scans", { delta: Number(grantDelta) })}><Plus className="h-4 w-4 mr-1" />Grant</Button>
+                  <Button size="sm" variant="outline" onClick={() => call("grant_scans", { delta: -Number(grantDelta) })}><Minus className="h-4 w-4 mr-1" />Deduct</Button>
+                  <Button size="sm" variant="ghost" onClick={() => call("reset_scans")}><RotateCcw className="h-4 w-4 mr-1" />Reset month</Button>
+                </div>
+              </Section>
+
+              <Section title="Credentials">
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" onClick={() => call("force_password_reset")}><KeyRound className="h-4 w-4 mr-1" />Send password reset</Button>
+                  <Button size="sm" variant="outline" onClick={() => call("send_magic_link")}><Mail className="h-4 w-4 mr-1" />Send magic link</Button>
+                  <Button size="sm" variant="outline" onClick={impersonate}><Eye className="h-4 w-4 mr-1" />Impersonate</Button>
+                </div>
+              </Section>
+
+              <Section title="Account status">
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" onClick={() => call("set_status", { status: "active" })}><UserCheck className="h-4 w-4 mr-1" />Activate</Button>
+                  <Button size="sm" variant="outline" onClick={() => {
+                    const reason = prompt("Suspension reason?") ?? "";
+                    call("set_status", { status: "suspended", reason });
+                  }}><ShieldOff className="h-4 w-4 mr-1" />Suspend</Button>
+                  <Button size="sm" variant="destructive" onClick={() => {
+                    const reason = prompt("Ban reason?") ?? "";
+                    call("set_status", { status: "banned", reason }, "Ban this user? They will be locked out.");
+                  }}><Ban className="h-4 w-4 mr-1" />Ban</Button>
+                </div>
+                {p?.banned_reason && <p className="text-xs text-muted-foreground mt-2">Reason: {p.banned_reason}</p>}
+              </Section>
+
+              <Section title="Danger zone" tone="danger">
+                <Button size="sm" variant="destructive" onClick={() => call("delete_user", {}, `PERMANENTLY delete ${p?.email} and all data? This cannot be undone.`)}>
+                  <Trash2 className="h-4 w-4 mr-1" />Hard delete (GDPR)
+                </Button>
+              </Section>
+            </TabsContent>
+
+            {/* ACTIVITY */}
+            <TabsContent value="activity" className="space-y-4 mt-4">
+              <div>
+                <h4 className="font-semibold mb-2 text-sm">Recent optimizations ({d.optimizations.length})</h4>
+                <div className="max-h-64 overflow-y-auto border rounded divide-y">
+                  {d.optimizations.length === 0 && <p className="p-3 text-xs text-muted-foreground">None</p>}
+                  {d.optimizations.map((o) => (
+                    <div key={o.id} className="p-2 text-xs flex justify-between">
+                      <span>{o.title || o.role || "Untitled"} {o.company && `· ${o.company}`}</span>
+                      <span className="text-muted-foreground">Score: {o.ats_score ?? "—"} · {new Date(o.created_at).toLocaleDateString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2 text-sm">AI usage ({d.ai_logs.length})</h4>
+                <div className="max-h-64 overflow-y-auto border rounded divide-y">
+                  {d.ai_logs.length === 0 && <p className="p-3 text-xs text-muted-foreground">None</p>}
+                  {d.ai_logs.map((l, i) => (
+                    <div key={i} className="p-2 text-xs flex justify-between">
+                      <span>{l.feature} · {l.model}</span>
+                      <span className="text-muted-foreground">{l.input_tokens}→{l.output_tokens} tok · ₹{Number(l.cost_inr).toFixed(3)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* BILLING */}
+            <TabsContent value="billing" className="space-y-4 mt-4">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <Field label="Razorpay customer">{p?.razorpay_customer_id || "—"}</Field>
+                <Field label="Razorpay subscription">{p?.razorpay_subscription_id || "—"}</Field>
+                <Field label="Payment failed">{p?.payment_failed ? "Yes" : "No"}</Field>
+                <Field label="Pending plan">{p?.pending_plan || "—"}</Field>
+              </div>
+
+              <Section title="Subscription">
+                <Button size="sm" variant="outline" onClick={() => call("cancel_subscription", {}, "Cancel this user's subscription now?")}>
+                  <XCircle className="h-4 w-4 mr-1" />Cancel subscription
+                </Button>
+              </Section>
+
+              <Section title="Issue refund">
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input placeholder="pay_XXXXXXXX (Razorpay payment_id)" value={refundId} onChange={(e) => setRefundId(e.target.value)} />
+                    <Input type="number" placeholder="Amount (paise, blank = full)" value={refundAmount} onChange={(e) => setRefundAmount(e.target.value)} className="w-56" />
+                  </div>
+                  <Button size="sm" variant="destructive" onClick={() => call("refund_payment", {
+                    payment_id: refundId,
+                    amount_paise: refundAmount ? Number(refundAmount) : undefined,
+                  }, "Issue refund and downgrade to Free?")}>
+                    <IndianRupee className="h-4 w-4 mr-1" />Refund & downgrade
+                  </Button>
+                </div>
+              </Section>
+            </TabsContent>
+
+            {/* AUDIT */}
+            <TabsContent value="audit" className="mt-4">
+              <div className="max-h-96 overflow-y-auto border rounded divide-y">
+                {audit.length === 0 && <p className="p-3 text-xs text-muted-foreground">No admin actions on this user yet.</p>}
+                {audit.map((r) => (
+                  <div key={r.id} className="p-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="font-semibold">{r.action}</span>
+                      <span className="text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
+                    </div>
+                    {r.details && Object.keys(r.details).length > 0 && (
+                      <pre className="mt-1 text-[10px] text-muted-foreground whitespace-pre-wrap">{JSON.stringify(r.details, null, 0)}</pre>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
+        )}
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="text-sm flex items-center gap-1">{children}</div>
+    </div>
+  );
+}
+
+function Section({ title, children, tone }: { title: string; children: React.ReactNode; tone?: "danger" }) {
+  return (
+    <div className={`rounded-lg border p-3 ${tone === "danger" ? "border-destructive/40 bg-destructive/5" : ""}`}>
+      <div className="text-xs font-semibold uppercase tracking-wide mb-2">{title}</div>
+      {children}
+    </div>
+  );
+}

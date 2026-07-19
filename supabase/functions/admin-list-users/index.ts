@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceKey);
     const { data: profiles, error } = await admin
       .from("profiles")
-      .select("user_id,email,display_name,plan,subscription_status,scans_used_month,current_period_end,created_at,payment_failed")
+      .select("user_id,email,display_name,plan,subscription_status,scans_used_month,current_period_end,created_at,payment_failed,status,tags,bonus_scans")
       .order("created_at", { ascending: false });
     if (error) throw error;
 
