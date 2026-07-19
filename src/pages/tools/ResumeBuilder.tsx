@@ -146,8 +146,14 @@ export default function ResumeBuilder() {
       const p = (data as any).parsed || {};
       setBasics({
         name: p.name || "", title: p.title || "", email: p.email || "", phone: p.phone || "",
-        location: p.location || "", linkedin: p.linkedin || "", github: p.github || "", portfolio: p.portfolio || "",
+        location: p.location || "",
       });
+      const parsedLinks: { label: string; url: string }[] = [];
+      if (p.linkedin) parsedLinks.push({ label: "LinkedIn", url: p.linkedin });
+      if (p.github) parsedLinks.push({ label: "GitHub", url: p.github });
+      if (p.portfolio) parsedLinks.push({ label: "Portfolio", url: p.portfolio });
+      if (Array.isArray(p.links)) p.links.forEach((l: any) => l?.url && parsedLinks.push({ label: l.label || "Link", url: l.url }));
+      setLinks(parsedLinks.length ? parsedLinks : [{ label: "LinkedIn", url: "" }]);
       setSummary(p.summary || "");
       setExperience((p.experience || []).length ? p.experience.map((e: any) => ({
         company: e.company || "", role: e.role || "", location: e.location || "",
