@@ -13,6 +13,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { UserDetailDrawer } from "@/components/admin/UserDetailDrawer";
 
 const ADMIN_EMAIL = "nandunaidu656565@gmail.com";
 
@@ -20,6 +21,7 @@ interface AdminUser {
   user_id: string; email: string | null; display_name: string | null;
   plan: string; subscription_status: string; scans_used_month: number;
   current_period_end: string | null; created_at: string;
+  status?: string; tags?: string[];
 }
 
 interface AdminData {
@@ -53,6 +55,9 @@ export default function Admin() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [signingIn, setSigningIn] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [planFilter, setPlanFilter] = useState<string>("all");
 
   const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
@@ -342,27 +347,63 @@ export default function Admin() {
 
         {/* Users table */}
         <Card>
-          <CardHeader><CardTitle>Users</CardTitle></CardHeader>
+          <CardHeader>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <CardTitle>Users ({data?.users.filter(u => {
+                const q = search.toLowerCase();
+                const matchQ = !q || (u.email?.toLowerCase().includes(q)) || (u.display_name?.toLowerCase().includes(q));
+                const matchP = planFilter === "all" || u.plan === planFilter;
+                return matchQ && matchP;
+              }).length ?? 0})</CardTitle>
+              <div className="flex gap-2">
+                <Input placeholder="Search email or name…" value={search} onChange={(e) => setSearch(e.target.value)} className="w-64" />
+                <Select value={planFilter} onValueChange={setPlanFilter}>
+                  <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All plans</SelectItem>
+                    <SelectItem value="free">Free</SelectItem>
+                    <SelectItem value="basic">Basic</SelectItem>
+                    <SelectItem value="pro">Pro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardHeader>
           <CardContent>
             {busy ? <div className="py-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div> : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader><TableRow>
                     <TableHead>Email</TableHead><TableHead>Name</TableHead><TableHead>Plan</TableHead>
-                    <TableHead>Status</TableHead><TableHead>Scans</TableHead><TableHead>Joined</TableHead><TableHead>Change Plan</TableHead>
+                    <TableHead>Status</TableHead><TableHead>Tags</TableHead><TableHead>Scans</TableHead>
+                    <TableHead>Joined</TableHead><TableHead>Change Plan</TableHead><TableHead></TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
-                    {data?.users.map((u) => (
-                      <TableRow key={u.user_id}>
+                    {data?.users.filter(u => {
+                      const q = search.toLowerCase();
+                      const matchQ = !q || (u.email?.toLowerCase().includes(q)) || (u.display_name?.toLowerCase().includes(q));
+                      const matchP = planFilter === "all" || u.plan === planFilter;
+                      return matchQ && matchP;
+                    }).map((u) => (
+                      <TableRow key={u.user_id} className="cursor-pointer hover:bg-muted/40" onClick={() => setSelectedUser(u.user_id)}>
                         <TableCell className="font-medium">{u.email}</TableCell>
                         <TableCell>{u.display_name || "—"}</TableCell>
                         <TableCell><Badge variant={u.plan === "free" ? "secondary" : "default"}>{u.plan}</Badge></TableCell>
-                        <TableCell><Badge variant={u.subscription_status === "active" ? "default" : "outline"}>{u.subscription_status}</Badge></TableCell>
+                        <TableCell>
+                          <Badge variant={u.status === "banned" ? "destructive" : u.status === "suspended" ? "outline" : "default"}>
+                            {u.status ?? u.subscription_status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-0.5 max-w-[140px]">
+                            {(u.tags ?? []).slice(0, 2).map(t => <Badge key={t} variant="secondary" className="text-[10px] px-1.5 py-0">{t}</Badge>)}
+                          </div>
+                        </TableCell>
                         <TableCell>{u.scans_used_month}</TableCell>
                         <TableCell className="text-xs text-muted-foreground">{new Date(u.created_at).toLocaleDateString()}</TableCell>
-                        <TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           <Select disabled={updating === u.user_id} value={u.plan} onValueChange={(v) => updatePlan(u.user_id, v)}>
-                            <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="w-24 h-8"><SelectValue /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="free">Free</SelectItem>
                               <SelectItem value="basic">Basic</SelectItem>
@@ -370,6 +411,7 @@ export default function Admin() {
                             </SelectContent>
                           </Select>
                         </TableCell>
+                        <TableCell><Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); setSelectedUser(u.user_id); }}>Manage →</Button></TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -379,6 +421,13 @@ export default function Admin() {
           </CardContent>
         </Card>
       </main>
+
+      <UserDetailDrawer
+        userId={selectedUser}
+        open={!!selectedUser}
+        onClose={() => setSelectedUser(null)}
+        onChanged={load}
+      />
     </div>
   );
 }
