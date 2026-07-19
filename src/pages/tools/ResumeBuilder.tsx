@@ -286,34 +286,56 @@ export default function ResumeBuilder() {
 
         {/* Starter chooser */}
         <div className="mb-6 rounded-2xl border-2 border-border bg-gradient-card p-6 shadow-card">
-          <div className="text-center mb-4">
-            <h2 className="font-display text-xl font-bold">Are you uploading an existing resume?</h2>
-            <p className="text-sm text-muted-foreground mt-1">Import it and we'll pre-fill everything — or start fresh below.</p>
+          <div className="text-center mb-5">
+            <h2 className="font-display text-xl font-bold">How would you like to start?</h2>
+            <p className="text-sm text-muted-foreground mt-1">Import an existing resume, start fresh, or preview with sample data.</p>
           </div>
-          <div className="grid sm:grid-cols-2 gap-3">
+          <div className="grid sm:grid-cols-3 gap-3">
+            {/* Upload */}
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className={`relative text-left rounded-xl border-2 p-5 transition-all ${starter === "uploaded" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/50"}`}
+              className={`group relative text-left rounded-xl border-2 p-5 pt-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow overflow-hidden ${starter === "uploaded" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/60"}`}
             >
-              <div className="absolute -top-2 left-4 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-primary text-primary-foreground">Recommended · saves time</div>
-              <div className="flex items-center gap-2 font-display font-semibold">
-                {uploading ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Upload className="h-4 w-4 text-primary" />}
-                Yes, upload my resume
+              <div className="absolute -top-px left-4 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-b bg-primary text-primary-foreground">Recommended</div>
+              <div className={`h-10 w-10 rounded-lg flex items-center justify-center mb-3 transition-all ${starter === "uploaded" ? "bg-primary text-primary-foreground shadow-glow" : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110"}`}>
+                {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
               </div>
-              <div className="text-xs text-muted-foreground mt-1">PDF, DOCX, or TXT. AI extracts your info so you can review, edit, and enhance it.</div>
+              <div className="font-display font-semibold flex items-center gap-1.5">
+                Upload my resume
+                {starter === "uploaded" && <CheckCircle2 className="h-4 w-4 text-primary" />}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1 leading-snug">PDF, DOCX, or TXT. AI extracts everything so you can review & polish.</div>
             </button>
+
+            {/* Scratch */}
             <button
               type="button"
               onClick={() => setStarter("scratch")}
-              className={`text-left rounded-xl border-2 p-5 transition-all ${starter === "scratch" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/50"}`}
+              className={`group text-left rounded-xl border-2 p-5 pt-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow ${starter === "scratch" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/60"}`}
             >
-              <div className="flex items-center gap-2 font-display font-semibold">
-                <FilePlus2 className="h-4 w-4 text-primary" />
-                No, start from scratch
+              <div className={`h-10 w-10 rounded-lg flex items-center justify-center mb-3 transition-all ${starter === "scratch" ? "bg-primary text-primary-foreground shadow-glow" : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110"}`}>
+                <FilePlus2 className="h-5 w-5" />
               </div>
-              <div className="text-xs text-muted-foreground mt-1">Fill in the form below — we'll guide you section by section.</div>
+              <div className="font-display font-semibold flex items-center gap-1.5">
+                Start from scratch
+                {starter === "scratch" && <CheckCircle2 className="h-4 w-4 text-primary" />}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1 leading-snug">Fill the form below — we guide you section by section.</div>
+            </button>
+
+            {/* Sample data */}
+            <button
+              type="button"
+              onClick={fillSample}
+              className="group text-left rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 p-5 pt-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow hover:border-primary hover:bg-primary/10"
+            >
+              <div className="h-10 w-10 rounded-lg bg-gradient-primary text-primary-foreground flex items-center justify-center mb-3 shadow-glow group-hover:scale-110 transition-transform">
+                <Wand className="h-5 w-5" />
+              </div>
+              <div className="font-display font-semibold">Try with sample data</div>
+              <div className="text-xs text-muted-foreground mt-1 leading-snug">Fill everything (incl. JD) so you can see the resume in every template instantly.</div>
             </button>
           </div>
           <input
