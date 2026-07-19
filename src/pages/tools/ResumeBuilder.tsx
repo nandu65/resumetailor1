@@ -176,7 +176,7 @@ export default function ResumeBuilder() {
     // Verbatim mode: no AI, no auth required — build directly from user input
     if (mode === "verbatim") {
       setResume(buildResumeDataVerbatim(buildRawInput()));
-      toast.success("Resume built from your exact text. Click any field in the preview to edit.");
+      setShowEditHint(true);
       return;
     }
 
