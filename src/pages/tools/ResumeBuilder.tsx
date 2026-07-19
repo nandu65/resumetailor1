@@ -482,6 +482,69 @@ export default function ResumeBuilder() {
           </div>
         </div>
       </div>
+
+      <Dialog open={showEditHint} onOpenChange={setShowEditHint}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 font-display">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Your resume is ready!
+            </DialogTitle>
+            <DialogDescription className="pt-1">
+              Small tweaks? No need to regenerate — just <span className="font-semibold text-foreground">click any text in the live preview</span> and type. Every edit flows straight into your PDF & DOCX.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Mini animation: cursor taps into an editable line */}
+          <div className="relative rounded-xl border-2 border-dashed border-primary/40 bg-gradient-to-br from-primary/5 to-primary/0 p-5 overflow-hidden">
+            <div className="space-y-2">
+              <div className="h-2.5 w-2/3 rounded bg-muted" />
+              <div className="relative rounded-md bg-background border border-primary/50 px-2 py-1.5 shadow-sm animate-pulse">
+                <span className="text-xs font-medium text-foreground">Senior Software Engineer</span>
+                <span className="ml-0.5 inline-block h-3 w-[2px] bg-primary align-middle animate-pulse" />
+              </div>
+              <div className="h-2 w-4/5 rounded bg-muted" />
+              <div className="h-2 w-3/5 rounded bg-muted" />
+            </div>
+            <MousePointer2
+              className="absolute h-6 w-6 text-primary drop-shadow-md"
+              style={{
+                top: "38%",
+                left: "58%",
+                animation: "cursorTap 2.4s ease-in-out infinite",
+              }}
+            />
+            <style>{`
+              @keyframes cursorTap {
+                0%   { transform: translate(20px, -18px) scale(1); opacity: 0; }
+                20%  { transform: translate(10px, -8px)  scale(1); opacity: 1; }
+                55%  { transform: translate(0, 0)        scale(0.85); opacity: 1; }
+                70%  { transform: translate(0, 0)        scale(1); opacity: 1; }
+                100% { transform: translate(-20px, 18px) scale(1); opacity: 0; }
+              }
+            `}</style>
+          </div>
+
+          <p className="text-[11px] text-muted-foreground text-center -mt-1">
+            Regenerating uses credits — inline edits are free and instant.
+          </p>
+
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" onClick={() => setShowEditHint(false)}>
+              Got it
+            </Button>
+            <Button
+              onClick={() => {
+                setShowEditHint(false);
+                setTimeout(() => previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+              }}
+              className="bg-gradient-primary text-primary-foreground hover:opacity-90"
+            >
+              <ArrowDown className="h-4 w-4 mr-1.5" /> Take me to the preview
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
