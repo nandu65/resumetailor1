@@ -15,7 +15,6 @@ import {
   Ban, UserCheck, Copy, Plus, Minus, RotateCcw, Eye, CheckCircle2, Tag, Activity, Flag,
 } from "lucide-react";
 import { UserActivityTimeline } from "@/components/admin/AdminOpsPanels";
-import { toast as sonner } from "sonner";
 
 interface Props {
   userId: string | null;
