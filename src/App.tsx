@@ -16,6 +16,8 @@ import SkillGapTool from "./pages/tools/SkillGapTool.tsx";
 import KeywordDensityTool from "./pages/tools/KeywordDensityTool.tsx";
 import DiffTool from "./pages/tools/DiffTool.tsx";
 import ResumeBuilder from "./pages/tools/ResumeBuilder.tsx";
+import AtsCompareTool from "./pages/tools/AtsCompareTool.tsx";
+import RecruiterViewTool from "./pages/tools/RecruiterViewTool.tsx";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Terms from "./pages/legal/Terms.tsx";
 import Privacy from "./pages/legal/Privacy.tsx";
@@ -38,6 +40,8 @@ function AppRoutes() {
       <Route path="/tools/keyword-density" element={<KeywordDensityTool />} />
       <Route path="/tools/diff" element={<DiffTool />} />
       <Route path="/tools/resume-builder" element={<ResumeBuilder />} />
+      <Route path="/tools/ats-compare" element={<AtsCompareTool />} />
+      <Route path="/tools/recruiter-view" element={<RecruiterViewTool />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/terms-of-service" element={<Terms />} />

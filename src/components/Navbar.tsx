@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { resetTour } from "@/components/OnboardingTour";
+import { ThemeToggle } from "@/components/ThemeToggle";
+
 
 export function Navbar() {
   const { user } = useAuth();
@@ -17,6 +19,7 @@ export function Navbar() {
           ResumeShot <span className="text-primary">AI</span>
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2">
+          <ThemeToggle />
           <Button
             variant="ghost" size="sm"
             title="Take the product tour"
