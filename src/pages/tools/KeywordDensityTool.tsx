@@ -114,16 +114,30 @@ export default function KeywordDensityTool() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container py-10 max-w-5xl">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="h-12 w-12 rounded-xl bg-gradient-primary text-primary-foreground flex items-center justify-center shadow-glow">
-            <Gauge className="h-6 w-6" />
+        <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-xl bg-gradient-primary text-primary-foreground flex items-center justify-center shadow-glow">
+              <Gauge className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="font-display text-3xl font-bold tracking-tight">ATS Score & Keyword Meter</h1>
+              <p className="text-muted-foreground text-sm mt-1">
+                Powered by Gemini 2.5 Flash · Deterministic scoring · Tracks improvement vs your original
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight">ATS Score & Keyword Meter</h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Powered by Gemini 2.5 Flash · Deterministic scoring · Tracks improvement vs your original
-            </p>
-          </div>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setResume(SAMPLE_RESUME);
+              setJd(SAMPLE_JD);
+              toast({ title: "Sample loaded", description: "Try 'Analyze ATS Score' to see it in action." });
+            }}
+            className="border-primary/40 hover:border-primary hover:bg-primary/5 shrink-0"
+          >
+            <Wand className="h-4 w-4 mr-2 text-primary" />
+            Fill with sample data
+          </Button>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
