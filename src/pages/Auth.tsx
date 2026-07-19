@@ -57,6 +57,13 @@ export default function Auth() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
+    // Log attempt so admins can spot brute-force
+    supabase.from("login_attempts").insert({
+      email,
+      success: !error,
+      user_agent: navigator.userAgent.slice(0, 300),
+      error: error?.message?.slice(0, 500) ?? null,
+    } as any).then(() => {});
     if (error) toast.error(error.message);
   };
 

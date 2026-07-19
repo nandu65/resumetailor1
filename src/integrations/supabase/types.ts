@@ -110,6 +110,36 @@ export type Database = {
         }
         Relationships: []
       }
+      login_attempts: {
+        Row: {
+          created_at: string
+          email: string | null
+          error: string | null
+          id: string
+          ip: string | null
+          success: boolean
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          error?: string | null
+          id?: string
+          ip?: string | null
+          success?: boolean
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          error?: string | null
+          id?: string
+          ip?: string | null
+          success?: boolean
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       optimizations: {
         Row: {
           ats_score: number | null
@@ -117,11 +147,15 @@ export type Database = {
           company_brief: Json | null
           cover_letter: string | null
           created_at: string
+          flag_reason: string | null
+          flagged: boolean
           id: string
           improved_bullets: Json | null
           job_description: string
           keyword_density: Json | null
           missing_keywords: Json | null
+          moderated_at: string | null
+          moderated_by: string | null
           previous_ats_score: number | null
           professional_summary: string | null
           recommendations: Json | null
@@ -141,11 +175,15 @@ export type Database = {
           company_brief?: Json | null
           cover_letter?: string | null
           created_at?: string
+          flag_reason?: string | null
+          flagged?: boolean
           id?: string
           improved_bullets?: Json | null
           job_description: string
           keyword_density?: Json | null
           missing_keywords?: Json | null
+          moderated_at?: string | null
+          moderated_by?: string | null
           previous_ats_score?: number | null
           professional_summary?: string | null
           recommendations?: Json | null
@@ -165,11 +203,15 @@ export type Database = {
           company_brief?: Json | null
           cover_letter?: string | null
           created_at?: string
+          flag_reason?: string | null
+          flagged?: boolean
           id?: string
           improved_bullets?: Json | null
           job_description?: string
           keyword_density?: Json | null
           missing_keywords?: Json | null
+          moderated_at?: string | null
+          moderated_by?: string | null
           previous_ats_score?: number | null
           professional_summary?: string | null
           recommendations?: Json | null
@@ -317,6 +359,24 @@ export type Database = {
           interval?: string
           razorpay_plan_id?: string
           tier?: string
+        }
+        Relationships: []
+      }
+      user_presence: {
+        Row: {
+          last_seen: string
+          path: string | null
+          user_id: string
+        }
+        Insert: {
+          last_seen?: string
+          path?: string | null
+          user_id: string
+        }
+        Update: {
+          last_seen?: string
+          path?: string | null
+          user_id?: string
         }
         Relationships: []
       }

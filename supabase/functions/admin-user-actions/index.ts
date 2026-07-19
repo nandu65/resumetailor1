@@ -300,6 +300,182 @@ Deno.serve(async (req) => {
         return json({ log: data ?? [] });
       }
 
+      case "list_all_audit": {
+        const limit = Math.min(Number(body.limit) || 200, 500);
+        const { data, error } = await admin
+          .from("admin_audit_log")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(limit);
+        if (error) throw error;
+        return json({ log: data ?? [] });
+      }
+
+      // -------- ACTIVITY TIMELINE (per user) --------
+      case "list_activity": {
+        if (!target) return json({ error: "user_id required" }, 400);
+        const [{ data: prof }, { data: authUser }, { data: opts }, { data: aiLogs }, { data: pricing }, { data: adminLog }, { data: attempts }] =
+          await Promise.all([
+            admin.from("profiles").select("created_at,plan,subscription_status,updated_at,email,current_period_end").eq("user_id", target).maybeSingle(),
+            admin.auth.admin.getUserById(target),
+            admin.from("optimizations").select("id,title,role,company,ats_score,created_at").eq("user_id", target).order("created_at", { ascending: false }).limit(100),
+            admin.from("ai_usage_logs").select("feature,model,cost_inr,status,created_at").eq("user_id", target).order("created_at", { ascending: false }).limit(100),
+            admin.from("pricing_experiments").select("variant,event,tier,created_at").eq("user_id", target).order("created_at", { ascending: false }).limit(50),
+            admin.from("admin_audit_log").select("action,admin_email,details,created_at").eq("target_user_id", target).order("created_at", { ascending: false }).limit(50),
+            (async () => {
+              const em = prof?.email || authUser?.user?.email;
+              if (!em) return { data: [] };
+              return await admin.from("login_attempts").select("success,ip,user_agent,error,created_at").ilike("email", em).order("created_at", { ascending: false }).limit(50);
+            })(),
+          ]);
+        type Ev = { ts: string; kind: string; label: string; meta?: any };
+        const events: Ev[] = [];
+        if (prof?.created_at) events.push({ ts: prof.created_at, kind: "signup", label: "Account created" });
+        const au = authUser?.user;
+        if (au?.last_sign_in_at) events.push({ ts: au.last_sign_in_at, kind: "login", label: "Signed in", meta: { providers: au.app_metadata?.providers } });
+        (opts ?? []).forEach((o: any) => events.push({ ts: o.created_at, kind: "scan", label: `Scanned "${o.title || o.role || "Untitled"}"${o.company ? " · " + o.company : ""}`, meta: { id: o.id, score: o.ats_score } }));
+        (aiLogs ?? []).forEach((l: any) => events.push({ ts: l.created_at, kind: "ai", label: `AI: ${l.feature} (${l.model})`, meta: { cost: l.cost_inr, status: l.status } }));
+        (pricing ?? []).forEach((p: any) => events.push({ ts: p.created_at, kind: p.event === "success" ? "payment" : "pricing", label: `Pricing ${p.event} · ${p.variant} · ${p.tier || ""}` }));
+        (adminLog ?? []).forEach((a: any) => events.push({ ts: a.created_at, kind: "admin", label: `Admin: ${a.action}`, meta: { by: a.admin_email, details: a.details } }));
+        (attempts ?? []).forEach((a: any) => events.push({ ts: a.created_at, kind: a.success ? "login" : "login_failed", label: a.success ? "Sign in" : `Failed sign-in${a.error ? ": " + a.error : ""}`, meta: { ip: a.ip } }));
+        events.sort((a, b) => b.ts.localeCompare(a.ts));
+        return json({ timeline: events.slice(0, 300) });
+      }
+
+      // -------- ONLINE NOW / SESSIONS --------
+      case "list_online": {
+        const windowMin = Math.min(Math.max(Number(body.window_min) || 15, 1), 120);
+        const since = new Date(Date.now() - windowMin * 60000).toISOString();
+        const { data: presence } = await admin
+          .from("user_presence")
+          .select("user_id,last_seen,path")
+          .gte("last_seen", since)
+          .order("last_seen", { ascending: false })
+          .limit(200);
+        const ids = (presence ?? []).map((p: any) => p.user_id);
+        let profileMap: Record<string, any> = {};
+        if (ids.length) {
+          const { data: profs } = await admin.from("profiles").select("user_id,email,display_name,plan").in("user_id", ids);
+          (profs ?? []).forEach((p: any) => { profileMap[p.user_id] = p; });
+        }
+        const online = (presence ?? []).map((p: any) => ({
+          ...p,
+          email: profileMap[p.user_id]?.email,
+          display_name: profileMap[p.user_id]?.display_name,
+          plan: profileMap[p.user_id]?.plan,
+        }));
+        return json({ online, count: online.length, window_min: windowMin });
+      }
+
+      // -------- FAILED LOGINS --------
+      case "list_failed_logins": {
+        const limit = Math.min(Number(body.limit) || 100, 500);
+        const { data, error } = await admin
+          .from("login_attempts")
+          .select("*")
+          .eq("success", false)
+          .order("created_at", { ascending: false })
+          .limit(limit);
+        if (error) throw error;
+        // Group by IP for brute-force detection
+        const byIp: Record<string, number> = {};
+        (data ?? []).forEach((r: any) => { if (r.ip) byIp[r.ip] = (byIp[r.ip] || 0) + 1; });
+        const suspiciousIps = Object.entries(byIp).filter(([, n]) => n >= 5).map(([ip, count]) => ({ ip, count })).sort((a, b) => b.count - a.count);
+        return json({ attempts: data ?? [], suspicious_ips: suspiciousIps });
+      }
+
+      // -------- CONTENT MODERATION --------
+      case "view_content": {
+        const opt_id = String(body.optimization_id || "");
+        const reason = String(body.reason || "").trim();
+        if (!opt_id || !reason || reason.length < 5) return json({ error: "optimization_id and reason (min 5 chars) required" }, 400);
+        const { data, error } = await admin.from("optimizations").select("*").eq("id", opt_id).maybeSingle();
+        if (error) throw error;
+        if (!data) return json({ error: "not found" }, 404);
+        await admin.from("admin_audit_log").insert({
+          admin_email: user.email,
+          action: "view_content",
+          target_user_id: data.user_id,
+          details: { optimization_id: opt_id, reason, title: data.title, company: data.company },
+          ip,
+        });
+        return json({ optimization: data });
+      }
+
+      case "delete_optimization": {
+        const opt_id = String(body.optimization_id || "");
+        const reason = String(body.reason || "").trim();
+        if (!opt_id || !reason) return json({ error: "optimization_id and reason required" }, 400);
+        const { data: existing } = await admin.from("optimizations").select("user_id,title,company").eq("id", opt_id).maybeSingle();
+        const { error } = await admin.from("optimizations").delete().eq("id", opt_id);
+        if (error) throw error;
+        await admin.from("admin_audit_log").insert({
+          admin_email: user.email,
+          action: "delete_optimization",
+          target_user_id: existing?.user_id ?? null,
+          details: { optimization_id: opt_id, reason, title: existing?.title, company: existing?.company },
+          ip,
+        });
+        return json({ ok: true });
+      }
+
+      case "flag_optimization": {
+        const opt_id = String(body.optimization_id || "");
+        const reason = String(body.reason || "").trim();
+        const flagged = body.flagged !== false;
+        if (!opt_id) return json({ error: "optimization_id required" }, 400);
+        const patch: any = { flagged, flag_reason: flagged ? reason || null : null };
+        if (flagged) { patch.moderated_at = new Date().toISOString(); patch.moderated_by = user.email; }
+        const { error } = await admin.from("optimizations").update(patch).eq("id", opt_id);
+        if (error) throw error;
+        await audit({ optimization_id: opt_id, flagged, reason });
+        return json({ ok: true });
+      }
+
+      case "list_flagged_jds": {
+        // Scan last 500 recent optimizations for prompt-injection signals + already-flagged ones
+        const limit = Math.min(Number(body.limit) || 500, 1000);
+        const { data: opts, error } = await admin
+          .from("optimizations")
+          .select("id,user_id,title,company,role,job_description,ats_score,flagged,flag_reason,created_at")
+          .order("created_at", { ascending: false })
+          .limit(limit);
+        if (error) throw error;
+
+        const patterns: { re: RegExp; label: string }[] = [
+          { re: /ignore (all |the |any )?(previous|prior|above) (instructions|rules|prompts)/i, label: "ignore-previous" },
+          { re: /disregard (all |the |any )?(previous|prior|above)/i, label: "disregard" },
+          { re: /you are (now |actually )?(an?|the) [a-z ]{2,40}(assistant|ai|model|bot|agent)/i, label: "role-hijack" },
+          { re: /system\s*(prompt|message|instruction)/i, label: "system-prompt" },
+          { re: /reveal (your|the) (prompt|instructions|system)/i, label: "reveal-prompt" },
+          { re: /jailbreak|DAN mode|developer mode/i, label: "jailbreak" },
+          { re: /print (all|the) (env|api key|secret|password)/i, label: "exfil-secret" },
+          { re: /```[\s\S]*?ignore[\s\S]*?```/i, label: "injection-fence" },
+          { re: /<\s*script\b/i, label: "script-tag" },
+          { re: /(bomb|kill|slur|nsfw|porn|racist|nazi)/i, label: "abuse-keyword" },
+        ];
+        const grabIds = new Set<string>();
+        (opts ?? []).forEach((o: any) => { if (o.flagged) grabIds.add(o.id); });
+        const detected = (opts ?? []).map((o: any) => {
+          const hits: string[] = [];
+          const jd = (o.job_description || "").slice(0, 20000);
+          patterns.forEach((p) => { if (p.re.test(jd)) hits.push(p.label); });
+          const excerpt = jd.length > 600 ? jd.slice(0, 600) + "…" : jd;
+          return { ...o, hits, excerpt, suspicious: hits.length > 0 || o.flagged };
+        }).filter((o: any) => o.suspicious);
+        return json({ items: detected.slice(0, 200) });
+      }
+
+      // -------- HEALTH / STATS --------
+      case "quick_stats": {
+        const [{ count: onlineCount }, { count: failedCount }, { count: flaggedCount }] = await Promise.all([
+          admin.from("user_presence").select("*", { count: "exact", head: true }).gte("last_seen", new Date(Date.now() - 15 * 60000).toISOString()),
+          admin.from("login_attempts").select("*", { count: "exact", head: true }).eq("success", false).gte("created_at", new Date(Date.now() - 24 * 3600000).toISOString()),
+          admin.from("optimizations").select("*", { count: "exact", head: true }).eq("flagged", true),
+        ]);
+        return json({ online_15m: onlineCount ?? 0, failed_logins_24h: failedCount ?? 0, flagged_content: flaggedCount ?? 0 });
+      }
+
       default:
         return json({ error: `unknown action: ${action}` }, 400);
     }

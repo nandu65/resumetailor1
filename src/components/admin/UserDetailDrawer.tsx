@@ -12,8 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import {
   Loader2, Mail, KeyRound, ShieldOff, ShieldCheck, Trash2, IndianRupee, XCircle,
-  Ban, UserCheck, Copy, Plus, Minus, RotateCcw, Eye, CheckCircle2, Tag,
+  Ban, UserCheck, Copy, Plus, Minus, RotateCcw, Eye, CheckCircle2, Tag, Activity, Flag,
 } from "lucide-react";
+import { UserActivityTimeline } from "@/components/admin/AdminOpsPanels";
 
 interface Props {
   userId: string | null;
@@ -132,13 +133,20 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
           <div className="py-20 flex justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>
         ) : (
           <Tabs defaultValue="overview" className="mt-4">
-            <TabsList className="grid grid-cols-5 w-full">
+            <TabsList className="grid grid-cols-6 w-full">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="actions">Actions</TabsTrigger>
-              <TabsTrigger value="activity">Activity</TabsTrigger>
+              <TabsTrigger value="timeline">Timeline</TabsTrigger>
+              <TabsTrigger value="activity">Content</TabsTrigger>
               <TabsTrigger value="billing">Billing</TabsTrigger>
               <TabsTrigger value="audit">Audit</TabsTrigger>
             </TabsList>
+
+            {/* TIMELINE */}
+            <TabsContent value="timeline" className="mt-4">
+              <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground"><Activity className="h-4 w-4" /> Signups, sign-ins, scans, AI usage, payments, admin actions.</div>
+              {userId && <UserActivityTimeline userId={userId} />}
+            </TabsContent>
 
             {/* OVERVIEW */}
             <TabsContent value="overview" className="space-y-4 mt-4">
