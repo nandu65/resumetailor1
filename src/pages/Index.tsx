@@ -7,6 +7,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { ExitIntentPopup } from "@/components/ExitIntentPopup";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { FloatingResume } from "@/components/FloatingResume";
+import { SkillConstellation } from "@/components/SkillConstellation";
 import { TryNow } from "@/components/TryNow";
 import { OnboardingTour, shouldAutoStartTour } from "@/components/OnboardingTour";
 import razorpayLogo from "@/assets/razorpay.png.asset.json";
