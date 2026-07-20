@@ -15,7 +15,18 @@ type Node = {
   label?: string;
 };
 
-const LABELS = ["React", "Python", "SQL", "AWS", "Figma", "TypeScript", "Leadership", "Product", "AI/ML", "Node"];
+const LABELS = [
+  "₹18 LPA",
+  "Selected ✓",
+  "Hired at Google",
+  "Offer received",
+  "₹24 LPA",
+  "Interview cleared",
+  "Promoted",
+  "Dream job ✨",
+  "₹12 LPA",
+  "Joined Razorpay",
+];
 
 export function SkillConstellation() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
