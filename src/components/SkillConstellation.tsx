@@ -183,9 +183,9 @@ export function SkillConstellation() {
         ctx.fill();
 
         if (p.n.label) {
-          ctx.font = "500 10px ui-sans-serif, system-ui, -apple-system";
-          ctx.fillStyle = `hsla(152, 30%, 45%, ${0.55 + p.glow * 0.4})`;
-          ctx.fillText(p.n.label, p.x + r + 6, p.y + 3);
+          ctx.font = "600 11px ui-sans-serif, system-ui, -apple-system";
+          ctx.fillStyle = `hsla(152, 55%, 40%, ${0.7 + p.glow * 0.3})`;
+          ctx.fillText(p.n.label, p.x + r + 7, p.y + 4);
         }
       }
 
