@@ -7,6 +7,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { ExitIntentPopup } from "@/components/ExitIntentPopup";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { FloatingResume } from "@/components/FloatingResume";
+import { SkillConstellation } from "@/components/SkillConstellation";
 import { TryNow } from "@/components/TryNow";
 import { OnboardingTour, shouldAutoStartTour } from "@/components/OnboardingTour";
 import razorpayLogo from "@/assets/razorpay.png.asset.json";
@@ -38,6 +39,7 @@ const Index = () => {
       {/* Hero */}
       <section data-tour="hero" className="relative overflow-hidden bg-hero">
         <div className="absolute inset-0 bg-mesh pointer-events-none" />
+        <SkillConstellation />
         <FloatingResume />
         <div className="container relative pt-20 pb-28 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-accent px-4 py-1.5 text-xs font-medium text-accent-foreground mb-8 animate-fade-in">
