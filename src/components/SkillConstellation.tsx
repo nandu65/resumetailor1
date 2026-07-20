@@ -15,7 +15,18 @@ type Node = {
   label?: string;
 };
 
-const LABELS = ["React", "Python", "SQL", "AWS", "Figma", "TypeScript", "Leadership", "Product", "AI/ML", "Node"];
+const LABELS = [
+  "₹18 LPA",
+  "Selected ✓",
+  "Hired at Google",
+  "Offer received",
+  "₹24 LPA",
+  "Interview cleared",
+  "Promoted",
+  "Dream job ✨",
+  "₹12 LPA",
+  "Joined Razorpay",
+];
 
 export function SkillConstellation() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -172,9 +183,9 @@ export function SkillConstellation() {
         ctx.fill();
 
         if (p.n.label) {
-          ctx.font = "500 10px ui-sans-serif, system-ui, -apple-system";
-          ctx.fillStyle = `hsla(152, 30%, 45%, ${0.55 + p.glow * 0.4})`;
-          ctx.fillText(p.n.label, p.x + r + 6, p.y + 3);
+          ctx.font = "600 11px ui-sans-serif, system-ui, -apple-system";
+          ctx.fillStyle = `hsla(152, 55%, 40%, ${0.7 + p.glow * 0.3})`;
+          ctx.fillText(p.n.label, p.x + r + 7, p.y + 4);
         }
       }
 
