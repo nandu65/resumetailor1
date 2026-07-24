@@ -216,6 +216,8 @@ export function TryNow() {
           )}
         </DialogContent>
       </Dialog>
+
+      <AnalyzeProgress open={loading} title="Analyzing your resume" />
     </section>
   );
 }
