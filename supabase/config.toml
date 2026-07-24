@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.admin-growth-ops]
 verify_jwt = false
+
+[functions.share-view]
+verify_jwt = false
