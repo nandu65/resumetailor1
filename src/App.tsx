@@ -7,6 +7,7 @@ import Index from "./pages/Index.tsx";
 import Auth from "./pages/Auth.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import HistoryPage from "./pages/History.tsx";
 import Results from "./pages/Results.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Pricing from "./pages/Pricing.tsx";
