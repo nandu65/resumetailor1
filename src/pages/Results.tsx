@@ -185,31 +185,31 @@ export default function Results() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="container py-10 max-w-5xl">
+      <div className="container py-6 sm:py-10 max-w-5xl">
         <Button asChild variant="ghost" size="sm" className="mb-4">
           <Link to="/dashboard"><ArrowLeft className="h-4 w-4 mr-1.5" /> Back</Link>
         </Button>
 
-        <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-          <div>
-            <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">{opt.title || "Your tailored resume"}</h1>
-            <div className="flex flex-wrap gap-2 items-center text-sm text-muted-foreground mt-1.5">
-              {opt.company && <span className="inline-flex items-center gap-1"><Building2 className="h-3.5 w-3.5" />{opt.company}</span>}
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+          <div className="min-w-0">
+            <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight break-words">{opt.title || "Your tailored resume"}</h1>
+            <div className="flex flex-wrap gap-x-2 gap-y-1 items-center text-sm text-muted-foreground mt-1.5">
+              {opt.company && <span className="inline-flex items-center gap-1 min-w-0"><Building2 className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{opt.company}</span></span>}
               {opt.role && <span>· {opt.role}</span>}
               <span>· {new Date(opt.created_at).toLocaleString()}</span>
               {opt.rewrite_level && <span className="rounded-full bg-accent px-2 py-0.5 text-xs capitalize">{opt.rewrite_level} rewrite</span>}
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto md:shrink-0">
             <ShareScoreDialog score={score} previousScore={prevScore} />
             {!canDownload ? (
-              <Button size="lg" onClick={() => navigate("/pricing")} className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
+              <Button size="lg" onClick={() => navigate("/pricing")} className="w-full sm:w-auto bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
                 <Lock className="h-4 w-4 mr-2" /> Upgrade to download
               </Button>
             ) : (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="lg" className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
+                  <Button size="lg" className="w-full sm:w-auto bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
                     <Download className="h-4 w-4 mr-2" /> Download
                   </Button>
                 </DropdownMenuTrigger>
