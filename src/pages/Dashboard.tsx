@@ -103,10 +103,26 @@ export default function Dashboard() {
       .then(({ data }) => setHistory(data ?? []));
   };
 
+  const loadAppStats = async () => {
+    if (!user) return;
+    const { data } = await supabase.from("job_applications")
+      .select("id, company_name, job_title, status, application_date, created_at")
+      .eq("user_id", user.id).order("created_at", { ascending: false });
+    const rows = (data ?? []) as any[];
+    const has = (s: string) => rows.filter(r => r.status === s).length;
+    setAppStats({
+      total: rows.length,
+      interviews: has("interview") + has("offer"),
+      offers: has("offer"),
+      recent: rows.slice(0, 3),
+    });
+  };
+
   useEffect(() => {
     if (!user) return;
     loadProfile();
     loadHistory();
+    loadAppStats();
   }, [user]);
 
   const handleCancel = async () => {
