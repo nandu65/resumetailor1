@@ -6,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { extractTextFromFile } from "@/lib/extractText";
+import { validateResumeFile } from "@/lib/fileValidation";
+import { AnalyzeProgress } from "@/components/AnalyzeProgress";
 import { supabase } from "@/integrations/supabase/client";
 
 type Result = {
@@ -26,12 +28,18 @@ export function TryNow() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (f: File) => {
+    const v = validateResumeFile(f);
+    if (v.ok === false) {
+      toast.error(v.error);
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
     setFile(f);
     setResumeText("");
     try {
       const text = await extractTextFromFile(f);
       if (!text || text.length < 30) {
-        toast.error("Couldn't read enough text from that file. Try another one.");
+        toast.error("We couldn't read enough text from that file. Try another PDF, DOCX, or TXT.");
         setFile(null);
         return;
       }
@@ -39,6 +47,8 @@ export function TryNow() {
     } catch (e: any) {
       toast.error(e?.message || "Failed to read file");
       setFile(null);
+    } finally {
+      if (inputRef.current) inputRef.current.value = "";
     }
   };
 
@@ -206,6 +216,8 @@ export function TryNow() {
           )}
         </DialogContent>
       </Dialog>
+
+      <AnalyzeProgress open={loading} title="Analyzing your resume" />
     </section>
   );
 }

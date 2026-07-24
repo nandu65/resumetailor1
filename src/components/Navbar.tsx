@@ -38,7 +38,7 @@ export function Navbar() {
           {user ? (
             <>
               <Button asChild variant="ghost" size="sm"><Link to="/dashboard">Dashboard</Link></Button>
-              <Button size="sm" variant="outline" onClick={() => supabase.auth.signOut()}>Sign out</Button>
+              <Button size="sm" variant="outline" onClick={() => supabase.auth.signOut()} aria-label="Sign out of your account">Sign out</Button>
             </>
           ) : (
             <>
@@ -56,18 +56,20 @@ export function Navbar() {
           <Button
             variant="ghost"
             size="sm"
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label={open ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={open}
+            aria-controls="mobile-nav-panel"
             onClick={() => setOpen((v) => !v)}
             className="text-foreground"
           >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {open ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
           </Button>
         </div>
       </div>
 
       {/* Mobile dropdown panel */}
       {open && (
-        <div className="md:hidden border-t border-border/60 bg-background/95 backdrop-blur-xl">
+        <div id="mobile-nav-panel" role="menu" aria-label="Mobile navigation" className="md:hidden border-t border-border/60 bg-background/95 backdrop-blur-xl">
           <div className="container py-3 flex flex-col gap-1">
             <Button variant="ghost" className="justify-start" onClick={startTour}>
               <HelpCircle className="h-4 w-4 mr-2" /> Tour
@@ -83,6 +85,7 @@ export function Navbar() {
                 <Button
                   variant="outline"
                   className="justify-start"
+                  aria-label="Sign out of your account"
                   onClick={() => { setOpen(false); supabase.auth.signOut(); }}
                 >
                   Sign out

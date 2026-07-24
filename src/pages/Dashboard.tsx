@@ -10,6 +10,8 @@ import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { extractTextFromFile } from "@/lib/extractText";
+import { validateResumeFile } from "@/lib/fileValidation";
+import { AnalyzeProgress } from "@/components/AnalyzeProgress";
 import { toast } from "sonner";
 
 type RewriteLevel = "light" | "balanced" | "aggressive";
@@ -100,9 +102,19 @@ export default function Dashboard() {
   };
 
   const handleFile = async (file: File) => {
+    const v = validateResumeFile(file);
+    if (v.ok === false) {
+      toast.error(v.error);
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
     setExtracting(true);
     try {
       const text = await extractTextFromFile(file);
+      if (!text || text.trim().length < 30) {
+        toast.error("We couldn't read enough text from that file. Try a different PDF/DOCX or paste the text below.");
+        return;
+      }
       setResumeText(text);
       setFilename(file.name);
       toast.success(`Loaded ${file.name}`);
@@ -110,6 +122,7 @@ export default function Dashboard() {
       toast.error(e instanceof Error ? e.message : "Failed to read file");
     } finally {
       setExtracting(false);
+      if (fileRef.current) fileRef.current.value = "";
     }
   };
 
@@ -309,6 +322,9 @@ export default function Dashboard() {
             {analyzing ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Tailoring...</> : <><Sparkles className="h-4 w-4 mr-2" /> Analyze & Tailor</>}
           </Button>
         </div>
+
+        <AnalyzeProgress open={analyzing} />
+
 
         {history.length > 0 && (
           <div className="mt-12">
