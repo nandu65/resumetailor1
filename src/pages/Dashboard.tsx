@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Upload, FileText, Loader2, Sparkles, History, Building2, AlertTriangle, X, Link2, Download } from "lucide-react";
+import { Upload, FileText, Loader2, Sparkles, History, Building2, AlertTriangle, X, Link2, Download, RefreshCw, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -40,6 +40,27 @@ export default function Dashboard() {
   const [cancelling, setCancelling] = useState(false);
   const [jdUrl, setJdUrl] = useState("");
   const [importingUrl, setImportingUrl] = useState(false);
+  const [lastError, setLastError] = useState<string | null>(null);
+
+  // Persist inputs so a failed request / reload never forces the user to re-upload.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("dashboard:draft");
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d.resumeText) setResumeText(d.resumeText);
+      if (d.jobDescription) setJobDescription(d.jobDescription);
+      if (d.filename) setFilename(d.filename);
+      if (d.title) setTitle(d.title);
+      if (d.rewriteLevel) setRewriteLevel(d.rewriteLevel);
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("dashboard:draft", JSON.stringify({ resumeText, jobDescription, filename, title, rewriteLevel }));
+    } catch { /* ignore */ }
+  }, [resumeText, jobDescription, filename, title, rewriteLevel]);
 
   const handleImportUrl = async () => {
     const url = jdUrl.trim();
@@ -130,6 +151,7 @@ export default function Dashboard() {
     if (!resumeText.trim()) return toast.error("Add your resume first");
     if (!jobDescription.trim()) return toast.error("Paste the job description");
 
+    setLastError(null);
     setAnalyzing(true);
     try {
       const { data, error } = await supabase.functions.invoke("analyze-resume", {
@@ -137,14 +159,18 @@ export default function Dashboard() {
       });
       if (error) {
         const msg = (error as any).context?.error || error.message || "Analysis failed";
+        setLastError(msg);
         toast.error(msg);
         return;
       }
-      if (data?.error) { toast.error(data.error); return; }
+      if (data?.error) { setLastError(data.error); toast.error(data.error); return; }
       toast.success("Resume tailored!");
+      try { localStorage.removeItem("dashboard:draft"); } catch { /* ignore */ }
       navigate(`/results/${data.optimization.id}`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Something went wrong");
+      const msg = e instanceof Error ? e.message : "Something went wrong";
+      setLastError(msg);
+      toast.error(msg);
     } finally {
       setAnalyzing(false);
     }
@@ -316,6 +342,20 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {lastError && !analyzing && (
+          <div className="mt-6 rounded-xl border border-destructive/40 bg-destructive/10 p-4 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <div className="flex-1 text-sm min-w-0">
+              <div className="font-semibold text-destructive">Analysis failed</div>
+              <div className="text-muted-foreground mt-0.5 break-words">{lastError}</div>
+              <div className="text-xs text-muted-foreground mt-1">Your resume and job description are still loaded — no need to re-upload.</div>
+            </div>
+            <Button onClick={handleAnalyze} size="sm" variant="outline" className="shrink-0">
+              <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Retry
+            </Button>
+          </div>
+        )}
+
         <div className="mt-6 flex justify-end">
           <Button onClick={handleAnalyze} disabled={analyzing} size="lg"
             className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow h-12 px-8 text-base">
@@ -328,9 +368,14 @@ export default function Dashboard() {
 
         {history.length > 0 && (
           <div className="mt-12">
-            <div className="flex items-center gap-2 mb-4">
-              <History className="h-4 w-4 text-muted-foreground" />
-              <h3 className="font-display font-semibold">Your tailored versions</h3>
+            <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <History className="h-4 w-4 text-muted-foreground" />
+                <h3 className="font-display font-semibold">Your tailored versions</h3>
+              </div>
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/history">View all history <ArrowRight className="h-3.5 w-3.5 ml-1" /></Link>
+              </Button>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {history.map((h) => (

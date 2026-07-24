@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Download, Loader2, Target, Sparkles, ListChecks, Lightbulb, Tag, FileText, Mail, Building2, GraduationCap, BarChart3, Eye, Code2, ExternalLink, TrendingUp, TrendingDown, Minus, Award, Wand2, Lock } from "lucide-react";
+import { ArrowLeft, Download, Loader2, Target, Sparkles, ListChecks, Lightbulb, Tag, FileText, Mail, Building2, GraduationCap, BarChart3, Eye, Code2, ExternalLink, TrendingUp, TrendingDown, Minus, Award, Wand2, Lock, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Navbar } from "@/components/Navbar";
 import { DiffView } from "@/components/DiffView";
+import { KeywordHighlight } from "@/components/KeywordHighlight";
 import { ShareScoreDialog } from "@/components/ShareScoreDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { downloadResumePdf, downloadResumeDocx, downloadResumeTxt, downloadResumeMarkdown, downloadCoverLetterPdf } from "@/lib/pdfExport";
@@ -36,6 +37,8 @@ interface Optimization {
   cover_letter: string | null;
   company_brief: CompanyBrief | null;
   skill_gaps: SkillGap[] | null;
+  resume_text: string | null;
+  job_description: string | null;
   created_at: string;
 }
 
@@ -341,6 +344,7 @@ export default function Results() {
         <Tabs defaultValue="resume" className="w-full">
           <TabsList className="w-full justify-start flex-wrap h-auto bg-card border border-border">
             <TabsTrigger value="resume"><Sparkles className="h-4 w-4 mr-1.5" /> Tailored Resume</TabsTrigger>
+            <TabsTrigger value="map"><MapPin className="h-4 w-4 mr-1.5" /> Keyword Map</TabsTrigger>
             <TabsTrigger value="keywords"><BarChart3 className="h-4 w-4 mr-1.5" /> Keyword Density</TabsTrigger>
             <TabsTrigger value="cover"><Mail className="h-4 w-4 mr-1.5" /> Cover Letter</TabsTrigger>
             <TabsTrigger value="company"><Building2 className="h-4 w-4 mr-1.5" /> Company Brief</TabsTrigger>
@@ -510,6 +514,74 @@ export default function Results() {
               {isFree && <UpgradeOverlay label="AI bullet rewrites are a Pro feature" />}
             </div>
           </TabsContent>
+
+          {/* KEYWORD MAP — inline highlighting */}
+          <TabsContent value="map" className="mt-6 space-y-6">
+            {(() => {
+              const missing = opt.missing_keywords ?? [];
+              const present = (opt.keyword_density ?? [])
+                .filter((k) => k.resume_count > 0)
+                .map((k) => k.keyword);
+              const allJdKeywords = Array.from(new Set([...missing, ...present]));
+              const resumeText = opt.resume_text || "";
+              const jdText = opt.job_description || "";
+              return (
+                <>
+                  <div className="rounded-2xl border border-primary/20 bg-gradient-card p-5 shadow-card">
+                    <div className="flex items-center gap-2 mb-2">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      <h3 className="font-display font-semibold">Where the gaps live</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Missing keywords are highlighted <span className="bg-warning/25 border-b-2 border-warning font-semibold rounded-sm px-1">amber in the job description</span> — that's what the recruiter is looking for.
+                      Matched keywords already in your resume show as <span className="bg-primary/15 text-primary border-b-2 border-primary/60 font-semibold rounded-sm px-1">primary green</span>.
+                    </p>
+                    {missing.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {missing.map((k) => (
+                          <span key={k} className="inline-flex items-center rounded-full border border-warning/40 bg-warning/10 px-2.5 py-0.5 text-xs font-medium">
+                            {k}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid lg:grid-cols-2 gap-5">
+                    <Card icon={FileText} title="Your resume">
+                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold mb-2">
+                        Green highlights = keywords you already cover
+                      </div>
+                      <div className="max-h-[520px] overflow-auto rounded-lg border border-border bg-background p-4">
+                        <KeywordHighlight
+                          text={resumeText}
+                          keywords={present}
+                          tone="present"
+                          emptyLabel="Original resume text isn't stored for this run."
+                        />
+                      </div>
+                    </Card>
+                    <Card icon={Building2} title="Job description">
+                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold mb-2">
+                        Amber highlights = missing from your resume · Green = present
+                      </div>
+                      <div className="max-h-[520px] overflow-auto rounded-lg border border-border bg-background p-4 space-y-0">
+                        {jdText ? (
+                          <JdMap text={jdText} missing={missing} present={present} />
+                        ) : (
+                          <p className="text-sm text-muted-foreground italic">Job description isn't stored for this run.</p>
+                        )}
+                      </div>
+                      {allJdKeywords.length === 0 && (
+                        <p className="text-xs text-muted-foreground mt-2">No keyword data available yet.</p>
+                      )}
+                    </Card>
+                  </div>
+                </>
+              );
+            })()}
+          </TabsContent>
+
 
           {/* KEYWORD DENSITY */}
           <TabsContent value="keywords" className="mt-6">
@@ -823,3 +895,44 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     </div>
   );
 }
+
+function escapeRegex(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** JD map: highlights missing (amber) and present (primary) keywords in one pass. */
+function JdMap({ text, missing, present }: { text: string; missing: string[]; present: string[] }) {
+  const missSet = new Set(missing.map((k) => k.toLowerCase()));
+  const presSet = new Set(present.map((k) => k.toLowerCase()));
+  const all = Array.from(new Set([...missing, ...present]))
+    .filter((k) => k && k.trim().length > 1)
+    .sort((a, b) => b.length - a.length);
+  if (all.length === 0) {
+    return <pre className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 font-sans">{text}</pre>;
+  }
+  const pattern = new RegExp(`(${all.map(escapeRegex).join("|")})`, "gi");
+  const parts: { value: string; kind: "none" | "miss" | "pres" }[] = [];
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = pattern.exec(text)) !== null) {
+    if (m.index > last) parts.push({ value: text.slice(last, m.index), kind: "none" });
+    const lower = m[0].toLowerCase();
+    const kind: "miss" | "pres" = missSet.has(lower) ? "miss" : presSet.has(lower) ? "pres" : "none" as any;
+    parts.push({ value: m[0], kind });
+    last = m.index + m[0].length;
+    if (m[0].length === 0) pattern.lastIndex++;
+  }
+  if (last < text.length) parts.push({ value: text.slice(last), kind: "none" });
+  return (
+    <pre className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 font-sans">
+      {parts.map((p, i) => {
+        if (p.kind === "miss")
+          return <mark key={i} className="bg-warning/25 text-foreground border-b-2 border-warning font-semibold rounded-sm px-0.5">{p.value}</mark>;
+        if (p.kind === "pres")
+          return <mark key={i} className="bg-primary/15 text-primary border-b-2 border-primary/60 font-semibold rounded-sm px-0.5">{p.value}</mark>;
+        return <span key={i}>{p.value}</span>;
+      })}
+    </pre>
+  );
+}
+
