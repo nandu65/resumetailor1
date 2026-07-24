@@ -28,12 +28,18 @@ export function TryNow() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (f: File) => {
+    const v = validateResumeFile(f);
+    if (v.ok === false) {
+      toast.error(v.error);
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
     setFile(f);
     setResumeText("");
     try {
       const text = await extractTextFromFile(f);
       if (!text || text.length < 30) {
-        toast.error("Couldn't read enough text from that file. Try another one.");
+        toast.error("We couldn't read enough text from that file. Try another PDF, DOCX, or TXT.");
         setFile(null);
         return;
       }
@@ -41,6 +47,8 @@ export function TryNow() {
     } catch (e: any) {
       toast.error(e?.message || "Failed to read file");
       setFile(null);
+    } finally {
+      if (inputRef.current) inputRef.current.value = "";
     }
   };
 
