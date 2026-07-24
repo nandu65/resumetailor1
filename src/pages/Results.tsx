@@ -344,6 +344,7 @@ export default function Results() {
         <Tabs defaultValue="resume" className="w-full">
           <TabsList className="w-full justify-start flex-wrap h-auto bg-card border border-border">
             <TabsTrigger value="resume"><Sparkles className="h-4 w-4 mr-1.5" /> Tailored Resume</TabsTrigger>
+            <TabsTrigger value="map"><MapPin className="h-4 w-4 mr-1.5" /> Keyword Map</TabsTrigger>
             <TabsTrigger value="keywords"><BarChart3 className="h-4 w-4 mr-1.5" /> Keyword Density</TabsTrigger>
             <TabsTrigger value="cover"><Mail className="h-4 w-4 mr-1.5" /> Cover Letter</TabsTrigger>
             <TabsTrigger value="company"><Building2 className="h-4 w-4 mr-1.5" /> Company Brief</TabsTrigger>
