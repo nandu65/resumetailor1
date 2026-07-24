@@ -40,6 +40,27 @@ export default function Dashboard() {
   const [cancelling, setCancelling] = useState(false);
   const [jdUrl, setJdUrl] = useState("");
   const [importingUrl, setImportingUrl] = useState(false);
+  const [lastError, setLastError] = useState<string | null>(null);
+
+  // Persist inputs so a failed request / reload never forces the user to re-upload.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("dashboard:draft");
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d.resumeText) setResumeText(d.resumeText);
+      if (d.jobDescription) setJobDescription(d.jobDescription);
+      if (d.filename) setFilename(d.filename);
+      if (d.title) setTitle(d.title);
+      if (d.rewriteLevel) setRewriteLevel(d.rewriteLevel);
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("dashboard:draft", JSON.stringify({ resumeText, jobDescription, filename, title, rewriteLevel }));
+    } catch { /* ignore */ }
+  }, [resumeText, jobDescription, filename, title, rewriteLevel]);
 
   const handleImportUrl = async () => {
     const url = jdUrl.trim();
