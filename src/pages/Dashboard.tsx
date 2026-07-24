@@ -151,6 +151,7 @@ export default function Dashboard() {
     if (!resumeText.trim()) return toast.error("Add your resume first");
     if (!jobDescription.trim()) return toast.error("Paste the job description");
 
+    setLastError(null);
     setAnalyzing(true);
     try {
       const { data, error } = await supabase.functions.invoke("analyze-resume", {
@@ -158,14 +159,18 @@ export default function Dashboard() {
       });
       if (error) {
         const msg = (error as any).context?.error || error.message || "Analysis failed";
+        setLastError(msg);
         toast.error(msg);
         return;
       }
-      if (data?.error) { toast.error(data.error); return; }
+      if (data?.error) { setLastError(data.error); toast.error(data.error); return; }
       toast.success("Resume tailored!");
+      try { localStorage.removeItem("dashboard:draft"); } catch { /* ignore */ }
       navigate(`/results/${data.optimization.id}`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Something went wrong");
+      const msg = e instanceof Error ? e.message : "Something went wrong";
+      setLastError(msg);
+      toast.error(msg);
     } finally {
       setAnalyzing(false);
     }
