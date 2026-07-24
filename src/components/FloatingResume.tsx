@@ -13,7 +13,7 @@ export const FloatingResume = () => {
   return (
     <div
       aria-hidden
-      className="floating-resume-root pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
+      className="floating-resume-root pointer-events-none absolute inset-0 hidden sm:flex items-center justify-center overflow-hidden"
       style={{ perspective: "1600px" }}
     >
       {/* Glow halo — hidden on mobile to avoid blur repaint cost */}
