@@ -103,7 +103,7 @@ export default function Dashboard() {
 
   const handleFile = async (file: File) => {
     const v = validateResumeFile(file);
-    if (!v.ok) {
+    if (v.ok === false) {
       toast.error(v.error);
       if (fileRef.current) fileRef.current.value = "";
       return;
