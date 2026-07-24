@@ -85,6 +85,7 @@ export function Navbar() {
                 <Button
                   variant="outline"
                   className="justify-start"
+                  aria-label="Sign out of your account"
                   onClick={() => { setOpen(false); supabase.auth.signOut(); }}
                 >
                   Sign out
