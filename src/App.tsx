@@ -24,6 +24,8 @@ import Terms from "./pages/legal/Terms.tsx";
 import Privacy from "./pages/legal/Privacy.tsx";
 import Refund from "./pages/legal/Refund.tsx";
 import Admin from "./pages/Admin.tsx";
+import SharePage from "./pages/SharePage.tsx";
+import Applications from "./pages/Applications.tsx";
 import { usePresence } from "./hooks/usePresence";
 
 function AppRoutes() {
@@ -52,6 +54,8 @@ function AppRoutes() {
       <Route path="/refund" element={<Refund />} />
       <Route path="/refund-policy" element={<Refund />} />
       <Route path="/admin" element={<Admin />} />
+      <Route path="/applications" element={<ProtectedRoute><Applications /></ProtectedRoute>} />
+      <Route path="/share/:token" element={<SharePage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

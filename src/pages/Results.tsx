@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Download, Loader2, Target, Sparkles, ListChecks, Lightbulb, Tag, FileText, Mail, Building2, GraduationCap, BarChart3, Eye, Code2, ExternalLink, TrendingUp, TrendingDown, Minus, Award, Wand2, Lock, MapPin } from "lucide-react";
+import { ArrowLeft, Download, Loader2, Target, Sparkles, ListChecks, Lightbulb, Tag, FileText, Mail, Building2, GraduationCap, BarChart3, Eye, Code2, ExternalLink, TrendingUp, TrendingDown, Minus, Award, Wand2, Lock, MapPin, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -204,7 +204,29 @@ export default function Results() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto md:shrink-0">
-            <ShareScoreDialog score={score} previousScore={prevScore} />
+            <ShareScoreDialog
+              score={score}
+              previousScore={prevScore}
+              recruiterScore={recruiter || null}
+              optimizationId={opt.id}
+              company={opt.company}
+              role={opt.role}
+              title={opt.title}
+            />
+            <Button size="lg" variant="outline" onClick={() => {
+              try {
+                localStorage.setItem("app:prefill", JSON.stringify({
+                  company_name: opt.company || "",
+                  job_title: opt.role || opt.title || "",
+                  job_description: (opt as any).job_description || "",
+                  optimization_id: opt.id,
+                  ats_score: score,
+                  recruiter_score: recruiter || null,
+                  status: "applied",
+                }));
+              } catch {}
+              navigate("/applications?new=1");
+            }} className="w-full sm:w-auto"><Briefcase className="h-4 w-4 mr-2" /> Track This Application</Button>
             {!canDownload ? (
               <Button size="lg" onClick={() => navigate("/pricing")} className="w-full sm:w-auto bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
                 <Lock className="h-4 w-4 mr-2" /> Upgrade to download

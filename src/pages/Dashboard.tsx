@@ -41,6 +41,9 @@ export default function Dashboard() {
   const [jdUrl, setJdUrl] = useState("");
   const [importingUrl, setImportingUrl] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [appStats, setAppStats] = useState<{ total: number; interviews: number; offers: number; recent: any[] } | null>(null);
 
   // Persist inputs so a failed request / reload never forces the user to re-upload.
   useEffect(() => {
@@ -100,10 +103,26 @@ export default function Dashboard() {
       .then(({ data }) => setHistory(data ?? []));
   };
 
+  const loadAppStats = async () => {
+    if (!user) return;
+    const { data } = await supabase.from("job_applications")
+      .select("id, company_name, job_title, status, application_date, created_at")
+      .eq("user_id", user.id).order("created_at", { ascending: false });
+    const rows = (data ?? []) as any[];
+    const has = (s: string) => rows.filter(r => r.status === s).length;
+    setAppStats({
+      total: rows.length,
+      interviews: has("interview") + has("offer"),
+      offers: has("offer"),
+      recent: rows.slice(0, 3),
+    });
+  };
+
   useEffect(() => {
     if (!user) return;
     loadProfile();
     loadHistory();
+    loadAppStats();
   }, [user]);
 
   const handleCancel = async () => {
@@ -123,8 +142,10 @@ export default function Dashboard() {
   };
 
   const handleFile = async (file: File) => {
+    setFileError(null);
     const v = validateResumeFile(file);
     if (v.ok === false) {
+      setFileError(v.error);
       toast.error(v.error);
       if (fileRef.current) fileRef.current.value = "";
       return;
@@ -249,6 +270,40 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Applications widget */}
+        <div className="mb-6 rounded-2xl border border-border bg-gradient-card p-5 shadow-card">
+          <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+            <div>
+              <h2 className="font-display font-semibold text-lg">Your Job Search</h2>
+              <p className="text-xs text-muted-foreground">Track every application, interview, and offer in one place.</p>
+            </div>
+            <div className="flex gap-2">
+              <Button asChild variant="outline" size="sm"><Link to="/applications">View all</Link></Button>
+              <Button asChild size="sm" className="bg-gradient-primary text-primary-foreground hover:opacity-90"><Link to="/applications?new=1"><Sparkles className="h-3.5 w-3.5 mr-1" /> Add Application</Link></Button>
+            </div>
+          </div>
+          {appStats && appStats.total > 0 ? (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                <div className="rounded-lg border border-border bg-background p-3"><div className="text-[11px] uppercase text-muted-foreground">Total</div><div className="font-display text-xl font-bold">{appStats.total}</div></div>
+                <div className="rounded-lg border border-border bg-background p-3"><div className="text-[11px] uppercase text-muted-foreground">Interviews</div><div className="font-display text-xl font-bold">{appStats.interviews}</div></div>
+                <div className="rounded-lg border border-border bg-background p-3"><div className="text-[11px] uppercase text-muted-foreground">Offers</div><div className="font-display text-xl font-bold">{appStats.offers}</div></div>
+                <div className="rounded-lg border border-border bg-background p-3"><div className="text-[11px] uppercase text-muted-foreground">Active</div><div className="font-display text-xl font-bold">{appStats.total - appStats.recent.filter((r: any) => r.status === "rejected" || r.status === "withdrawn").length}</div></div>
+              </div>
+              <div className="grid gap-2">
+                {appStats.recent.map((r: any) => (
+                  <Link key={r.id} to="/applications" className="flex items-center justify-between rounded-lg border border-border bg-background/60 px-3 py-2 text-sm hover:bg-accent/50">
+                    <div className="min-w-0"><div className="font-medium truncate">{r.company_name}</div><div className="text-xs text-muted-foreground truncate">{r.job_title}</div></div>
+                    <span className="text-xs capitalize text-muted-foreground shrink-0 ml-3">{r.status}</span>
+                  </Link>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="text-sm text-muted-foreground py-2">No applications yet — <Link to="/applications?new=1" className="text-primary underline">add your first</Link>.</div>
+          )}
+        </div>
+
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Resume card */}
           <div className="rounded-2xl border border-border bg-gradient-card p-6 shadow-card">
@@ -263,21 +318,41 @@ export default function Dashboard() {
             <input ref={fileRef} type="file" accept=".pdf,.docx,.txt" className="hidden"
               onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
 
-            <button
+            <div
+              role="button"
+              tabIndex={0}
+              aria-label="Upload resume file. Drag and drop or click to browse."
               onClick={() => fileRef.current?.click()}
-              disabled={extracting}
-              className="w-full rounded-xl border-2 border-dashed border-border hover:border-primary hover:bg-accent/40 transition-colors p-8 text-center group"
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileRef.current?.click(); } }}
+              onDragEnter={(e) => { e.preventDefault(); setDragActive(true); }}
+              onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+              onDragLeave={(e) => { e.preventDefault(); setDragActive(false); }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragActive(false);
+                const f = e.dataTransfer.files?.[0];
+                if (f) handleFile(f);
+              }}
+              className={`w-full rounded-xl border-2 border-dashed p-8 text-center group cursor-pointer transition-colors ${
+                dragActive ? "border-primary bg-primary/5" : fileError ? "border-destructive/50 bg-destructive/5" : "border-border hover:border-primary hover:bg-accent/40"
+              } ${extracting ? "opacity-70 pointer-events-none" : ""}`}
             >
               {extracting ? (
                 <Loader2 className="h-6 w-6 mx-auto animate-spin text-primary" />
               ) : (
                 <>
-                  <Upload className="h-6 w-6 mx-auto text-muted-foreground group-hover:text-primary transition-colors" />
-                  <div className="mt-2 text-sm font-medium">{filename ?? "Click to upload"}</div>
-                  <div className="text-xs text-muted-foreground">PDF, DOCX, or TXT</div>
+                  <Upload className={`h-6 w-6 mx-auto transition-colors ${dragActive ? "text-primary" : "text-muted-foreground group-hover:text-primary"}`} />
+                  <div className="mt-2 text-sm font-medium">{filename ?? (dragActive ? "Drop your resume here" : "Drag & drop, or click to upload")}</div>
+                  <div className="text-xs text-muted-foreground">PDF, DOCX, or TXT · max 5 MB</div>
                 </>
               )}
-            </button>
+            </div>
+            {fileError && (
+              <div role="alert" className="mt-2 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-2.5 text-xs text-destructive">
+                <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                <span>{fileError}</span>
+              </div>
+            )}
 
             <div className="mt-4">
               <Label htmlFor="resume" className="text-xs">Or paste resume text</Label>
