@@ -102,9 +102,19 @@ export default function Dashboard() {
   };
 
   const handleFile = async (file: File) => {
+    const v = validateResumeFile(file);
+    if (!v.ok) {
+      toast.error(v.error);
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
     setExtracting(true);
     try {
       const text = await extractTextFromFile(file);
+      if (!text || text.trim().length < 30) {
+        toast.error("We couldn't read enough text from that file. Try a different PDF/DOCX or paste the text below.");
+        return;
+      }
       setResumeText(text);
       setFilename(file.name);
       toast.success(`Loaded ${file.name}`);
@@ -112,6 +122,7 @@ export default function Dashboard() {
       toast.error(e instanceof Error ? e.message : "Failed to read file");
     } finally {
       setExtracting(false);
+      if (fileRef.current) fileRef.current.value = "";
     }
   };
 
