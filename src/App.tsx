@@ -34,6 +34,7 @@ function AppRoutes() {
       <Route path="/auth" element={<Auth />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
       <Route path="/results/:id" element={<ProtectedRoute><Results /></ProtectedRoute>} />
       <Route path="/tools/cover-letter" element={<CoverLetterTool />} />
       <Route path="/tools/company-brief" element={<CompanyBriefTool />} />
