@@ -41,6 +41,9 @@ export default function Dashboard() {
   const [jdUrl, setJdUrl] = useState("");
   const [importingUrl, setImportingUrl] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [appStats, setAppStats] = useState<{ total: number; interviews: number; offers: number; recent: any[] } | null>(null);
 
   // Persist inputs so a failed request / reload never forces the user to re-upload.
   useEffect(() => {
@@ -123,8 +126,10 @@ export default function Dashboard() {
   };
 
   const handleFile = async (file: File) => {
+    setFileError(null);
     const v = validateResumeFile(file);
     if (v.ok === false) {
+      setFileError(v.error);
       toast.error(v.error);
       if (fileRef.current) fileRef.current.value = "";
       return;
@@ -263,21 +268,41 @@ export default function Dashboard() {
             <input ref={fileRef} type="file" accept=".pdf,.docx,.txt" className="hidden"
               onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
 
-            <button
+            <div
+              role="button"
+              tabIndex={0}
+              aria-label="Upload resume file. Drag and drop or click to browse."
               onClick={() => fileRef.current?.click()}
-              disabled={extracting}
-              className="w-full rounded-xl border-2 border-dashed border-border hover:border-primary hover:bg-accent/40 transition-colors p-8 text-center group"
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileRef.current?.click(); } }}
+              onDragEnter={(e) => { e.preventDefault(); setDragActive(true); }}
+              onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+              onDragLeave={(e) => { e.preventDefault(); setDragActive(false); }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragActive(false);
+                const f = e.dataTransfer.files?.[0];
+                if (f) handleFile(f);
+              }}
+              className={`w-full rounded-xl border-2 border-dashed p-8 text-center group cursor-pointer transition-colors ${
+                dragActive ? "border-primary bg-primary/5" : fileError ? "border-destructive/50 bg-destructive/5" : "border-border hover:border-primary hover:bg-accent/40"
+              } ${extracting ? "opacity-70 pointer-events-none" : ""}`}
             >
               {extracting ? (
                 <Loader2 className="h-6 w-6 mx-auto animate-spin text-primary" />
               ) : (
                 <>
-                  <Upload className="h-6 w-6 mx-auto text-muted-foreground group-hover:text-primary transition-colors" />
-                  <div className="mt-2 text-sm font-medium">{filename ?? "Click to upload"}</div>
-                  <div className="text-xs text-muted-foreground">PDF, DOCX, or TXT</div>
+                  <Upload className={`h-6 w-6 mx-auto transition-colors ${dragActive ? "text-primary" : "text-muted-foreground group-hover:text-primary"}`} />
+                  <div className="mt-2 text-sm font-medium">{filename ?? (dragActive ? "Drop your resume here" : "Drag & drop, or click to upload")}</div>
+                  <div className="text-xs text-muted-foreground">PDF, DOCX, or TXT · max 5 MB</div>
                 </>
               )}
-            </button>
+            </div>
+            {fileError && (
+              <div role="alert" className="mt-2 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-2.5 text-xs text-destructive">
+                <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                <span>{fileError}</span>
+              </div>
+            )}
 
             <div className="mt-4">
               <Label htmlFor="resume" className="text-xs">Or paste resume text</Label>
