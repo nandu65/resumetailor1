@@ -38,6 +38,7 @@ export function Navbar() {
           {user ? (
             <>
               <Button asChild variant="ghost" size="sm"><Link to="/dashboard">Dashboard</Link></Button>
+              <Button asChild variant="ghost" size="sm"><Link to="/applications">Applications</Link></Button>
               <Button size="sm" variant="outline" onClick={() => supabase.auth.signOut()} aria-label="Sign out of your account">Sign out</Button>
             </>
           ) : (
@@ -81,6 +82,9 @@ export function Navbar() {
               <>
                 <Button asChild variant="ghost" className="justify-start" onClick={() => setOpen(false)}>
                   <Link to="/dashboard">Dashboard</Link>
+                </Button>
+                <Button asChild variant="ghost" className="justify-start" onClick={() => setOpen(false)}>
+                  <Link to="/applications">Applications</Link>
                 </Button>
                 <Button
                   variant="outline"
