@@ -6,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { extractTextFromFile } from "@/lib/extractText";
+import { validateResumeFile } from "@/lib/fileValidation";
+import { AnalyzeProgress } from "@/components/AnalyzeProgress";
 import { supabase } from "@/integrations/supabase/client";
 
 type Result = {
