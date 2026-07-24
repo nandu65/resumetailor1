@@ -10,6 +10,8 @@ import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { extractTextFromFile } from "@/lib/extractText";
+import { validateResumeFile } from "@/lib/fileValidation";
+import { AnalyzeProgress } from "@/components/AnalyzeProgress";
 import { toast } from "sonner";
 
 type RewriteLevel = "light" | "balanced" | "aggressive";
