@@ -323,6 +323,9 @@ export default function Dashboard() {
           </Button>
         </div>
 
+        <AnalyzeProgress open={analyzing} />
+
+
         {history.length > 0 && (
           <div className="mt-12">
             <div className="flex items-center gap-2 mb-4">
