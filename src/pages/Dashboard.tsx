@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Upload, FileText, Loader2, Sparkles, History, Building2, AlertTriangle, X, Link2, Download } from "lucide-react";
+import { Upload, FileText, Loader2, Sparkles, History, Building2, AlertTriangle, X, Link2, Download, RefreshCw, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
