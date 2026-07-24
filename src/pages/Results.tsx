@@ -936,5 +936,3 @@ function JdMap({ text, missing, present }: { text: string; missing: string[]; pr
   );
 }
 
-  );
-}
