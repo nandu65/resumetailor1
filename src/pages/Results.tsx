@@ -895,3 +895,46 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     </div>
   );
 }
+
+function escapeRegex(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** JD map: highlights missing (amber) and present (primary) keywords in one pass. */
+function JdMap({ text, missing, present }: { text: string; missing: string[]; present: string[] }) {
+  const missSet = new Set(missing.map((k) => k.toLowerCase()));
+  const presSet = new Set(present.map((k) => k.toLowerCase()));
+  const all = Array.from(new Set([...missing, ...present]))
+    .filter((k) => k && k.trim().length > 1)
+    .sort((a, b) => b.length - a.length);
+  if (all.length === 0) {
+    return <pre className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 font-sans">{text}</pre>;
+  }
+  const pattern = new RegExp(`(${all.map(escapeRegex).join("|")})`, "gi");
+  const parts: { value: string; kind: "none" | "miss" | "pres" }[] = [];
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = pattern.exec(text)) !== null) {
+    if (m.index > last) parts.push({ value: text.slice(last, m.index), kind: "none" });
+    const lower = m[0].toLowerCase();
+    const kind: "miss" | "pres" = missSet.has(lower) ? "miss" : presSet.has(lower) ? "pres" : "none" as any;
+    parts.push({ value: m[0], kind });
+    last = m.index + m[0].length;
+    if (m[0].length === 0) pattern.lastIndex++;
+  }
+  if (last < text.length) parts.push({ value: text.slice(last), kind: "none" });
+  return (
+    <pre className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 font-sans">
+      {parts.map((p, i) => {
+        if (p.kind === "miss")
+          return <mark key={i} className="bg-warning/25 text-foreground border-b-2 border-warning font-semibold rounded-sm px-0.5">{p.value}</mark>;
+        if (p.kind === "pres")
+          return <mark key={i} className="bg-primary/15 text-primary border-b-2 border-primary/60 font-semibold rounded-sm px-0.5">{p.value}</mark>;
+        return <span key={i}>{p.value}</span>;
+      })}
+    </pre>
+  );
+}
+
+  );
+}
