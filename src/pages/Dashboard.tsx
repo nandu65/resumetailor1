@@ -342,6 +342,20 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {lastError && !analyzing && (
+          <div className="mt-6 rounded-xl border border-destructive/40 bg-destructive/10 p-4 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <div className="flex-1 text-sm min-w-0">
+              <div className="font-semibold text-destructive">Analysis failed</div>
+              <div className="text-muted-foreground mt-0.5 break-words">{lastError}</div>
+              <div className="text-xs text-muted-foreground mt-1">Your resume and job description are still loaded — no need to re-upload.</div>
+            </div>
+            <Button onClick={handleAnalyze} size="sm" variant="outline" className="shrink-0">
+              <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Retry
+            </Button>
+          </div>
+        )}
+
         <div className="mt-6 flex justify-end">
           <Button onClick={handleAnalyze} disabled={analyzing} size="lg"
             className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow h-12 px-8 text-base">
@@ -354,9 +368,14 @@ export default function Dashboard() {
 
         {history.length > 0 && (
           <div className="mt-12">
-            <div className="flex items-center gap-2 mb-4">
-              <History className="h-4 w-4 text-muted-foreground" />
-              <h3 className="font-display font-semibold">Your tailored versions</h3>
+            <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <History className="h-4 w-4 text-muted-foreground" />
+                <h3 className="font-display font-semibold">Your tailored versions</h3>
+              </div>
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/history">View all history <ArrowRight className="h-3.5 w-3.5 ml-1" /></Link>
+              </Button>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {history.map((h) => (
