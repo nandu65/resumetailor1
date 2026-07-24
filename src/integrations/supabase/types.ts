@@ -86,6 +86,47 @@ export type Database = {
         }
         Relationships: []
       }
+      application_events: {
+        Row: {
+          application_id: string
+          created_at: string
+          event_date: string
+          event_title: string
+          event_type: string
+          id: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          event_date?: string
+          event_title: string
+          event_type: string
+          id?: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          event_date?: string
+          event_title?: string
+          event_type?: string
+          id?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_events_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "job_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       broadcast_recipients: {
         Row: {
           broadcast_id: string
@@ -296,6 +337,89 @@ export type Database = {
           updated_by?: string | null
         }
         Relationships: []
+      }
+      job_applications: {
+        Row: {
+          application_date: string | null
+          assessment_date: string | null
+          ats_score: number | null
+          company_name: string
+          created_at: string
+          follow_up_date: string | null
+          id: string
+          interview_date: string | null
+          job_description: string | null
+          job_title: string
+          job_url: string | null
+          location: string | null
+          notes: string | null
+          optimization_id: string | null
+          recruiter_email: string | null
+          recruiter_name: string | null
+          recruiter_score: number | null
+          salary_range: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          work_type: string | null
+        }
+        Insert: {
+          application_date?: string | null
+          assessment_date?: string | null
+          ats_score?: number | null
+          company_name: string
+          created_at?: string
+          follow_up_date?: string | null
+          id?: string
+          interview_date?: string | null
+          job_description?: string | null
+          job_title: string
+          job_url?: string | null
+          location?: string | null
+          notes?: string | null
+          optimization_id?: string | null
+          recruiter_email?: string | null
+          recruiter_name?: string | null
+          recruiter_score?: number | null
+          salary_range?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          work_type?: string | null
+        }
+        Update: {
+          application_date?: string | null
+          assessment_date?: string | null
+          ats_score?: number | null
+          company_name?: string
+          created_at?: string
+          follow_up_date?: string | null
+          id?: string
+          interview_date?: string | null
+          job_description?: string | null
+          job_title?: string
+          job_url?: string | null
+          location?: string | null
+          notes?: string | null
+          optimization_id?: string | null
+          recruiter_email?: string | null
+          recruiter_name?: string | null
+          recruiter_score?: number | null
+          salary_range?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          work_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_optimization_id_fkey"
+            columns: ["optimization_id"]
+            isOneToOne: false
+            referencedRelation: "optimizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       leads: {
         Row: {
@@ -714,6 +838,74 @@ export type Database = {
         }
         Relationships: []
       }
+      resume_score_shares: {
+        Row: {
+          ats_score: number | null
+          company: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          job_match_score: number | null
+          optimization_id: string | null
+          recruiter_score: number | null
+          role: string | null
+          score_breakdown: Json | null
+          score_label: string | null
+          share_token: string
+          title: string | null
+          updated_at: string
+          user_id: string
+          view_count: number
+        }
+        Insert: {
+          ats_score?: number | null
+          company?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          job_match_score?: number | null
+          optimization_id?: string | null
+          recruiter_score?: number | null
+          role?: string | null
+          score_breakdown?: Json | null
+          score_label?: string | null
+          share_token: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+          view_count?: number
+        }
+        Update: {
+          ats_score?: number | null
+          company?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          job_match_score?: number | null
+          optimization_id?: string | null
+          recruiter_score?: number | null
+          role?: string | null
+          score_breakdown?: Json | null
+          score_label?: string | null
+          share_token?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resume_score_shares_optimization_id_fkey"
+            columns: ["optimization_id"]
+            isOneToOne: false
+            referencedRelation: "optimizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_presence: {
         Row: {
           last_seen: string
@@ -743,6 +935,7 @@ export type Database = {
       }
       consume_scan: { Args: { _user_id: string }; Returns: Json }
       ensure_referral_code: { Args: { _user_id: string }; Returns: string }
+      increment_share_view: { Args: { _token: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
