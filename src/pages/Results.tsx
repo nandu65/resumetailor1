@@ -37,6 +37,8 @@ interface Optimization {
   cover_letter: string | null;
   company_brief: CompanyBrief | null;
   skill_gaps: SkillGap[] | null;
+  resume_text: string | null;
+  job_description: string | null;
   created_at: string;
 }
 
