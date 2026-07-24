@@ -1,7 +1,9 @@
 export const MAX_RESUME_BYTES = 5 * 1024 * 1024; // 5 MB
 export const ALLOWED_EXTENSIONS = [".pdf", ".docx", ".txt"] as const;
 
-export function validateResumeFile(file: File): { ok: true } | { ok: false; error: string } {
+export type ValidationResult = { ok: true; error?: undefined } | { ok: false; error: string };
+
+export function validateResumeFile(file: File): ValidationResult {
   if (!file) return { ok: false, error: "No file selected." };
   const name = file.name.toLowerCase();
   const ext = name.slice(name.lastIndexOf("."));
