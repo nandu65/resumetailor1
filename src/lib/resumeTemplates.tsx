@@ -21,7 +21,9 @@ export interface ResumeData {
   certifications: string[];
 }
 
-export type TemplateId = "modern" | "classic" | "compact" | "executive" | "creative" | "minimal";
+export type TemplateId =
+  | "modern" | "classic" | "compact" | "executive" | "creative" | "minimal"
+  | "timeline" | "elegant" | "sidebar-dark" | "photo-header";
 
 export const TEMPLATES: { id: TemplateId; name: string; desc: string }[] = [
   { id: "modern", name: "Modern", desc: "Sidebar accent, great for tech & design" },
@@ -30,7 +32,12 @@ export const TEMPLATES: { id: TemplateId; name: string; desc: string }[] = [
   { id: "executive", name: "Executive", desc: "Elegant serif with strong header — senior roles" },
   { id: "creative", name: "Creative", desc: "Bold indigo banner, two-column — design & marketing" },
   { id: "minimal", name: "Minimal", desc: "Ultra-clean typography, generous whitespace" },
+  { id: "timeline", name: "Timeline", desc: "Left date rail with teal accents — consultants & analysts" },
+  { id: "elegant", name: "Elegant", desc: "Cream background, italic summary — executive presence" },
+  { id: "sidebar-dark", name: "Sidebar Pro", desc: "Dark teal right sidebar with photo — polished pros" },
+  { id: "photo-header", name: "Photo Header", desc: "Dark banner with photo circle — sales & client-facing" },
 ];
+
 
 /* ---------- Inline editable primitive ---------- */
 const Editable = React.memo(function Editable({
