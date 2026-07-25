@@ -782,6 +782,8 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
   const accentMap: Record<TemplateId, [number, number, number]> = {
     modern: [6, 95, 70], classic: [20, 20, 20], compact: [40, 40, 40],
     executive: [146, 64, 14], creative: [79, 70, 229], minimal: [64, 64, 64],
+    timeline: [15, 118, 110], elegant: [120, 53, 15],
+    "sidebar-dark": [17, 94, 89], "photo-header": [30, 41, 59],
   };
   const accent: [number, number, number] = accentMap[template] ?? [40, 40, 40];
   const font = template === "classic" || template === "executive" ? "times" : "helvetica";
