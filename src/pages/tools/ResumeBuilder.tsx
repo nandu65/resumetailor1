@@ -16,6 +16,8 @@ import {
   downloadResumePdfFromData, downloadResumeDocxFromData, buildResumeDataVerbatim,
 } from "@/lib/resumeTemplates";
 import { BuilderIntroLoader } from "@/components/BuilderIntroLoader";
+import { TemplatePreferencesWizard, DEFAULT_PREFS, ResumePrefs } from "@/components/TemplatePreferencesWizard";
+import { PreferenceFilterBar, scoreTemplate } from "@/components/PreferenceFilterBar";
 
 type Exp = { company: string; role: string; location: string; start: string; end: string; description: string };
 type Edu = { school: string; degree: string; location: string; start: string; end: string; details: string };
