@@ -142,7 +142,7 @@ function makeSkillUpdater(update: UpdateFn, r: ResumeData, i: number) {
 function ModernPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
   const on = (patch: Partial<ResumeData>) => update?.(patch);
   return (
-    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg overflow-hidden font-sans text-[11px] leading-snug" style={{ aspectRatio: "8.5 / 11" }}>
+    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg overflow-hidden font-sans text-[11px] leading-snug" style={{ minHeight: "var(--page-h, auto)" }}>
       <div className="grid grid-cols-[35%_65%] h-full">
         <div className="bg-emerald-800 text-white p-5">
           <Editable as="div" value={r.name || "Your Name"} onChange={update && (v => on({ name: v }))} className="font-bold text-lg leading-tight" />
@@ -259,7 +259,7 @@ function ModernPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
 function ClassicPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
   const on = (patch: Partial<ResumeData>) => update?.(patch);
   return (
-    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg p-8 font-serif text-[11px] leading-snug" style={{ aspectRatio: "8.5 / 11" }}>
+    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg p-8 font-serif text-[11px] leading-snug" style={{ minHeight: "var(--page-h, auto)" }}>
       <div className="text-center border-b-2 border-neutral-900 pb-2 mb-3">
         <Editable as="div" value={r.name || "Your Name"} onChange={update && (v => on({ name: v }))} className="font-bold text-2xl tracking-tight" />
         <Editable as="div" value={r.title} onChange={update && (v => on({ title: v }))} className="text-[11px] mt-0.5" />
@@ -351,7 +351,7 @@ function ClassicPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
 function CompactPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
   const on = (patch: Partial<ResumeData>) => update?.(patch);
   return (
-    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg p-6 font-sans text-[10px] leading-tight" style={{ aspectRatio: "8.5 / 11" }}>
+    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg p-6 font-sans text-[10px] leading-tight" style={{ minHeight: "var(--page-h, auto)" }}>
       <div className="flex justify-between items-end border-b-2 border-neutral-900 pb-1.5 mb-2">
         <div>
           <Editable as="div" value={r.name || "Your Name"} onChange={update && (v => on({ name: v }))} className="font-extrabold text-xl" />
@@ -448,7 +448,7 @@ function CompactPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
 function ExecutivePreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
   const on = (patch: Partial<ResumeData>) => update?.(patch);
   return (
-    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg p-8 font-serif text-[11px] leading-snug" style={{ aspectRatio: "8.5 / 11" }}>
+    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg p-8 font-serif text-[11px] leading-snug" style={{ minHeight: "var(--page-h, auto)" }}>
       <div className="pb-3 mb-4 border-b-4 border-amber-800">
         <Editable as="div" value={r.name || "Your Name"} onChange={update && (v => on({ name: v }))} className="font-bold text-3xl tracking-tight text-amber-900" />
         <div className="flex justify-between items-end mt-1">
@@ -526,7 +526,7 @@ function ExecutivePreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
 function CreativePreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
   const on = (patch: Partial<ResumeData>) => update?.(patch);
   return (
-    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg overflow-hidden font-sans text-[11px] leading-snug" style={{ aspectRatio: "8.5 / 11" }}>
+    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg overflow-hidden font-sans text-[11px] leading-snug" style={{ minHeight: "var(--page-h, auto)" }}>
       <div className="p-5 bg-gradient-to-r from-indigo-700 via-indigo-600 to-fuchsia-600 text-white">
         <Editable as="div" value={r.name || "Your Name"} onChange={update && (v => on({ name: v }))} className="font-extrabold text-2xl tracking-tight" />
         <Editable as="div" value={r.title} onChange={update && (v => on({ title: v }))} className="text-indigo-100 text-[11px]" />
@@ -629,7 +629,7 @@ function MinimalPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
   const on = (patch: Partial<ResumeData>) => update?.(patch);
   const H = (t: string) => <h3 className="text-[9px] font-semibold uppercase tracking-[0.3em] text-neutral-400 mb-2">{t}</h3>;
   return (
-    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg p-10 font-sans text-[11px] leading-relaxed" style={{ aspectRatio: "8.5 / 11" }}>
+    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg p-10 font-sans text-[11px] leading-relaxed" style={{ minHeight: "var(--page-h, auto)" }}>
       <div className="mb-6">
         <Editable as="div" value={r.name || "Your Name"} onChange={update && (v => on({ name: v }))} className="font-light text-3xl tracking-tight text-neutral-900" />
         <Editable as="div" value={r.title} onChange={update && (v => on({ title: v }))} className="text-neutral-500 text-[11px] mt-1" />
@@ -696,16 +696,74 @@ function MinimalPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
   );
 }
 
+/**
+ * Wraps a template preview and:
+ *  - sets --page-h so the sheet always shows a full US-Letter page even when empty
+ *  - overlays dashed "Page 2 / 3 / ..." break lines when content overflows one page
+ *    so users can visually confirm content spilling onto additional pages.
+ */
+function PagedSheet({ children }: { children: React.ReactNode }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [pageH, setPageH] = React.useState(0);
+  const [totalH, setTotalH] = React.useState(0);
+
+  React.useLayoutEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      const w = el.clientWidth;
+      const ph = w * (11 / 8.5);
+      setPageH(ph);
+      setTotalH(el.scrollHeight);
+      el.style.setProperty("--page-h", `${ph}px`);
+    });
+    ro.observe(el);
+    // observe children growth too
+    if (el.firstElementChild) ro.observe(el.firstElementChild as Element);
+    return () => ro.disconnect();
+  }, []);
+
+  const pageCount = pageH > 0 ? Math.max(1, Math.ceil(totalH / pageH)) : 1;
+  const breaks: number[] = [];
+  for (let i = 1; i < pageCount; i++) breaks.push(i * pageH);
+
+  return (
+    <div ref={wrapRef} className="relative">
+      {children}
+      {breaks.map((top, i) => (
+        <div
+          key={i}
+          aria-hidden
+          className="pointer-events-none absolute left-0 right-0 z-10"
+          style={{ top: top - 1 }}
+        >
+          <div className="border-t-2 border-dashed border-primary/50" />
+          <div className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-semibold shadow">
+            Page {i + 2}
+          </div>
+        </div>
+      ))}
+      {pageCount > 1 && (
+        <div className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded-full bg-primary/90 text-primary-foreground text-[9px] font-semibold shadow">
+          {pageCount} pages
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ResumePreview({
   template, data, onChange,
 }: { template: TemplateId; data: ResumeData; onChange?: (data: ResumeData) => void }) {
   const update: UpdateFn = onChange ? (patch) => onChange({ ...data, ...patch }) : undefined;
-  if (template === "modern") return <ModernPreview r={data} update={update} />;
-  if (template === "compact") return <CompactPreview r={data} update={update} />;
-  if (template === "executive") return <ExecutivePreview r={data} update={update} />;
-  if (template === "creative") return <CreativePreview r={data} update={update} />;
-  if (template === "minimal") return <MinimalPreview r={data} update={update} />;
-  return <ClassicPreview r={data} update={update} />;
+  const inner =
+    template === "modern" ? <ModernPreview r={data} update={update} /> :
+    template === "compact" ? <CompactPreview r={data} update={update} /> :
+    template === "executive" ? <ExecutivePreview r={data} update={update} /> :
+    template === "creative" ? <CreativePreview r={data} update={update} /> :
+    template === "minimal" ? <MinimalPreview r={data} update={update} /> :
+    <ClassicPreview r={data} update={update} />;
+  return <PagedSheet>{inner}</PagedSheet>;
 }
 
 /* ---------- PDF export ---------- */
