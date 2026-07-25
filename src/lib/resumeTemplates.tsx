@@ -856,11 +856,13 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
 
 /* ---------- DOCX export (editable in Word / Google Docs) ---------- */
 export async function downloadResumeDocxFromData(data: ResumeData, template: TemplateId) {
-  const serifTpls: TemplateId[] = ["classic", "executive"];
+  const serifTpls: TemplateId[] = ["classic", "executive", "elegant"];
   const font = serifTpls.includes(template) ? "Times New Roman" : "Calibri";
   const accentMap: Record<TemplateId, string> = {
     modern: "065F46", classic: "111111", compact: "1F1F1F",
     executive: "92400E", creative: "4F46E5", minimal: "404040",
+    timeline: "0F766E", elegant: "78350F",
+    "sidebar-dark": "115E59", "photo-header": "1E293B",
   };
   const accent = accentMap[template] ?? "111111";
 
