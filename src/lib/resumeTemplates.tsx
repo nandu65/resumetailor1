@@ -759,6 +759,364 @@ function PagedSheet({ children }: { children: React.ReactNode }) {
   );
 }
 
+function initials(name: string) {
+  return (name || "You")
+    .split(/\s+/).filter(Boolean).slice(0, 2)
+    .map(w => w[0]?.toUpperCase() ?? "").join("") || "Y";
+}
+
+/* ---------- Timeline: left date rail, teal accents ---------- */
+function TimelinePreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
+  const on = (patch: Partial<ResumeData>) => update?.(patch);
+  const H = (t: string) => <h3 className="text-[11px] font-bold tracking-widest uppercase text-teal-700 border-b border-teal-200 pb-0.5 mb-2">{t}</h3>;
+  return (
+    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg p-8 font-sans text-[11px] leading-snug" style={{ minHeight: "var(--page-h, auto)" }}>
+      <div className="mb-4">
+        <Editable as="div" value={r.name || "Your Name"} onChange={update && (v => on({ name: v }))} className="font-bold text-2xl tracking-tight" />
+        <Editable as="div" value={r.title} onChange={update && (v => on({ title: v }))} className="text-teal-700 text-[11px] font-medium" />
+        <div className="mt-1 text-[10px] text-neutral-600 flex flex-wrap gap-x-3">
+          <Editable value={r.email} onChange={update && (v => on({ email: v }))} />
+          <Editable value={r.phone} onChange={update && (v => on({ phone: v }))} />
+          <Editable value={r.location} onChange={update && (v => on({ location: v }))} />
+          {r.links?.map((l, i) => (
+            <Editable key={i} value={l.url} onChange={update && (v => on({ links: r.links.map((x, j) => j === i ? { ...x, url: v } : x) }))} />
+          ))}
+        </div>
+      </div>
+      {(r.summary || update) && (
+        <section className="mb-4">{H("Summary")}<Editable as="p" multiline value={r.summary} onChange={update && (v => on({ summary: v }))} className="whitespace-pre-wrap text-[11px]" /></section>
+      )}
+      {r.experience?.length > 0 && (
+        <section className="mb-4">{H("Experience")}
+          {r.experience.map((e, i) => {
+            const upd = makeExpUpdater(update, r, i);
+            return (
+              <div key={i} className="grid grid-cols-[90px_1fr] gap-3 mb-3">
+                <div className="text-[10px] text-teal-700 font-semibold pt-0.5 border-r-2 border-teal-200 pr-2">
+                  <div><Editable value={e.start} onChange={update && (v => upd({ start: v }))} /></div>
+                  <div className="text-neutral-500 font-normal"><Editable value={e.end} onChange={update && (v => upd({ end: v }))} /></div>
+                  <div className="text-neutral-500 font-normal mt-0.5 text-[9px]"><Editable value={e.location} onChange={update && (v => upd({ location: v }))} /></div>
+                </div>
+                <div>
+                  <div className="font-semibold text-[11px]"><Editable value={e.role} onChange={update && (v => upd({ role: v }))} /></div>
+                  <div className="text-teal-700 text-[10px]"><Editable value={e.company} onChange={update && (v => upd({ company: v }))} /></div>
+                  <BulletsEditor bullets={e.bullets || []} onChange={update && (v => upd({ bullets: v }))} className="list-disc pl-4 mt-0.5 text-[10px] space-y-0.5" />
+                </div>
+              </div>
+            );
+          })}
+        </section>
+      )}
+      {r.education?.length > 0 && (
+        <section className="mb-4">{H("Education")}
+          {r.education.map((e, i) => {
+            const upd = makeEduUpdater(update, r, i);
+            return (
+              <div key={i} className="grid grid-cols-[90px_1fr] gap-3 mb-2">
+                <div className="text-[10px] text-teal-700 font-semibold border-r-2 border-teal-200 pr-2">
+                  <Editable value={e.start} onChange={update && (v => upd({ start: v }))} />–<Editable value={e.end} onChange={update && (v => upd({ end: v }))} />
+                </div>
+                <div>
+                  <div className="font-semibold text-[11px]"><Editable value={e.degree} onChange={update && (v => upd({ degree: v }))} /></div>
+                  <div className="text-neutral-600 text-[10px]"><Editable value={e.school} onChange={update && (v => upd({ school: v }))} /></div>
+                </div>
+              </div>
+            );
+          })}
+        </section>
+      )}
+      {r.skills?.length > 0 && (
+        <section className="mb-4">{H("Skills")}
+          <div className="flex flex-wrap gap-1.5">
+            {r.skills.flatMap(s => s.items).map((it, k) => (
+              <span key={k} className="text-[10px] px-2 py-0.5 rounded bg-teal-50 text-teal-800 border border-teal-100">{it}</span>
+            ))}
+          </div>
+          {update && r.skills.map((s, i) => {
+            const upd = makeSkillUpdater(update, r, i);
+            return (
+              <div key={i} className="mt-1 text-[9px] text-neutral-400">
+                <Editable value={s.category} onChange={v => upd({ category: v })} />: <Editable value={s.items.join(", ")} onChange={v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) })} />
+              </div>
+            );
+          })}
+        </section>
+      )}
+      {r.certifications?.length > 0 && (
+        <section>{H("Certifications")}
+          <Editable value={r.certifications.join(" • ")} onChange={update && (v => on({ certifications: v.split("•").map(x => x.trim()).filter(Boolean) }))} className="text-[10px]" />
+        </section>
+      )}
+    </div>
+  );
+}
+
+/* ---------- Elegant: cream bg, centered serif with italic summary ---------- */
+function ElegantPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
+  const on = (patch: Partial<ResumeData>) => update?.(patch);
+  const H = (t: string) => <h3 className="text-center text-[10px] font-semibold uppercase tracking-[0.35em] text-stone-600 my-3">{t}</h3>;
+  return (
+    <div className="bg-stone-50 text-stone-900 shadow-elegant rounded-lg p-10 font-serif text-[11px] leading-relaxed" style={{ minHeight: "var(--page-h, auto)" }}>
+      <div className="text-center">
+        <Editable as="div" value={r.name || "Your Name"} onChange={update && (v => on({ name: v }))} className="font-normal text-[36px] italic tracking-tight" />
+        <div className="mt-1 text-[10px] uppercase tracking-[0.3em] text-stone-600">
+          <Editable value={r.title} onChange={update && (v => on({ title: v }))} />
+        </div>
+        <div className="mt-2 text-[10px] text-stone-600 flex justify-center flex-wrap gap-x-3">
+          <Editable value={r.phone} onChange={update && (v => on({ phone: v }))} />
+          <Editable value={r.email} onChange={update && (v => on({ email: v }))} />
+          <Editable value={r.location} onChange={update && (v => on({ location: v }))} />
+        </div>
+      </div>
+      <div className="my-4 flex justify-center gap-2 text-stone-400">
+        <span>•</span><span>•</span><span>•</span>
+      </div>
+      {(r.summary || update) && (
+        <section className="max-w-[85%] mx-auto text-center">
+          <Editable as="p" multiline value={r.summary} onChange={update && (v => on({ summary: v }))} className="italic text-[11px] whitespace-pre-wrap" />
+        </section>
+      )}
+      {r.experience?.length > 0 && (
+        <section>{H("Experience")}
+          {r.experience.map((e, i) => {
+            const upd = makeExpUpdater(update, r, i);
+            return (
+              <div key={i} className="mb-3">
+                <div className="flex justify-between gap-2">
+                  <span className="font-semibold text-[12px]"><Editable value={e.role} onChange={update && (v => upd({ role: v }))} /> — <span className="italic font-normal"><Editable value={e.company} onChange={update && (v => upd({ company: v }))} /></span></span>
+                  <span className="text-[10px] italic text-stone-500 whitespace-nowrap"><Editable value={e.start} onChange={update && (v => upd({ start: v }))} /> – <Editable value={e.end} onChange={update && (v => upd({ end: v }))} /></span>
+                </div>
+                <BulletsEditor bullets={e.bullets || []} onChange={update && (v => upd({ bullets: v }))} className="list-[square] pl-4 mt-1 text-[10.5px] space-y-0.5" />
+              </div>
+            );
+          })}
+        </section>
+      )}
+      {r.education?.length > 0 && (
+        <section>{H("Education")}
+          {r.education.map((e, i) => {
+            const upd = makeEduUpdater(update, r, i);
+            return (
+              <div key={i} className="text-center mb-1">
+                <div className="font-semibold"><Editable value={e.degree} onChange={update && (v => upd({ degree: v }))} /></div>
+                <div className="italic text-[10px] text-stone-600"><Editable value={e.school} onChange={update && (v => upd({ school: v }))} /> · <Editable value={e.start} onChange={update && (v => upd({ start: v }))} />–<Editable value={e.end} onChange={update && (v => upd({ end: v }))} /></div>
+              </div>
+            );
+          })}
+        </section>
+      )}
+      {r.skills?.length > 0 && (
+        <section>{H("Core Competencies")}
+          <div className="text-center text-[11px]">
+            {r.skills.flatMap(s => s.items).join("  ·  ")}
+          </div>
+          {update && r.skills.map((s, i) => {
+            const upd = makeSkillUpdater(update, r, i);
+            return (
+              <div key={i} className="text-[9px] text-stone-400 text-center mt-1">
+                <Editable value={s.category} onChange={v => upd({ category: v })} />: <Editable value={s.items.join(", ")} onChange={v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) })} />
+              </div>
+            );
+          })}
+        </section>
+      )}
+      {r.certifications?.length > 0 && (
+        <section>{H("Certifications")}
+          <div className="text-center"><Editable value={r.certifications.join(" • ")} onChange={update && (v => on({ certifications: v.split("•").map(x => x.trim()).filter(Boolean) }))} /></div>
+        </section>
+      )}
+    </div>
+  );
+}
+
+/* ---------- Sidebar Dark: main content left, dark teal right rail with avatar ---------- */
+function SidebarDarkPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
+  const on = (patch: Partial<ResumeData>) => update?.(patch);
+  return (
+    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg overflow-hidden font-sans text-[11px] leading-snug" style={{ minHeight: "var(--page-h, auto)" }}>
+      <div className="grid grid-cols-[65%_35%] h-full">
+        <div className="p-6">
+          <Editable as="div" value={r.name || "Your Name"} onChange={update && (v => on({ name: v }))} className="font-bold text-2xl tracking-tight" />
+          <Editable as="div" value={r.title} onChange={update && (v => on({ title: v }))} className="text-teal-700 text-[11px] font-medium mt-0.5" />
+          <div className="mt-1 text-[10px] text-neutral-600 flex flex-wrap gap-x-3">
+            <Editable value={r.phone} onChange={update && (v => on({ phone: v }))} />
+            <Editable value={r.email} onChange={update && (v => on({ email: v }))} />
+            <Editable value={r.location} onChange={update && (v => on({ location: v }))} />
+          </div>
+          {(r.summary || update) && (
+            <section className="mt-4">
+              <h3 className="uppercase text-[10px] font-bold tracking-widest text-teal-800 mb-1">Summary</h3>
+              <Editable as="p" multiline value={r.summary} onChange={update && (v => on({ summary: v }))} className="whitespace-pre-wrap text-[10.5px]" />
+            </section>
+          )}
+          {r.experience?.length > 0 && (
+            <section className="mt-4">
+              <h3 className="uppercase text-[10px] font-bold tracking-widest text-teal-800 mb-1">Experience</h3>
+              {r.experience.map((e, i) => {
+                const upd = makeExpUpdater(update, r, i);
+                return (
+                  <div key={i} className="mb-2">
+                    <div className="flex justify-between gap-2">
+                      <span className="font-semibold text-[11px]"><Editable value={e.role} onChange={update && (v => upd({ role: v }))} /></span>
+                      <span className="text-[9px] text-neutral-500 whitespace-nowrap"><Editable value={e.start} onChange={update && (v => upd({ start: v }))} /> – <Editable value={e.end} onChange={update && (v => upd({ end: v }))} /></span>
+                    </div>
+                    <div className="text-[10px] text-teal-700"><Editable value={e.company} onChange={update && (v => upd({ company: v }))} /></div>
+                    <BulletsEditor bullets={e.bullets || []} onChange={update && (v => upd({ bullets: v }))} className="list-disc pl-4 mt-0.5 text-[10px] space-y-0.5" />
+                  </div>
+                );
+              })}
+            </section>
+          )}
+          {r.education?.length > 0 && (
+            <section className="mt-3">
+              <h3 className="uppercase text-[10px] font-bold tracking-widest text-teal-800 mb-1">Education</h3>
+              {r.education.map((e, i) => {
+                const upd = makeEduUpdater(update, r, i);
+                return (
+                  <div key={i} className="mb-1">
+                    <div className="font-semibold text-[10.5px]"><Editable value={e.degree} onChange={update && (v => upd({ degree: v }))} /></div>
+                    <div className="text-[10px] text-neutral-600"><Editable value={e.school} onChange={update && (v => upd({ school: v }))} /> · <Editable value={e.start} onChange={update && (v => upd({ start: v }))} />–<Editable value={e.end} onChange={update && (v => upd({ end: v }))} /></div>
+                  </div>
+                );
+              })}
+            </section>
+          )}
+        </div>
+        <div className="bg-teal-800 text-teal-50 p-5">
+          <div className="mx-auto mb-3 h-16 w-16 rounded-full bg-teal-600 flex items-center justify-center text-xl font-bold text-white ring-2 ring-teal-300/40">
+            {initials(r.name)}
+          </div>
+          {r.links?.length > 0 && (
+            <div className="text-[10px] space-y-1 break-words mb-4">
+              {r.links.map((l, i) => (
+                <Editable key={i} as="div" value={`${l.label}: ${l.url}`} onChange={update && (v => {
+                  const [label, ...rest] = v.split(":");
+                  on({ links: r.links.map((x, j) => j === i ? { label: (label || "").trim(), url: rest.join(":").trim() } : x) });
+                })} />
+              ))}
+            </div>
+          )}
+          {r.skills?.length > 0 && (
+            <div className="mb-4">
+              <div className="uppercase tracking-widest text-[9px] font-bold border-b border-teal-500 pb-1 mb-2">Skills</div>
+              {r.skills.map((s, i) => {
+                const upd = makeSkillUpdater(update, r, i);
+                return (
+                  <div key={i} className="mb-2">
+                    <Editable as="div" value={s.category} onChange={update && (v => upd({ category: v }))} className="font-semibold text-[10px]" />
+                    <Editable as="div" value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} className="text-[10px] text-teal-100" />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {r.certifications?.length > 0 && (
+            <div>
+              <div className="uppercase tracking-widest text-[9px] font-bold border-b border-teal-500 pb-1 mb-2">Certifications</div>
+              <Editable as="div" multiline value={r.certifications.join("\n")} onChange={update && (v => on({ certifications: v.split("\n").map(x => x.trim()).filter(Boolean) }))} className="text-[10px] whitespace-pre-wrap" />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Photo Header: dark banner with avatar circle on the right ---------- */
+function PhotoHeaderPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
+  const on = (patch: Partial<ResumeData>) => update?.(patch);
+  return (
+    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg overflow-hidden font-sans text-[11px] leading-snug" style={{ minHeight: "var(--page-h, auto)" }}>
+      <div className="bg-slate-800 text-white px-6 py-5 flex items-center gap-4">
+        <div className="flex-1 min-w-0">
+          <Editable as="div" value={r.name || "Your Name"} onChange={update && (v => on({ name: v }))} className="font-extrabold text-2xl tracking-tight" />
+          <Editable as="div" value={r.title} onChange={update && (v => on({ title: v }))} className="text-sky-300 text-[11px] font-medium mt-0.5" />
+          <div className="flex flex-wrap gap-x-3 mt-2 text-[10px] text-slate-200">
+            <Editable value={r.phone} onChange={update && (v => on({ phone: v }))} />
+            <Editable value={r.email} onChange={update && (v => on({ email: v }))} />
+            <Editable value={r.location} onChange={update && (v => on({ location: v }))} />
+            {r.links?.map((l, i) => (
+              <Editable key={i} value={l.url} onChange={update && (v => on({ links: r.links.map((x, j) => j === i ? { ...x, url: v } : x) }))} />
+            ))}
+          </div>
+        </div>
+        <div className="h-16 w-16 rounded-full bg-slate-600 ring-2 ring-white/30 flex items-center justify-center text-lg font-bold shrink-0">
+          {initials(r.name)}
+        </div>
+      </div>
+      <div className="grid grid-cols-[60%_40%] gap-5 p-6">
+        <div>
+          {(r.summary || update) && (
+            <section className="mb-3">
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-800 border-b border-slate-300 pb-0.5 mb-1.5">Summary</h3>
+              <Editable as="p" multiline value={r.summary} onChange={update && (v => on({ summary: v }))} className="whitespace-pre-wrap text-[10.5px]" />
+            </section>
+          )}
+          {r.experience?.length > 0 && (
+            <section className="mb-3">
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-800 border-b border-slate-300 pb-0.5 mb-1.5">Experience</h3>
+              {r.experience.map((e, i) => {
+                const upd = makeExpUpdater(update, r, i);
+                return (
+                  <div key={i} className="mb-2">
+                    <div className="font-semibold text-[11px]"><Editable value={e.role} onChange={update && (v => upd({ role: v }))} /></div>
+                    <div className="flex justify-between text-[10px] text-slate-600">
+                      <span><Editable value={e.company} onChange={update && (v => upd({ company: v }))} /></span>
+                      <span><Editable value={e.start} onChange={update && (v => upd({ start: v }))} /> – <Editable value={e.end} onChange={update && (v => upd({ end: v }))} /></span>
+                    </div>
+                    <BulletsEditor bullets={e.bullets || []} onChange={update && (v => upd({ bullets: v }))} className="list-disc pl-4 mt-0.5 text-[10px] space-y-0.5" />
+                  </div>
+                );
+              })}
+            </section>
+          )}
+          {r.education?.length > 0 && (
+            <section>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-800 border-b border-slate-300 pb-0.5 mb-1.5">Education</h3>
+              {r.education.map((e, i) => {
+                const upd = makeEduUpdater(update, r, i);
+                return (
+                  <div key={i} className="mb-1">
+                    <div className="font-semibold text-[10.5px]"><Editable value={e.degree} onChange={update && (v => upd({ degree: v }))} /></div>
+                    <div className="text-[10px] text-slate-600"><Editable value={e.school} onChange={update && (v => upd({ school: v }))} /> · <Editable value={e.start} onChange={update && (v => upd({ start: v }))} />–<Editable value={e.end} onChange={update && (v => upd({ end: v }))} /></div>
+                  </div>
+                );
+              })}
+            </section>
+          )}
+        </div>
+        <div>
+          {r.skills?.length > 0 && (
+            <section className="mb-3">
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-sky-700 border-b border-sky-200 pb-0.5 mb-1.5">Skills</h3>
+              {r.skills.map((s, i) => {
+                const upd = makeSkillUpdater(update, r, i);
+                return (
+                  <div key={i} className="mb-1.5">
+                    <Editable as="div" value={s.category} onChange={update && (v => upd({ category: v }))} className="font-semibold text-[10px]" />
+                    <div className="flex flex-wrap gap-1 mt-0.5">
+                      {s.items.map((it, k) => (
+                        <span key={k} className="text-[9px] px-1.5 py-0.5 rounded bg-sky-50 text-sky-800 border border-sky-100">{it}</span>
+                      ))}
+                    </div>
+                    <Editable as="div" value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} className="text-[9px] text-neutral-400 mt-0.5" />
+                  </div>
+                );
+              })}
+            </section>
+          )}
+          {r.certifications?.length > 0 && (
+            <section>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-sky-700 border-b border-sky-200 pb-0.5 mb-1.5">Certifications</h3>
+              <Editable as="div" multiline value={r.certifications.join("\n")} onChange={update && (v => on({ certifications: v.split("\n").map(x => x.trim()).filter(Boolean) }))} className="text-[10px] whitespace-pre-wrap" />
+            </section>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ResumePreview({
   template, data, onChange,
 }: { template: TemplateId; data: ResumeData; onChange?: (data: ResumeData) => void }) {
@@ -769,9 +1127,14 @@ export function ResumePreview({
     template === "executive" ? <ExecutivePreview r={data} update={update} /> :
     template === "creative" ? <CreativePreview r={data} update={update} /> :
     template === "minimal" ? <MinimalPreview r={data} update={update} /> :
+    template === "timeline" ? <TimelinePreview r={data} update={update} /> :
+    template === "elegant" ? <ElegantPreview r={data} update={update} /> :
+    template === "sidebar-dark" ? <SidebarDarkPreview r={data} update={update} /> :
+    template === "photo-header" ? <PhotoHeaderPreview r={data} update={update} /> :
     <ClassicPreview r={data} update={update} />;
   return <PagedSheet>{inner}</PagedSheet>;
 }
+
 
 /* ---------- PDF export ---------- */
 export function downloadResumePdfFromData(data: ResumeData, template: TemplateId) {
