@@ -696,16 +696,74 @@ function MinimalPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
   );
 }
 
+/**
+ * Wraps a template preview and:
+ *  - sets --page-h so the sheet always shows a full US-Letter page even when empty
+ *  - overlays dashed "Page 2 / 3 / ..." break lines when content overflows one page
+ *    so users can visually confirm content spilling onto additional pages.
+ */
+function PagedSheet({ children }: { children: React.ReactNode }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [pageH, setPageH] = React.useState(0);
+  const [totalH, setTotalH] = React.useState(0);
+
+  React.useLayoutEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      const w = el.clientWidth;
+      const ph = w * (11 / 8.5);
+      setPageH(ph);
+      setTotalH(el.scrollHeight);
+      el.style.setProperty("--page-h", `${ph}px`);
+    });
+    ro.observe(el);
+    // observe children growth too
+    if (el.firstElementChild) ro.observe(el.firstElementChild as Element);
+    return () => ro.disconnect();
+  }, []);
+
+  const pageCount = pageH > 0 ? Math.max(1, Math.ceil(totalH / pageH)) : 1;
+  const breaks: number[] = [];
+  for (let i = 1; i < pageCount; i++) breaks.push(i * pageH);
+
+  return (
+    <div ref={wrapRef} className="relative">
+      {children}
+      {breaks.map((top, i) => (
+        <div
+          key={i}
+          aria-hidden
+          className="pointer-events-none absolute left-0 right-0 z-10"
+          style={{ top: top - 1 }}
+        >
+          <div className="border-t-2 border-dashed border-primary/50" />
+          <div className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-semibold shadow">
+            Page {i + 2}
+          </div>
+        </div>
+      ))}
+      {pageCount > 1 && (
+        <div className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded-full bg-primary/90 text-primary-foreground text-[9px] font-semibold shadow">
+          {pageCount} pages
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ResumePreview({
   template, data, onChange,
 }: { template: TemplateId; data: ResumeData; onChange?: (data: ResumeData) => void }) {
   const update: UpdateFn = onChange ? (patch) => onChange({ ...data, ...patch }) : undefined;
-  if (template === "modern") return <ModernPreview r={data} update={update} />;
-  if (template === "compact") return <CompactPreview r={data} update={update} />;
-  if (template === "executive") return <ExecutivePreview r={data} update={update} />;
-  if (template === "creative") return <CreativePreview r={data} update={update} />;
-  if (template === "minimal") return <MinimalPreview r={data} update={update} />;
-  return <ClassicPreview r={data} update={update} />;
+  const inner =
+    template === "modern" ? <ModernPreview r={data} update={update} /> :
+    template === "compact" ? <CompactPreview r={data} update={update} /> :
+    template === "executive" ? <ExecutivePreview r={data} update={update} /> :
+    template === "creative" ? <CreativePreview r={data} update={update} /> :
+    template === "minimal" ? <MinimalPreview r={data} update={update} /> :
+    <ClassicPreview r={data} update={update} />;
+  return <PagedSheet>{inner}</PagedSheet>;
 }
 
 /* ---------- PDF export ---------- */
