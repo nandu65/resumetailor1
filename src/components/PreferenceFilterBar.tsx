@@ -3,13 +3,18 @@ import { COLOR_SWATCHES, ResumePrefs } from "./TemplatePreferencesWizard";
 import { TemplateId } from "@/lib/resumeTemplates";
 
 export const TEMPLATE_META: Record<TemplateId, { style: ResumePrefs["style"]; columns: 1 | 2; photoFriendly: boolean }> = {
-  modern:    { style: "modern",    columns: 2, photoFriendly: true  },
-  classic:   { style: "classic",   columns: 1, photoFriendly: false },
-  compact:   { style: "modern",    columns: 1, photoFriendly: false },
-  executive: { style: "executive", columns: 1, photoFriendly: false },
-  creative:  { style: "creative",  columns: 2, photoFriendly: true  },
-  minimal:   { style: "minimal",   columns: 1, photoFriendly: false },
+  modern:          { style: "modern",    columns: 2, photoFriendly: true  },
+  classic:         { style: "classic",   columns: 1, photoFriendly: false },
+  compact:         { style: "modern",    columns: 1, photoFriendly: false },
+  executive:       { style: "executive", columns: 1, photoFriendly: false },
+  creative:        { style: "creative",  columns: 2, photoFriendly: true  },
+  minimal:         { style: "minimal",   columns: 1, photoFriendly: false },
+  timeline:        { style: "modern",    columns: 1, photoFriendly: false },
+  elegant:         { style: "executive", columns: 1, photoFriendly: false },
+  "sidebar-dark":  { style: "modern",    columns: 2, photoFriendly: true  },
+  "photo-header":  { style: "creative",  columns: 2, photoFriendly: true  },
 };
+
 
 export function scoreTemplate(id: TemplateId, prefs: ResumePrefs): number {
   const m = TEMPLATE_META[id];
