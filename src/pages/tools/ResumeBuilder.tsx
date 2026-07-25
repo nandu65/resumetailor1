@@ -273,7 +273,18 @@ export default function ResumeBuilder() {
 
   return (
     <div className="min-h-screen bg-background">
-      {showIntro && <BuilderIntroLoader onDone={() => setShowIntro(false)} />}
+      {showIntro && <BuilderIntroLoader onDone={() => { setShowIntro(false); setShowWizard(true); }} />}
+      <TemplatePreferencesWizard
+        open={showWizard}
+        onOpenChange={setShowWizard}
+        initial={prefs}
+        onDone={(p) => {
+          setPrefs(p); setPrefsSet(true);
+          // auto-select top recommended template
+          const ranked = [...TEMPLATES].sort((a, b) => scoreTemplate(b.id, p) - scoreTemplate(a.id, p));
+          if (ranked[0]) setTemplate(ranked[0].id);
+        }}
+      />
       <Navbar />
       <div className="container py-10 max-w-7xl">
         <div className="flex items-center gap-3 mb-8">
