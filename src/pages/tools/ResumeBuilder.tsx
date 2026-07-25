@@ -15,6 +15,7 @@ import {
   TEMPLATES, TemplateId, ResumeData, ResumePreview,
   downloadResumePdfFromData, downloadResumeDocxFromData, buildResumeDataVerbatim,
 } from "@/lib/resumeTemplates";
+import { BuilderIntroLoader } from "@/components/BuilderIntroLoader";
 
 type Exp = { company: string; role: string; location: string; start: string; end: string; description: string };
 type Edu = { school: string; degree: string; location: string; start: string; end: string; details: string };
