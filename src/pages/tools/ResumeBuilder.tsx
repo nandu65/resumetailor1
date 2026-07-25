@@ -96,6 +96,7 @@ export default function ResumeBuilder() {
   const fileRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const [showEditHint, setShowEditHint] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
 
   const fillSample = () => {
     setBasics({
