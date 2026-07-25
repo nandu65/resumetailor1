@@ -553,13 +553,33 @@ export default function ResumeBuilder() {
                   </div>
                 )}
               </div>
+              {prefsSet && (
+                <div className="mb-3">
+                  <PreferenceFilterBar prefs={prefs} onChange={setPrefs} onOpenWizard={() => setShowWizard(true)} />
+                </div>
+              )}
+              {!prefsSet && (
+                <button type="button" onClick={() => setShowWizard(true)}
+                  className="mb-3 w-full rounded-lg border-2 border-dashed border-primary/40 bg-primary/5 py-2 text-xs font-semibold text-primary hover:bg-primary/10 transition">
+                  ✨ Take the 4-step quiz to get recommended templates
+                </button>
+              )}
               <div className="grid grid-cols-3 gap-3">
-                {TEMPLATES.map(t => {
+                {[...TEMPLATES]
+                  .sort((a, b) => scoreTemplate(b.id, prefs) - scoreTemplate(a.id, prefs))
+                  .map((t, idx) => {
                   const selected = template === t.id;
+                  const score = scoreTemplate(t.id, prefs);
+                  const recommended = prefsSet && idx === 0 && score > 0;
                   return (
                     <button key={t.id} type="button" onClick={() => setTemplate(t.id)}
-                      className={`group text-left rounded-xl border-2 overflow-hidden transition-all ${selected ? "border-primary shadow-glow ring-2 ring-primary/30" : "border-border hover:border-primary/50"}`}>
-                      {/* Thumbnail: render actual template scaled down */}
+                      className={`group text-left rounded-xl border-2 overflow-hidden transition-all relative ${selected ? "border-primary shadow-glow ring-2 ring-primary/30" : "border-border hover:border-primary/50"}`}
+                      style={selected ? { borderColor: prefs.color } : undefined}>
+                      {recommended && (
+                        <div className="absolute top-1.5 left-1.5 z-10 text-[9px] font-bold px-1.5 py-0.5 rounded shadow text-white" style={{ background: prefs.color }}>
+                          ★ BEST MATCH
+                        </div>
+                      )}
                       <div className="relative aspect-[3/4] bg-white overflow-hidden border-b border-border">
                         <div
                           className="absolute top-0 left-0 origin-top-left pointer-events-none select-none"
@@ -568,7 +588,7 @@ export default function ResumeBuilder() {
                           <ResumePreview template={t.id} data={resume ?? SAMPLE_RESUME} />
                         </div>
                         {selected && (
-                          <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded shadow">
+                          <div className="absolute top-1.5 right-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded shadow text-white" style={{ background: prefs.color }}>
                             SELECTED
                           </div>
                         )}
