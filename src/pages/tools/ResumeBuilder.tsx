@@ -15,6 +15,7 @@ import {
   TEMPLATES, TemplateId, ResumeData, ResumePreview,
   downloadResumePdfFromData, downloadResumeDocxFromData, buildResumeDataVerbatim,
 } from "@/lib/resumeTemplates";
+import { BuilderIntroLoader } from "@/components/BuilderIntroLoader";
 
 type Exp = { company: string; role: string; location: string; start: string; end: string; description: string };
 type Edu = { school: string; degree: string; location: string; start: string; end: string; details: string };
@@ -95,6 +96,7 @@ export default function ResumeBuilder() {
   const fileRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const [showEditHint, setShowEditHint] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
 
   const fillSample = () => {
     setBasics({
@@ -266,6 +268,7 @@ export default function ResumeBuilder() {
 
   return (
     <div className="min-h-screen bg-background">
+      {showIntro && <BuilderIntroLoader onDone={() => setShowIntro(false)} />}
       <Navbar />
       <div className="container py-10 max-w-7xl">
         <div className="flex items-center gap-3 mb-8">
