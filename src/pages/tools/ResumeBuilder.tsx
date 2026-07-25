@@ -268,6 +268,7 @@ export default function ResumeBuilder() {
 
   return (
     <div className="min-h-screen bg-background">
+      {showIntro && <BuilderIntroLoader onDone={() => setShowIntro(false)} />}
       <Navbar />
       <div className="container py-10 max-w-7xl">
         <div className="flex items-center gap-3 mb-8">
