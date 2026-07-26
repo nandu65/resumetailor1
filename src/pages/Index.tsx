@@ -207,7 +207,8 @@ const Index = () => {
           <h2 className="font-display text-4xl font-bold tracking-tight">Everything you need to get hired</h2>
           <p className="mt-4 text-muted-foreground">A complete toolkit to position your experience for any opportunity.</p>
         </div>
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+
           {[
             { icon: Target, title: "ATS Match Score", desc: "Get an instant 0–100 score showing how well your resume aligns with any job description." },
             { icon: Zap, title: "AI-Rewritten Bullets", desc: "Tighter, metric-driven experience lines that mirror the language recruiters search for." },
