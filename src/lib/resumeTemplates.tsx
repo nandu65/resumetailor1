@@ -23,7 +23,8 @@ export interface ResumeData {
 
 export type TemplateId =
   | "modern" | "classic" | "compact" | "executive" | "creative" | "minimal"
-  | "timeline" | "elegant" | "sidebar-dark" | "photo-header";
+  | "timeline" | "elegant" | "sidebar-dark" | "photo-header"
+  | "centered-serif" | "banner-photo" | "teal-left" | "photo-grid" | "logo-boxed";
 
 export const TEMPLATES: { id: TemplateId; name: string; desc: string }[] = [
   { id: "modern", name: "Modern", desc: "Sidebar accent, great for tech & design" },
@@ -36,6 +37,11 @@ export const TEMPLATES: { id: TemplateId; name: string; desc: string }[] = [
   { id: "elegant", name: "Elegant", desc: "Cream background, italic summary — executive presence" },
   { id: "sidebar-dark", name: "Sidebar Pro", desc: "Dark teal right sidebar with photo — polished pros" },
   { id: "photo-header", name: "Photo Header", desc: "Dark banner with photo circle — sales & client-facing" },
+  { id: "centered-serif", name: "Centered Serif", desc: "Centered name & rule-lined sections — cloud & engineering" },
+  { id: "banner-photo", name: "Banner Photo", desc: "Navy banner with photo, two-column body — sales & CRM" },
+  { id: "teal-left", name: "Teal Rail", desc: "Solid teal LEFT column with icon achievements — leadership" },
+  { id: "photo-grid", name: "Photo Grid", desc: "Centered photo header + 3-column achievement boxes — account executives" },
+  { id: "logo-boxed", name: "Logo Boxed", desc: "Centered header, company logo tiles per role — analysts & business" },
 ];
 
 
