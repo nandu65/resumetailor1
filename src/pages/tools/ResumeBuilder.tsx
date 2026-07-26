@@ -148,7 +148,7 @@ export default function ResumeBuilder() {
   };
 
   const onUpload = async (file: File) => {
-    if (!user) return toast.error("Sign in to upload and parse your resume");
+    if (!user) return requireAuth("upload and parse your resume");
     setUploading(true);
     try {
       const text = await extractTextFromFile(file);
