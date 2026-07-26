@@ -9,7 +9,7 @@ import { Navbar } from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import {
   TEMPLATES, TemplateId, ResumeData, ResumePreview,
@@ -78,6 +78,11 @@ Must have: 5+ years JS/TS, React, Node.js, PostgreSQL, AWS, Docker. Nice to have
 
 export default function ResumeBuilder() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const requireAuth = (intent: string) => {
+    toast.info(`Sign in to ${intent}`);
+    navigate("/auth", { state: { from: "/tools/resume-builder" } });
+  };
   const [basics, setBasics] = useState({ name: "", title: "", email: "", phone: "", location: "" });
   const [links, setLinks] = useState<{ label: string; url: string }[]>([
     { label: "LinkedIn", url: "" },
@@ -143,7 +148,7 @@ export default function ResumeBuilder() {
   };
 
   const onUpload = async (file: File) => {
-    if (!user) return toast.error("Sign in to upload and parse your resume");
+    if (!user) return requireAuth("upload and parse your resume");
     setUploading(true);
     try {
       const text = await extractTextFromFile(file);
@@ -239,7 +244,7 @@ export default function ResumeBuilder() {
       return;
     }
 
-    if (!user) return toast.error("Sign in to use AI polish");
+    if (!user) return requireAuth("use AI polish");
     setLoading(true);
     try {
       const profile = {
