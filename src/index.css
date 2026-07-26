@@ -130,3 +130,67 @@
   .shadow-elegant { box-shadow: var(--shadow-lg); }
   .text-balance { text-wrap: balance; }
 }
+
+/* ---------------------------------------------------------------
+   Global mobile compaction pass (<= 767px only).
+   Desktop/laptop layout is untouched. Reduces excessive vertical
+   spacing, oversized headings, and heavy card padding on phones
+   so the page reads as a compact adaptation of the desktop design.
+--------------------------------------------------------------- */
+@media (max-width: 767px) {
+  html, body { overflow-x: hidden; }
+
+  /* Section vertical rhythm */
+  .py-24 { padding-top: 2.5rem !important; padding-bottom: 2.5rem !important; }
+  .py-20 { padding-top: 2.25rem !important; padding-bottom: 2.25rem !important; }
+  .py-16 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+  .py-14 { padding-top: 1.75rem !important; padding-bottom: 1.75rem !important; }
+  .py-12 { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
+  .py-10 { padding-top: 1.25rem !important; padding-bottom: 1.25rem !important; }
+
+  .pt-20 { padding-top: 2rem !important; }
+  .pb-28 { padding-bottom: 2.25rem !important; }
+  .pb-24 { padding-bottom: 2rem !important; }
+
+  /* Header/section title margins */
+  .mb-16 { margin-bottom: 1.5rem !important; }
+  .mb-14 { margin-bottom: 1.25rem !important; }
+  .mb-12 { margin-bottom: 1.25rem !important; }
+  .mb-10 { margin-bottom: 1rem !important; }
+  .mt-12 { margin-top: 1.25rem !important; }
+  .mt-10 { margin-top: 1rem !important; }
+  .mt-8  { margin-top: 1rem !important; }
+
+  /* Large decorative cards & CTAs */
+  .p-16 { padding: 1.5rem !important; }
+  .p-10 { padding: 1.25rem !important; }
+  .p-8  { padding: 1rem !important; }
+  .p-7  { padding: 1rem !important; }
+  .p-6  { padding: 0.875rem !important; }
+
+  /* Grid gaps */
+  .gap-10 { gap: 1rem !important; }
+  .gap-8  { gap: 0.875rem !important; }
+  .gap-6  { gap: 0.75rem !important; }
+  .gap-5  { gap: 0.625rem !important; }
+
+  /* Typography — big display headings only */
+  .text-7xl { font-size: 2.5rem !important; line-height: 1.1 !important; }
+  .text-6xl { font-size: 2.25rem !important; line-height: 1.1 !important; }
+  .text-5xl { font-size: 2rem !important; line-height: 1.15 !important; }
+  .text-4xl { font-size: 1.65rem !important; line-height: 1.2 !important; }
+  .text-3xl { font-size: 1.4rem !important; line-height: 1.25 !important; }
+  .text-2xl { font-size: 1.2rem !important; line-height: 1.3 !important; }
+  .text-xl  { font-size: 1.05rem !important; line-height: 1.35 !important; }
+  .text-lg  { font-size: 0.98rem !important; }
+
+  /* Hero support text */
+  .text-base { font-size: 0.9rem !important; }
+
+  /* Prevent oversized rounded final-CTA */
+  .rounded-3xl { border-radius: 1.25rem !important; }
+
+  /* Buttons that use h-12 shouldn't dominate */
+  .h-12 { height: 2.75rem !important; }
+}
+

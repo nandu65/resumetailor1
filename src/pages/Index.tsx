@@ -207,7 +207,8 @@ const Index = () => {
           <h2 className="font-display text-4xl font-bold tracking-tight">Everything you need to get hired</h2>
           <p className="mt-4 text-muted-foreground">A complete toolkit to position your experience for any opportunity.</p>
         </div>
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+
           {[
             { icon: Target, title: "ATS Match Score", desc: "Get an instant 0–100 score showing how well your resume aligns with any job description." },
             { icon: Zap, title: "AI-Rewritten Bullets", desc: "Tighter, metric-driven experience lines that mirror the language recruiters search for." },
@@ -380,7 +381,7 @@ const Index = () => {
           <h2 className="font-display text-4xl font-bold tracking-tight">Your privacy is our priority</h2>
           <p className="mt-4 text-muted-foreground">We treat your resume like our own — locked down, encrypted, and never sold.</p>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
           {[
             { icon: Trash2, t: "Never stored permanently", d: "Your resume is processed in memory and removed from active use after your session." },
             { icon: Clock, t: "Auto-deleted after 24 hours", d: "Raw uploads and intermediate AI inputs are purged within 24 hours, automatically." },
@@ -409,7 +410,7 @@ const Index = () => {
             <p className="mt-4 text-muted-foreground">Eight powerful tools working together — from tailoring to interview-ready in minutes.</p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
             {[
               { icon: Wand2, title: "AI Resume Builder", desc: "Answer a few prompts — AI writes a polished resume in your pick of 3 templates.", tag: "New", to: "/tools/resume-builder" },
               { icon: Mail, title: "Cover Letter Generator", desc: "Tailored cover letter from your resume + JD in one click.", tag: "AI", to: "/tools/cover-letter" },
@@ -545,7 +546,7 @@ const Index = () => {
           <h2 className="font-display text-4xl font-bold tracking-tight">From "no replies" to "offer accepted"</h2>
           <p className="mt-4 text-muted-foreground">Real stories from people who landed roles after tailoring with us.</p>
         </div>
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
           {[
             { name: "Aditya Sharma", role: "SDE-2 @ Razorpay", quote: "Went from 2 callbacks in 3 months to 7 in two weeks. The keyword gap report was a game-changer.", initials: "AS" },
             { name: "Priya Iyer", role: "Product Manager @ Swiggy", quote: "I tailored 14 resumes for 14 different PM roles in one weekend. Got 5 first-round interviews.", initials: "PI" },
