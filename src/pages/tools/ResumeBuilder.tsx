@@ -78,6 +78,11 @@ Must have: 5+ years JS/TS, React, Node.js, PostgreSQL, AWS, Docker. Nice to have
 
 export default function ResumeBuilder() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const requireAuth = (intent: string) => {
+    toast.info(`Sign in to ${intent}`);
+    navigate("/auth", { state: { from: "/tools/resume-builder" } });
+  };
   const [basics, setBasics] = useState({ name: "", title: "", email: "", phone: "", location: "" });
   const [links, setLinks] = useState<{ label: string; url: string }[]>([
     { label: "LinkedIn", url: "" },
