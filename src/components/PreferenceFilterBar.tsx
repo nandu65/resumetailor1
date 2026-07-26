@@ -13,6 +13,11 @@ export const TEMPLATE_META: Record<TemplateId, { style: ResumePrefs["style"]; co
   elegant:         { style: "executive", columns: 1, photoFriendly: false },
   "sidebar-dark":  { style: "modern",    columns: 2, photoFriendly: true  },
   "photo-header":  { style: "creative",  columns: 2, photoFriendly: true  },
+  "centered-serif":{ style: "executive", columns: 1, photoFriendly: false },
+  "banner-photo":  { style: "modern",    columns: 2, photoFriendly: true  },
+  "teal-left":     { style: "modern",    columns: 2, photoFriendly: false },
+  "photo-grid":    { style: "creative",  columns: 1, photoFriendly: true  },
+  "logo-boxed":    { style: "classic",   columns: 1, photoFriendly: false },
 };
 
 
