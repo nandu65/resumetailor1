@@ -244,7 +244,7 @@ export default function ResumeBuilder() {
       return;
     }
 
-    if (!user) return toast.error("Sign in to use AI polish");
+    if (!user) return requireAuth("use AI polish");
     setLoading(true);
     try {
       const profile = {
