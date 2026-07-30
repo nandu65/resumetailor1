@@ -272,12 +272,13 @@ export const FloatingResume = () => {
         /* Lighter load on small touch screens to keep scrolling smooth */
         @media (max-width: 639px) {
           .resume-card {
-            width: 200px; height: 280px;
-            animation-duration: 30s;
-            opacity: 0.4 !important;
+            width: 215px; height: 300px;
+            animation-duration: 26s;
+            opacity: 0.85 !important;
             pointer-events: none !important;
+            filter: drop-shadow(0 10px 30px hsl(var(--primary) / 0.35));
           }
-          .halo { width: 300px !important; height: 300px !important; }
+          .halo { width: 340px !important; height: 340px !important; opacity: 1 !important; }
         }
       `}</style>
     </div>
