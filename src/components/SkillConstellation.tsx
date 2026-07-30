@@ -34,6 +34,7 @@ export function SkillConstellation() {
   const mouseRef = useRef<{ x: number; y: number; active: boolean }>({ x: -9999, y: -9999, active: false });
   const nodesRef = useRef<Node[]>([]);
   const isDesktopRef = useRef(false);
+  const ripplesRef = useRef<{ x: number; y: number; start: number }[]>([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -108,8 +109,23 @@ export function SkillConstellation() {
       canvas.parentElement!.addEventListener("pointerleave", leaveHandler);
     }
 
+    // Mobile / touch: tap anywhere over the hero to make the constellation blink
+    let tapHandler: ((e: PointerEvent) => void) | null = null;
+    if (!isDesktop) {
+      tapHandler = (e: PointerEvent) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        if (x < 0 || y < 0 || x > rect.width || y > rect.height) return;
+        ripplesRef.current.push({ x, y, start: performance.now() });
+        if (ripplesRef.current.length > 4) ripplesRef.current.shift();
+      };
+      canvas.parentElement!.addEventListener("pointerdown", tapHandler, { passive: true, capture: true });
+    }
+
     const start = performance.now();
     const REACH = 160; // px cursor influence radius
+    const RIPPLE_MS = 1600; // tap highlight duration
     const LINK = isDesktop ? 130 : 100; // link distance px
 
     const render = (now: number) => {
@@ -134,6 +150,19 @@ export function SkillConstellation() {
             px -= dx * 0.08 * f;
             py -= dy * 0.08 * f;
             glow = f;
+          }
+        }
+        // touch ripples: expanding highlight wave from the tap point
+        if (!isDesktopRef.current && ripplesRef.current.length) {
+          for (const rp of ripplesRef.current) {
+            const age = (now - rp.start) / RIPPLE_MS;
+            if (age < 0 || age > 1) continue;
+            const dist = Math.hypot(px - rp.x, py - rp.y);
+            const waveR = age * Math.max(w, h) * 0.9;
+            const band = 1 - Math.min(1, Math.abs(dist - waveR) / 110);
+            const fade = 1 - age;
+            const g = band * fade;
+            if (g > glow) glow = g;
           }
         }
         return { x: px, y: py, glow, n };
@@ -189,6 +218,10 @@ export function SkillConstellation() {
         }
       }
 
+      if (ripplesRef.current.length) {
+        ripplesRef.current = ripplesRef.current.filter((rp) => now - rp.start < RIPPLE_MS);
+      }
+
       rafRef.current = requestAnimationFrame(render);
     };
     rafRef.current = requestAnimationFrame(render);
@@ -198,6 +231,7 @@ export function SkillConstellation() {
       window.removeEventListener("resize", resize);
       if (mouseHandler) canvas.parentElement?.removeEventListener("pointermove", mouseHandler);
       if (leaveHandler) canvas.parentElement?.removeEventListener("pointerleave", leaveHandler);
+      if (tapHandler) canvas.parentElement?.removeEventListener("pointerdown", tapHandler, { capture: true } as EventListenerOptions);
     };
   }, []);
 
