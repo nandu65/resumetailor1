@@ -94,50 +94,50 @@ const Index = () => {
       {/* ATS score + AI Resume Builder — side by side */}
       <section className="relative overflow-hidden border-y border-border bg-gradient-to-b from-background via-accent/20 to-background">
         <div className="container py-16">
-          <div className="grid lg:grid-cols-2 gap-8 items-start">
+          <div className="grid grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-6 lg:gap-8 items-start">
             {/* ATS score (Try before signup) */}
             <div data-tour="try-now" className="min-w-0">
               <TryNow />
             </div>
 
             {/* AI Resume Builder — compact */}
-            <div data-tour="resume-builder" className="min-w-0 rounded-2xl border border-border bg-gradient-card p-6 md:p-8 shadow-card">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary mb-4">
-                <Sparkles className="h-3.5 w-3.5" /> New · AI Resume Builder
+            <div data-tour="resume-builder" className="min-w-0 rounded-2xl border border-border bg-gradient-card p-3 sm:p-6 md:p-8 shadow-card">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-2 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-[11px] font-semibold uppercase tracking-[0.12em] sm:tracking-[0.18em] text-primary mb-2 sm:mb-4">
+                <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> <span className="truncate">AI Resume Builder</span>
               </div>
-              <h2 className="font-display text-3xl md:text-4xl font-extrabold tracking-tight">
+              <h2 className="font-display text-[13px] leading-snug sm:text-3xl md:text-4xl font-extrabold tracking-tight">
                 <span className="text-primary">Easy</span> as <span className="text-foreground">1-2-3</span>
               </h2>
-              <p className="mt-3 text-sm text-muted-foreground">No resume? Build a recruiter-ready one in under 3 minutes — powered by AI.</p>
+              <p className="mt-1 sm:mt-3 text-[10px] leading-snug sm:text-sm text-muted-foreground">No resume? Build a recruiter-ready one in under 3 minutes — powered by AI.</p>
 
-              <div className="mt-6 space-y-3">
+              <div className="mt-3 sm:mt-6 space-y-2 sm:space-y-3">
                 {[
                   { n: 1, title: "Select a template", desc: "Pick from ATS-tested designs — Modern, Classic, or Compact." },
                   { n: 2, title: "Fill your details", desc: "AI rewrites input into strong, metric-driven bullet points." },
                   { n: 3, title: "Download & apply", desc: "Export a polished PDF you can send the same day." },
                 ].map((step) => (
-                  <div key={step.n} className="flex gap-3 rounded-xl border border-border bg-background/60 p-3">
-                    <div className="h-8 w-8 shrink-0 rounded-full bg-gradient-primary text-primary-foreground flex items-center justify-center font-bold shadow-glow">
+                  <div key={step.n} className="flex gap-2 sm:gap-3 rounded-xl border border-border bg-background/60 p-2 sm:p-3">
+                    <div className="h-6 w-6 text-[11px] sm:text-sm sm:h-8 sm:w-8 shrink-0 rounded-full bg-gradient-primary text-primary-foreground flex items-center justify-center font-bold shadow-glow">
                       {step.n}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-display font-bold text-sm">{step.title}</h3>
-                      <p className="text-xs text-muted-foreground leading-relaxed">{step.desc}</p>
+                      <h3 className="font-display font-bold text-[11px] sm:text-sm leading-tight">{step.title}</h3>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground leading-snug sm:leading-relaxed">{step.desc}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-6 flex flex-col items-start gap-3">
-                <Button asChild size="lg" className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow h-12 px-7 text-base rounded-full">
+              <div className="mt-3 sm:mt-6 flex flex-col items-start gap-2 sm:gap-3">
+                <Button asChild size="lg" className="w-full sm:w-auto bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow h-9 sm:h-12 px-3 sm:px-7 text-[11px] sm:text-base rounded-full">
                   <Link to="/tools/resume-builder">
-                    Build my resume now <ArrowRight className="ml-1 h-4 w-4" />
+                    Build my resume <ArrowRight className="ml-1 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </Link>
                 </Button>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> ATS-tested templates</span>
-                  <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> AI-written bullets</span>
-                  <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> Instant PDF export</span>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] sm:text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1"><CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" /> ATS-tested</span>
+                  <span className="inline-flex items-center gap-1"><CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" /> AI bullets</span>
+                  <span className="inline-flex items-center gap-1"><CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" /> PDF export</span>
                 </div>
               </div>
             </div>
