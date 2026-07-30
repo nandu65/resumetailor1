@@ -25,14 +25,10 @@ export default function SharePage() {
     if (!token) return;
     document.title = "Resume Score — ResumeShot";
     (async () => {
-      const { data } = await supabase
-        .from("resume_score_shares")
-        .select("ats_score, recruiter_score, job_match_score, score_label, title, company, role, created_at")
-        .eq("share_token", token)
-        .eq("is_active", true)
-        .maybeSingle();
-      if (!data) setNotFound(true);
-      else setShare(data as Share);
+      const { data } = await supabase.rpc("get_shared_score", { _token: token });
+      const row = Array.isArray(data) ? data[0] : data;
+      if (!row) setNotFound(true);
+      else setShare(row as Share);
       setLoading(false);
       // fire-and-forget view bump
       supabase.functions.invoke("share-view", { body: { token } }).catch(() => {});
