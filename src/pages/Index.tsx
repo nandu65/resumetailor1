@@ -105,10 +105,10 @@ const Index = () => {
               <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-2 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-[11px] font-semibold uppercase tracking-[0.12em] sm:tracking-[0.18em] text-primary mb-2 sm:mb-4">
                 <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> <span className="truncate">AI Resume Builder</span>
               </div>
-              <h2 className="font-display text-lg sm:text-3xl md:text-4xl font-extrabold tracking-tight">
+              <h2 className="font-display text-[13px] leading-snug sm:text-3xl md:text-4xl font-extrabold tracking-tight">
                 <span className="text-primary">Easy</span> as <span className="text-foreground">1-2-3</span>
               </h2>
-              <p className="mt-1.5 sm:mt-3 text-[11px] sm:text-sm text-muted-foreground">No resume? Build a recruiter-ready one in under 3 minutes — powered by AI.</p>
+              <p className="mt-1 sm:mt-3 text-[10px] leading-snug sm:text-sm text-muted-foreground">No resume? Build a recruiter-ready one in under 3 minutes — powered by AI.</p>
 
               <div className="mt-3 sm:mt-6 space-y-2 sm:space-y-3">
                 {[
