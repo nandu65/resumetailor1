@@ -935,6 +935,19 @@ export type Database = {
       }
       consume_scan: { Args: { _user_id: string }; Returns: Json }
       ensure_referral_code: { Args: { _user_id: string }; Returns: string }
+      get_shared_score: {
+        Args: { _token: string }
+        Returns: {
+          ats_score: number
+          company: string
+          created_at: string
+          job_match_score: number
+          recruiter_score: number
+          role: string
+          score_label: string
+          title: string
+        }[]
+      }
       increment_share_view: { Args: { _token: string }; Returns: undefined }
     }
     Enums: {
