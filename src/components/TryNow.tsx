@@ -85,45 +85,45 @@ export function TryNow() {
 
   return (
     <section className="container -mt-10 md:-mt-14 relative z-10">
-      <div className="max-w-4xl mx-auto rounded-3xl border-2 border-primary/30 bg-gradient-card p-6 md:p-10 shadow-elegant">
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground mb-3">
-            <Sparkles className="h-3.5 w-3.5" /> Try it now — No signup required
+      <div className="max-w-4xl mx-auto rounded-3xl border-2 border-primary/30 bg-gradient-card p-3 sm:p-6 md:p-10 shadow-elegant">
+        <div className="text-center mb-3 sm:mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-accent px-2 py-0.5 sm:px-4 sm:py-1.5 text-[9px] sm:text-xs font-semibold text-accent-foreground mb-2 sm:mb-3">
+            <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Try it now — free
           </div>
-          <h2 className="font-display text-2xl md:text-3xl font-bold tracking-tight">
-            Get your instant ATS score in 30 seconds
+          <h2 className="font-display text-lg sm:text-2xl md:text-3xl font-bold tracking-tight">
+            Instant ATS score in 30 seconds
           </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-1.5 sm:mt-2 text-[11px] sm:text-sm text-muted-foreground">
             Free preview. See how your resume scores before you sign up.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-5">
+        <div className="grid md:grid-cols-2 gap-3 sm:gap-5">
           {/* JD */}
           <div>
-            <label className="text-sm font-semibold flex items-center gap-2 mb-2">
-              <FileText className="h-4 w-4 text-primary" /> Paste Job Description
+            <label className="text-[11px] sm:text-sm font-semibold flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+              <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" /> Job Description
             </label>
             <Textarea
               value={jd}
               onChange={(e) => setJd(e.target.value)}
               placeholder="Paste the full job description here — responsibilities, required skills, qualifications..."
-              className="min-h-[180px] resize-none bg-background/70"
+              className="min-h-[110px] sm:min-h-[180px] text-xs sm:text-sm resize-none bg-background/70"
             />
-            <div className="mt-1 text-[11px] text-muted-foreground text-right">{jd.length} characters</div>
+            <div className="mt-1 text-[10px] sm:text-[11px] text-muted-foreground text-right">{jd.length} characters</div>
           </div>
 
           {/* Upload */}
           <div>
-            <label className="text-sm font-semibold flex items-center gap-2 mb-2">
-              <Upload className="h-4 w-4 text-primary" /> Upload Your Resume (PDF/DOCX)
+            <label className="text-[11px] sm:text-sm font-semibold flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+              <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" /> Upload Resume
             </label>
             <div
               onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
               onDrop={onDrop}
               onClick={() => inputRef.current?.click()}
-              className={`min-h-[180px] rounded-md border-2 border-dashed flex flex-col items-center justify-center text-center p-6 cursor-pointer transition-all ${
+              className={`min-h-[110px] sm:min-h-[180px] rounded-md border-2 border-dashed flex flex-col items-center justify-center text-center p-3 sm:p-6 cursor-pointer transition-all ${
                 dragOver ? "border-primary bg-primary/5" : "border-border bg-background/70 hover:border-primary/60 hover:bg-accent/30"
               }`}
             >
@@ -136,35 +136,35 @@ export function TryNow() {
               />
               {file ? (
                 <div className="flex flex-col items-center gap-2">
-                  <CheckCircle2 className="h-8 w-8 text-primary" />
-                  <div className="font-semibold text-sm">{file.name}</div>
-                  <div className="text-xs text-muted-foreground">Click to replace</div>
+                  <CheckCircle2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                  <div className="font-semibold text-[11px] sm:text-sm break-all">{file.name}</div>
+                  <div className="text-[10px] sm:text-xs text-muted-foreground">Click to replace</div>
                 </div>
               ) : (
                 <>
-                  <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                  <div className="font-semibold text-sm">Drop your resume or click to browse</div>
-                  <div className="text-xs text-muted-foreground mt-1">PDF, DOCX or TXT · max 5MB</div>
+                  <Upload className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground mb-1.5 sm:mb-2" />
+                  <div className="font-semibold text-[11px] sm:text-sm">Drop resume or browse</div>
+                  <div className="text-[10px] sm:text-xs text-muted-foreground mt-1">PDF, DOCX, TXT · 5MB</div>
                 </>
               )}
             </div>
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="mt-3 sm:mt-6 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
           <Button
             size="lg"
             onClick={analyze}
             disabled={loading}
-            className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow h-12 px-8 text-base w-full sm:w-auto"
+            className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow h-9 sm:h-12 px-3 sm:px-8 text-[11px] sm:text-base w-full sm:w-auto"
           >
             {loading ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing your resume...</>
+              <><Loader2 className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" /> Analyzing...</>
             ) : (
-              <>Get Instant ATS Score <ArrowRight className="ml-1 h-4 w-4" /></>
+              <>Get ATS Score <ArrowRight className="ml-1 h-3.5 w-3.5 sm:h-4 sm:w-4" /></>
             )}
           </Button>
-          <div className="text-xs text-muted-foreground">🔒 We don't store your data on this preview</div>
+          <div className="text-[10px] sm:text-xs text-muted-foreground text-center">🔒 We don't store your data</div>
         </div>
       </div>
 
