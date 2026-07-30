@@ -84,13 +84,13 @@ export function TryNow() {
   };
 
   return (
-    <section className="container -mt-10 md:-mt-14 relative z-10">
-      <div className="max-w-4xl mx-auto rounded-3xl border-2 border-primary/30 bg-gradient-card p-3 sm:p-6 md:p-10 shadow-elegant">
+    <section className="w-full relative z-10">
+      <div className="w-full rounded-3xl border-2 border-primary/30 bg-gradient-card p-3 sm:p-6 md:p-10 shadow-elegant">
         <div className="text-center mb-3 sm:mb-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-accent px-2 py-0.5 sm:px-4 sm:py-1.5 text-[9px] sm:text-xs font-semibold text-accent-foreground mb-2 sm:mb-3">
             <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Try it now — free
           </div>
-          <h2 className="font-display text-[13px] leading-snug sm:text-2xl md:text-3xl font-bold tracking-tight">
+          <h2 className="font-display text-xs leading-snug sm:text-2xl md:text-3xl font-bold tracking-tight">
             Instant ATS score in 30 seconds
           </h2>
           <p className="mt-1 sm:mt-2 text-[10px] leading-snug sm:text-sm text-muted-foreground">
