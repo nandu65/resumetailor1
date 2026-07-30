@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
     const prompt = `From the raw web page text below, extract ONLY the job description. Remove navigation, cookie banners, ads, "similar jobs", footers, and application forms. Preserve responsibilities, requirements, skills, tech stack, benefits. Return strict JSON: {"title": string|null, "company": string|null, "jobDescription": string}. Keep jobDescription as plain text with newlines between sections.\n\nPAGE TEXT:\n${text}`;
 
     const startedAt = Date.now();
-    const gr = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + geminiKey, {
+    const gr = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=" + geminiKey, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
     logAiUsage({
       userId: callerId,
       feature: "jd-from-url",
-      model: "gemini-2.5-flash",
+      model: "gemini-flash-latest",
       inputTokens: usage.promptTokenCount ?? estimateTokens(prompt),
       outputTokens: usage.candidatesTokenCount ?? estimateTokens(raw),
       durationMs: Date.now() - startedAt,
