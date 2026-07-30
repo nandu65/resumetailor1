@@ -13,12 +13,12 @@ export const FloatingResume = () => {
   return (
     <div
       aria-hidden
-      className="floating-resume-root pointer-events-none absolute inset-0 hidden sm:flex items-center justify-center overflow-hidden"
+      className="floating-resume-root pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
       style={{ perspective: "1600px" }}
     >
       {/* Glow halo — hidden on mobile to avoid blur repaint cost */}
       <div
-        className="halo hidden sm:block absolute h-[460px] w-[460px] rounded-full blur-3xl"
+        className="halo absolute h-[460px] w-[460px] rounded-full blur-3xl"
         style={{
           background:
             "radial-gradient(circle, hsl(var(--primary) / 0.25), transparent 70%)",
@@ -146,7 +146,7 @@ export const FloatingResume = () => {
 
           {/* Scanning line */}
           <div
-            className="absolute left-0 right-0 top-0 h-[2px] pointer-events-none hidden sm:block"
+            className="absolute left-0 right-0 top-0 h-[2px] pointer-events-none block"
             style={{
               background:
                 "linear-gradient(90deg, transparent, hsl(var(--primary)), transparent)",
@@ -271,7 +271,13 @@ export const FloatingResume = () => {
         }
         /* Lighter load on small touch screens to keep scrolling smooth */
         @media (max-width: 639px) {
-          .resume-card { animation-duration: 30s; opacity: 0.55 !important; }
+          .resume-card {
+            width: 200px; height: 280px;
+            animation-duration: 30s;
+            opacity: 0.4 !important;
+            pointer-events: none !important;
+          }
+          .halo { width: 300px !important; height: 300px !important; }
         }
       `}</style>
     </div>
