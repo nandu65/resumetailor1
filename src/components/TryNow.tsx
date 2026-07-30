@@ -85,15 +85,15 @@ export function TryNow() {
 
   return (
     <section className="w-full relative z-10">
-      <div className="w-full rounded-3xl border-2 border-primary/30 bg-gradient-card p-3 sm:p-6 md:p-10 shadow-elegant">
+      <div className="w-full rounded-3xl border-2 border-primary/30 bg-gradient-card p-2.5 max-[360px]:p-2 sm:p-6 md:p-10 shadow-elegant">
         <div className="text-center mb-3 sm:mb-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-accent px-2 py-0.5 sm:px-4 sm:py-1.5 text-[9px] sm:text-xs font-semibold text-accent-foreground mb-2 sm:mb-3">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-accent px-2 py-0.5 sm:px-4 sm:py-1.5 text-[8px] max-[360px]:text-[7px] sm:text-xs font-semibold text-accent-foreground mb-1.5 sm:mb-3">
             <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Try it now — free
           </div>
-          <h2 className="font-display text-xs leading-snug sm:text-2xl md:text-3xl font-bold tracking-tight">
+          <h2 className="font-display text-[11px] max-[360px]:text-[10px] leading-tight sm:text-2xl md:text-3xl font-bold tracking-tight">
             Instant ATS score in 30 seconds
           </h2>
-          <p className="mt-1 sm:mt-2 text-[10px] leading-snug sm:text-sm text-muted-foreground">
+          <p className="mt-1 sm:mt-2 text-[9px] max-[360px]:text-[8px] leading-tight sm:text-sm text-muted-foreground">
             Free preview. See how your resume scores before you sign up.
           </p>
         </div>
@@ -101,21 +101,21 @@ export function TryNow() {
         <div className="grid md:grid-cols-2 gap-3 sm:gap-5">
           {/* JD */}
           <div>
-            <label className="text-[11px] sm:text-sm font-semibold flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+            <label className="text-[10px] max-[360px]:text-[9px] sm:text-sm font-semibold flex items-center gap-1 sm:gap-2 mb-1.5 sm:mb-2">
               <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" /> Job Description
             </label>
             <Textarea
               value={jd}
               onChange={(e) => setJd(e.target.value)}
               placeholder="Paste the full job description here — responsibilities, required skills, qualifications..."
-              className="min-h-[110px] sm:min-h-[180px] text-xs sm:text-sm resize-none bg-background/70"
+              className="min-h-[92px] sm:min-h-[180px] text-[11px] leading-tight sm:text-sm resize-none bg-background/70"
             />
             <div className="mt-1 text-[10px] sm:text-[11px] text-muted-foreground text-right">{jd.length} characters</div>
           </div>
 
           {/* Upload */}
           <div>
-            <label className="text-[11px] sm:text-sm font-semibold flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+            <label className="text-[10px] max-[360px]:text-[9px] sm:text-sm font-semibold flex items-center gap-1 sm:gap-2 mb-1.5 sm:mb-2">
               <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" /> Upload Resume
             </label>
             <div
@@ -123,7 +123,7 @@ export function TryNow() {
               onDragLeave={() => setDragOver(false)}
               onDrop={onDrop}
               onClick={() => inputRef.current?.click()}
-              className={`min-h-[110px] sm:min-h-[180px] rounded-md border-2 border-dashed flex flex-col items-center justify-center text-center p-3 sm:p-6 cursor-pointer transition-all ${
+              className={`min-h-[92px] sm:min-h-[180px] rounded-md border-2 border-dashed flex flex-col items-center justify-center text-center p-3 sm:p-6 cursor-pointer transition-all ${
                 dragOver ? "border-primary bg-primary/5" : "border-border bg-background/70 hover:border-primary/60 hover:bg-accent/30"
               }`}
             >
@@ -143,8 +143,8 @@ export function TryNow() {
               ) : (
                 <>
                   <Upload className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground mb-1.5 sm:mb-2" />
-                  <div className="font-semibold text-[11px] sm:text-sm">Drop resume or browse</div>
-                  <div className="text-[10px] sm:text-xs text-muted-foreground mt-1">PDF, DOCX, TXT · 5MB</div>
+                  <div className="font-semibold text-[10px] leading-tight sm:text-sm">Drop resume or browse</div>
+                  <div className="text-[9px] leading-tight sm:text-xs text-muted-foreground mt-1">PDF, DOCX, TXT · 5MB</div>
                 </>
               )}
             </div>
@@ -156,7 +156,7 @@ export function TryNow() {
             size="lg"
             onClick={analyze}
             disabled={loading}
-            className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow h-9 sm:h-12 px-3 sm:px-8 text-[11px] sm:text-base w-full sm:w-auto"
+            className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow h-8 sm:h-12 px-2 sm:px-8 text-[10px] sm:text-base w-full sm:w-auto"
           >
             {loading ? (
               <><Loader2 className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" /> Analyzing...</>
@@ -164,7 +164,7 @@ export function TryNow() {
               <>Get ATS Score <ArrowRight className="ml-1 h-3.5 w-3.5 sm:h-4 sm:w-4" /></>
             )}
           </Button>
-          <div className="text-[10px] sm:text-xs text-muted-foreground text-center">🔒 We don't store your data</div>
+          <div className="text-[9px] leading-tight sm:text-xs text-muted-foreground text-center">🔒 We don't store your data</div>
         </div>
       </div>
 
