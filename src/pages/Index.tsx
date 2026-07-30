@@ -94,7 +94,7 @@ const Index = () => {
       {/* ATS score + AI Resume Builder — side by side */}
       <section className="relative overflow-hidden border-y border-border bg-gradient-to-b from-background via-accent/20 to-background">
         <div className="container py-16">
-          <div className="grid lg:grid-cols-2 gap-8 items-start">
+          <div className="grid grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-6 lg:gap-8 items-start">
             {/* ATS score (Try before signup) */}
             <div data-tour="try-now" className="min-w-0">
               <TryNow />
