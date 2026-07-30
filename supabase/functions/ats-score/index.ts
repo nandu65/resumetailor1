@@ -66,7 +66,7 @@ ${resume}
 Apply the rubric strictly and return the JSON.`;
 
     const geminiUrl =
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=" +
       GEMINI_API_KEY;
 
     const startedAt = Date.now();
@@ -123,7 +123,7 @@ Apply the rubric strictly and return the JSON.`;
     logAiUsage({
       userId: callerId,
       feature: "ats-score",
-      model: "gemini-2.5-flash",
+      model: "gemini-flash-latest",
       inputTokens, outputTokens,
       durationMs: Date.now() - startedAt,
     });
