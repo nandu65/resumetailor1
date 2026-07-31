@@ -56,6 +56,7 @@ export type Database = {
           output_tokens: number
           plan: string | null
           status: string
+          token_source: string
           user_id: string | null
         }
         Insert: {
@@ -69,6 +70,7 @@ export type Database = {
           output_tokens?: number
           plan?: string | null
           status?: string
+          token_source?: string
           user_id?: string | null
         }
         Update: {
@@ -82,6 +84,7 @@ export type Database = {
           output_tokens?: number
           plan?: string | null
           status?: string
+          token_source?: string
           user_id?: string | null
         }
         Relationships: []
