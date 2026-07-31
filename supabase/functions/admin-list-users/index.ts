@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
     // AI usage aggregation (last 30d)
     const { data: aiLogs } = await admin
       .from("ai_usage_logs")
-      .select("feature,plan,model,input_tokens,output_tokens,cost_inr,created_at,status")
+      .select("feature,plan,model,input_tokens,output_tokens,cost_inr,created_at,status,token_source")
       .gte("created_at", since.toISOString());
 
     const aiByFeature: Record<string, { calls: number; input: number; output: number; cost: number; errors: number }> = {};

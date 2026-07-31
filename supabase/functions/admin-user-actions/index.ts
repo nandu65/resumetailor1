@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
           admin.from("profiles").select("*").eq("user_id", target).maybeSingle(),
           admin.auth.admin.getUserById(target),
           admin.from("optimizations").select("id,title,company,role,ats_score,created_at").eq("user_id", target).order("created_at", { ascending: false }).limit(50),
-          admin.from("ai_usage_logs").select("feature,model,input_tokens,output_tokens,cost_inr,status,created_at").eq("user_id", target).order("created_at", { ascending: false }).limit(50),
+          admin.from("ai_usage_logs").select("feature,model,input_tokens,output_tokens,cost_inr,status,created_at,token_source").eq("user_id", target).order("created_at", { ascending: false }).limit(50),
           admin.from("pricing_experiments").select("variant,event,tier,created_at").eq("user_id", target).order("created_at", { ascending: false }).limit(30),
         ]);
         const au = authUser?.user;
