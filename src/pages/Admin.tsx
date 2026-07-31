@@ -42,6 +42,8 @@ interface AdminData {
   timeseries: { date: string; signups: number; scans: number }[];
   abTest: Record<"a49" | "b99" | "c149", { view: number; click: number; success: number }>;
   aiCost?: {
+    exactTokenPct?: number;
+    usdToInr?: number;
     byFeature: { feature: string; calls: number; input: number; output: number; cost: number; errors: number; avgCost: number }[];
     byPlan: { plan: string; calls: number; input: number; output: number; cost: number; avgCost: number }[];
     series: { date: string; cost: number }[];
