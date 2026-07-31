@@ -103,6 +103,7 @@ serve(async (req) => {
       model,
       inputTokens: usage.prompt_tokens ?? estimateTokens((opt.resume_text || "") + (opt.job_description || "")),
       outputTokens: usage.completion_tokens ?? estimateTokens(toolCall.function.arguments),
+      tokenSource: usage.prompt_tokens != null ? "exact" : "estimated",
       durationMs: Date.now() - startedAt,
     });
 

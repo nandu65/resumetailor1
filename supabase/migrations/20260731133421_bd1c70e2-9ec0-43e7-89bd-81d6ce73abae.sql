@@ -1,0 +1,1 @@
+ALTER TABLE public.ai_usage_logs ADD COLUMN IF NOT EXISTS token_source text NOT NULL DEFAULT 'estimated';

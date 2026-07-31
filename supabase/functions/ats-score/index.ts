@@ -125,6 +125,7 @@ Apply the rubric strictly and return the JSON.`;
       feature: "ats-score",
       model: "gemini-flash-latest",
       inputTokens, outputTokens,
+      tokenSource: usage.promptTokenCount != null ? "exact" : "estimated",
       durationMs: Date.now() - startedAt,
     });
     const text =

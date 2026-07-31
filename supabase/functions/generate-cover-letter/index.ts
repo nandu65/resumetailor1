@@ -77,6 +77,7 @@ serve(async (req) => {
       model,
       inputTokens: usage.prompt_tokens ?? estimateTokens(sysMsg + userMsg),
       outputTokens: usage.completion_tokens ?? estimateTokens(coverLetter),
+      tokenSource: usage.prompt_tokens != null ? "exact" : "estimated",
       durationMs: Date.now() - startedAt,
     });
 
