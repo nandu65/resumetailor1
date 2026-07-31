@@ -270,6 +270,11 @@ export default function Admin() {
           <Kpi label="AI Errors" value={m?.aiErrors30d ?? 0} icon={<AlertCircle className="h-4 w-4" />} tone={(m?.aiErrors30d ?? 0) > 0 ? "warn" : undefined} />
         </div>
 
+        <p className="text-xs text-muted-foreground -mt-1">
+          {(data?.aiCost?.exactTokenPct ?? 0).toFixed(0)}% of calls used exact provider token counts
+          {(data?.aiCost?.exactTokenPct ?? 0) < 100 && " (rest estimated)"} · converted at 1 USD = ₹{data?.aiCost?.usdToInr ?? 83} · provider rate card applied per model.
+        </p>
+
         <div className="grid gap-4 lg:grid-cols-3">
           <Card className="lg:col-span-2">
             <CardHeader><CardTitle className="text-base flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /> AI Cost per Day (₹, last 30d)</CardTitle></CardHeader>
