@@ -84,6 +84,7 @@ Rules:
       model,
       inputTokens: usage.prompt_tokens ?? estimateTokens(sysMsg + userMsg),
       outputTokens: usage.completion_tokens ?? estimateTokens(content),
+      tokenSource: usage.prompt_tokens != null ? "exact" : "estimated",
       durationMs: Date.now() - startedAt,
     });
 

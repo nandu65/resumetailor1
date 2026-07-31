@@ -91,6 +91,7 @@ Deno.serve(async (req) => {
       model: "gemini-flash-latest",
       inputTokens: usage.promptTokenCount ?? estimateTokens(prompt),
       outputTokens: usage.candidatesTokenCount ?? estimateTokens(raw),
+      tokenSource: usage.promptTokenCount != null ? "exact" : "estimated",
       durationMs: Date.now() - startedAt,
     });
 

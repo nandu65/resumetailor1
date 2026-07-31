@@ -35,6 +35,8 @@ export interface LogArgs {
   outputTokens: number;
   status?: "success" | "error";
   durationMs?: number;
+  /** "exact" when token counts came from the provider response, "estimated" otherwise */
+  tokenSource?: "exact" | "estimated";
 }
 
 export async function logAiUsage(args: LogArgs) {
@@ -65,6 +67,7 @@ export async function logAiUsage(args: LogArgs) {
       output_tokens: args.outputTokens,
       cost_inr: cost,
       status: args.status ?? "success",
+      token_source: args.tokenSource ?? "estimated",
       duration_ms: args.durationMs ?? null,
     });
   } catch (e) {
