@@ -281,7 +281,7 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
                   {d.ai_logs.map((l, i) => (
                     <div key={i} className="p-2 text-xs flex justify-between">
                       <span>{l.feature} · {l.model}</span>
-                      <span className="text-muted-foreground">{l.input_tokens}→{l.output_tokens} tok · ₹{Number(l.cost_inr).toFixed(3)}</span>
+                      <span className="text-muted-foreground">{l.input_tokens}→{l.output_tokens} tok{(l as any).token_source === "exact" ? "" : " (est)"} · ₹{Number(l.cost_inr).toFixed(3)}</span>
                     </div>
                   ))}
                 </div>

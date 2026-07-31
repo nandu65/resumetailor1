@@ -42,6 +42,8 @@ interface AdminData {
   timeseries: { date: string; signups: number; scans: number }[];
   abTest: Record<"a49" | "b99" | "c149", { view: number; click: number; success: number }>;
   aiCost?: {
+    exactTokenPct?: number;
+    usdToInr?: number;
     byFeature: { feature: string; calls: number; input: number; output: number; cost: number; errors: number; avgCost: number }[];
     byPlan: { plan: string; calls: number; input: number; output: number; cost: number; avgCost: number }[];
     series: { date: string; cost: number }[];
@@ -267,6 +269,11 @@ export default function Admin() {
           <Kpi label="Tokens In / Out" value={`${((m?.aiInputTokens30d ?? 0) / 1000).toFixed(1)}k / ${((m?.aiOutputTokens30d ?? 0) / 1000).toFixed(1)}k`} icon={<Cpu className="h-4 w-4" />} />
           <Kpi label="AI Errors" value={m?.aiErrors30d ?? 0} icon={<AlertCircle className="h-4 w-4" />} tone={(m?.aiErrors30d ?? 0) > 0 ? "warn" : undefined} />
         </div>
+
+        <p className="text-xs text-muted-foreground -mt-1">
+          {(data?.aiCost?.exactTokenPct ?? 0).toFixed(0)}% of calls used exact provider token counts
+          {(data?.aiCost?.exactTokenPct ?? 0) < 100 && " (rest estimated)"} · converted at 1 USD = ₹{data?.aiCost?.usdToInr ?? 83} · provider rate card applied per model.
+        </p>
 
         <div className="grid gap-4 lg:grid-cols-3">
           <Card className="lg:col-span-2">

@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
     // AI usage aggregation (last 30d)
     const { data: aiLogs } = await admin
       .from("ai_usage_logs")
-      .select("feature,plan,model,input_tokens,output_tokens,cost_inr,created_at,status")
+      .select("feature,plan,model,input_tokens,output_tokens,cost_inr,created_at,status,token_source")
       .gte("created_at", since.toISOString());
 
     const aiByFeature: Record<string, { calls: number; input: number; output: number; cost: number; errors: number }> = {};
@@ -106,13 +106,14 @@ Deno.serve(async (req) => {
       anonymous: { calls: 0, input: 0, output: 0, cost: 0 },
     };
     const aiByDay: Record<string, number> = {};
-    let aiTotalCost = 0, aiTotalInput = 0, aiTotalOutput = 0, aiTotalCalls = 0, aiErrors = 0;
+    let aiTotalCost = 0, aiTotalInput = 0, aiTotalOutput = 0, aiTotalCalls = 0, aiErrors = 0, aiExactCalls = 0;
     (aiLogs || []).forEach((l: any) => {
       const cost = Number(l.cost_inr) || 0;
       const inp = l.input_tokens || 0;
       const outp = l.output_tokens || 0;
       aiTotalCost += cost; aiTotalInput += inp; aiTotalOutput += outp; aiTotalCalls++;
       if (l.status === "error") aiErrors++;
+      if (l.token_source === "exact") aiExactCalls++;
       const f = l.feature || "unknown";
       if (!aiByFeature[f]) aiByFeature[f] = { calls: 0, input: 0, output: 0, cost: 0, errors: 0 };
       aiByFeature[f].calls++; aiByFeature[f].input += inp; aiByFeature[f].output += outp; aiByFeature[f].cost += cost;
@@ -157,6 +158,8 @@ Deno.serve(async (req) => {
       timeseries: days,
       abTest: funnel,
       aiCost: {
+        exactTokenPct: aiTotalCalls ? +((aiExactCalls / aiTotalCalls) * 100).toFixed(1) : 0,
+        usdToInr: Number(Deno.env.get("USD_TO_INR") ?? 83),
         byFeature: aiFeatureRows,
         byPlan: aiPlanRows,
         series: aiCostSeries,
