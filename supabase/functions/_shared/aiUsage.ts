@@ -2,7 +2,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 // Prices in USD per 1M tokens -> INR per token
-const USD_TO_INR = 83;
+const USD_TO_INR = Number(Deno.env.get("USD_TO_INR") ?? 83);
 const PRICES: Record<string, { in: number; out: number }> = {
   // Gemini via Lovable Gateway / Google
   "google/gemini-2.5-flash":       { in: 0.30, out: 2.50 },
@@ -10,6 +10,7 @@ const PRICES: Record<string, { in: number; out: number }> = {
   "google/gemini-3-flash-preview": { in: 0.30, out: 2.50 },
   "gemini-2.5-flash":              { in: 0.30, out: 2.50 },
   "gemini-2.5-flash-lite":         { in: 0.10, out: 0.40 },
+  "gemini-flash-latest":           { in: 0.30, out: 2.50 },
 };
 
 function priceFor(model: string) {
