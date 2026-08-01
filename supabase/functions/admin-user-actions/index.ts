@@ -77,25 +77,37 @@ Deno.serve(async (req) => {
           ? new Date(rToRaw.getTime() + (String(body.ai_to).length <= 10 ? 86399999 : 0)).toISOString()
           : new Date().toISOString();
 
+        const fFeature = String(body.ai_feature || "").trim();
+        const fModel = String(body.ai_model || "").trim();
+
         const blank = () => ({ calls: 0, input: 0, output: 0, cost: 0, exactCalls: 0, errors: 0 });
         const totals = blank();
         const rangeTotals = blank();
-        const byFeature: Record<string, { feature: string; calls: number; input: number; output: number; cost: number }> = {};
-        const byFeatureRange: Record<string, { feature: string; calls: number; input: number; output: number; cost: number }> = {};
+        type Bucket = { feature: string; calls: number; input: number; output: number; cost: number };
+        const byFeature: Record<string, Bucket> = {};
+        const byFeatureRange: Record<string, Bucket> = {};
+        const byModelRange: Record<string, Bucket> = {};
+        const featureSet = new Set<string>();
+        const modelSet = new Set<string>();
         const PAGE = 1000;
         for (let page = 0; page < 100; page++) {
           const { data: rows, error: rowsErr } = await admin
             .from("ai_usage_logs")
-            .select("feature,input_tokens,output_tokens,cost_inr,status,token_source,created_at")
+            .select("feature,model,input_tokens,output_tokens,cost_inr,status,token_source,created_at")
             .eq("user_id", target)
             .range(page * PAGE, page * PAGE + PAGE - 1);
           if (rowsErr) break;
           (rows || []).forEach((l: any) => {
+            const f = l.feature || "unknown";
+            const m = l.model || "unknown";
+            featureSet.add(f);
+            modelSet.add(m);
+            if (fFeature && f !== fFeature) return;
+            if (fModel && m !== fModel) return;
             const inp = l.input_tokens || 0, outp = l.output_tokens || 0, cost = Number(l.cost_inr) || 0;
             totals.calls++; totals.input += inp; totals.output += outp; totals.cost += cost;
             if (l.token_source === "exact") totals.exactCalls++;
             if (l.status === "error") totals.errors++;
-            const f = l.feature || "unknown";
             if (!byFeature[f]) byFeature[f] = { feature: f, calls: 0, input: 0, output: 0, cost: 0 };
             byFeature[f].calls++; byFeature[f].input += inp; byFeature[f].output += outp; byFeature[f].cost += cost;
 
@@ -106,10 +118,13 @@ Deno.serve(async (req) => {
               if (l.status === "error") rangeTotals.errors++;
               if (!byFeatureRange[f]) byFeatureRange[f] = { feature: f, calls: 0, input: 0, output: 0, cost: 0 };
               byFeatureRange[f].calls++; byFeatureRange[f].input += inp; byFeatureRange[f].output += outp; byFeatureRange[f].cost += cost;
+              if (!byModelRange[m]) byModelRange[m] = { feature: m, calls: 0, input: 0, output: 0, cost: 0 };
+              byModelRange[m].calls++; byModelRange[m].input += inp; byModelRange[m].output += outp; byModelRange[m].cost += cost;
             }
           });
           if (!rows || rows.length < PAGE) break;
         }
+
 
 
         const au = authUser?.user;
@@ -126,7 +141,16 @@ Deno.serve(async (req) => {
             banned_until: (au as any).banned_until ?? null,
           } : null,
           optimizations: opts ?? [],
-          ai_logs: aiLogs ?? [],
+          ai_logs: (aiLogs ?? []).filter((l: any) =>
+            (!fFeature || (l.feature || "unknown") === fFeature) &&
+            (!fModel || (l.model || "unknown") === fModel)
+          ),
+          ai_filters: {
+            feature: fFeature || null,
+            model: fModel || null,
+            features: Array.from(featureSet).sort(),
+            models: Array.from(modelSet).sort(),
+          },
           ai_totals: {
             ...totals,
             cost: +totals.cost.toFixed(4),
@@ -145,6 +169,9 @@ Deno.serve(async (req) => {
             avgCost: +(rangeTotals.cost / Math.max(1, rangeTotals.calls)).toFixed(4),
             exactPct: +((rangeTotals.exactCalls / Math.max(1, rangeTotals.calls)) * 100).toFixed(1),
             byFeature: Object.values(byFeatureRange)
+              .map((f) => ({ ...f, cost: +f.cost.toFixed(4) }))
+              .sort((a, b) => b.cost - a.cost),
+            byModel: Object.values(byModelRange)
               .map((f) => ({ ...f, cost: +f.cost.toFixed(4) }))
               .sort((a, b) => b.cost - a.cost),
           },
@@ -567,11 +594,84 @@ Deno.serve(async (req) => {
       case "cancel_custom_offer": {
         const offerId = String(body.offer_id || "");
         if (!offerId) return json({ error: "offer_id required" }, 400);
+        const { data: offer } = await admin.from("custom_offers").select("*").eq("id", offerId).maybeSingle();
+        if (!offer) return json({ error: "offer not found" }, 404);
+        if (offer.status === "paid") {
+          return json({ error: "Offer is already paid — use refund instead so the payment and scans are reversed." }, 400);
+        }
         const { error } = await admin.from("custom_offers")
-          .update({ status: "cancelled" }).eq("id", offerId).eq("status", "pending");
+          .update({ status: "cancelled" }).eq("id", offerId).neq("status", "paid");
         if (error) throw error;
         await audit({ offer_id: offerId });
         return json({ ok: true });
+      }
+
+      case "refund_custom_offer": {
+        const offerId = String(body.offer_id || "");
+        if (!offerId) return json({ error: "offer_id required" }, 400);
+        const { data: offer } = await admin.from("custom_offers").select("*").eq("id", offerId).maybeSingle();
+        if (!offer) return json({ error: "offer not found" }, 404);
+        if (offer.status !== "paid") return json({ error: "only paid offers can be refunded" }, 400);
+        if (!offer.payment_id) return json({ error: "offer has no payment id" }, 400);
+
+        const paid = Number(offer.amount_paise) || 0;
+        const reqRupees = body.amount_rupees === undefined || body.amount_rupees === null || body.amount_rupees === ""
+          ? null
+          : Number(body.amount_rupees);
+        if (reqRupees !== null && (!Number.isFinite(reqRupees) || reqRupees <= 0)) {
+          return json({ error: "invalid refund amount" }, 400);
+        }
+        const refundPaise = reqRupees === null ? paid : Math.round(reqRupees * 100);
+        if (refundPaise > paid) return json({ error: "refund exceeds amount paid" }, 400);
+        const isPartial = refundPaise < paid;
+
+        const keyId = Deno.env.get("RAZORPAY_KEY_ID");
+        const keySecret = Deno.env.get("RAZORPAY_KEY_SECRET");
+        const rzAuth = "Basic " + btoa(`${keyId}:${keySecret}`);
+        const rz = await fetch(`https://api.razorpay.com/v1/payments/${offer.payment_id}/refund`, {
+          method: "POST",
+          headers: { Authorization: rzAuth, "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: refundPaise, notes: { offer_id: offerId } }),
+        });
+        const rzJson = await rz.json();
+        if (!rz.ok) {
+          await audit({ offer_id: offerId, error: rzJson });
+          return json({ error: rzJson?.error?.description || "refund failed" }, 400);
+        }
+
+        // Revoke the credited scans (proportional for partial refunds unless overridden)
+        const granted = Number(offer.scans) || 0;
+        const requestedRevoke = body.revoke_scans === undefined || body.revoke_scans === null || body.revoke_scans === ""
+          ? (isPartial ? Math.floor((granted * refundPaise) / Math.max(1, paid)) : granted)
+          : Number(body.revoke_scans);
+        const revoke = Math.max(0, Math.min(granted, Math.round(Number.isFinite(requestedRevoke) ? requestedRevoke : 0)));
+
+        let bonusAfter: number | null = null;
+        if (revoke > 0) {
+          const { data: prof } = await admin.from("profiles").select("bonus_scans").eq("user_id", offer.user_id).maybeSingle();
+          const current = Number(prof?.bonus_scans) || 0;
+          bonusAfter = Math.max(0, current - revoke);
+          await admin.from("profiles").update({ bonus_scans: bonusAfter }).eq("user_id", offer.user_id);
+        }
+
+        await admin.from("custom_offers").update({
+          status: isPartial ? "partially_refunded" : "refunded",
+        }).eq("id", offerId);
+
+        // Reflect the refund on the matching payment row when present
+        if (offer.payment_id) {
+          const { data: pay } = await admin.from("payments").select("id,refunded_paise").eq("payment_id", offer.payment_id).maybeSingle();
+          if (pay) {
+            await admin.from("payments").update({
+              refunded_paise: (Number(pay.refunded_paise) || 0) + refundPaise,
+              refund_id: rzJson?.id ?? null,
+              status: isPartial ? "partially_refunded" : "refunded",
+            }).eq("id", pay.id);
+          }
+        }
+
+        await audit({ offer_id: offerId, refund_paise: refundPaise, revoked_scans: revoke, refund_id: rzJson?.id });
+        return json({ ok: true, refund: rzJson, refunded_paise: refundPaise, revoked_scans: revoke, bonus_scans: bonusAfter });
       }
 
       case "list_custom_offers": {

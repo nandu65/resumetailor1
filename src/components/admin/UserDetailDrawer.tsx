@@ -39,7 +39,9 @@ interface Detail {
     calls: number; input: number; output: number; cost: number;
     exactCalls: number; errors: number; avgCost: number; exactPct: number;
     byFeature: { feature: string; calls: number; input: number; output: number; cost: number }[];
+    byModel?: { feature: string; calls: number; input: number; output: number; cost: number }[];
   };
+  ai_filters?: { feature: string | null; model: string | null; features: string[]; models: string[] };
   pricing_events: any[];
   custom_offers?: any[];
 }
@@ -73,14 +75,24 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
   const [rangePreset, setRangePreset] = useState("30");
   const [rFrom, setRFrom] = useState(() => new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10));
   const [rTo, setRTo] = useState(() => new Date().toISOString().slice(0, 10));
+  const [fFeature, setFFeature] = useState("all");
+  const [fModel, setFModel] = useState("all");
 
-  const load = async (from?: string, to?: string) => {
+  const load = async (opts: { from?: string; to?: string; feature?: string; model?: string } = {}) => {
     if (!userId) return;
     setLoading(true);
-    const ai_from = from ?? rFrom;
-    const ai_to = to ?? rTo;
+    const ai_from = opts.from ?? rFrom;
+    const ai_to = opts.to ?? rTo;
+    const feat = opts.feature ?? fFeature;
+    const mod = opts.model ?? fModel;
     const [{ data: r1 }, { data: r2 }] = await Promise.all([
-      supabase.functions.invoke("admin-user-actions", { body: { action: "get_user_detail", user_id: userId, ai_from, ai_to } }),
+      supabase.functions.invoke("admin-user-actions", {
+        body: {
+          action: "get_user_detail", user_id: userId, ai_from, ai_to,
+          ai_feature: feat === "all" ? "" : feat,
+          ai_model: mod === "all" ? "" : mod,
+        },
+      }),
       supabase.functions.invoke("admin-user-actions", { body: { action: "list_audit", user_id: userId } }),
     ]);
     const detail = r1 as Detail;
@@ -97,21 +109,58 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
 
   useEffect(() => { if (open && userId) load(); /* eslint-disable-next-line */ }, [open, userId]);
 
+  const filterSuffix = `${fFeature === "all" ? "all-features" : fFeature}_${fModel === "all" ? "all-models" : fModel}`;
+
+  // Exports ONLY the currently selected date range (+ active feature/model filters).
   const exportLedgerCsv = () => {
     if (!d) return;
-    const lt = d.ai_totals, rg = d.ai_range;
+    const rg = d.ai_range;
     const rows: unknown[][] = [];
-    if (lt) rows.push(["TOTAL", "lifetime", "", "", lt.calls, lt.input, lt.output, lt.avgCost, lt.cost, lt.exactPct, lt.errors]);
-    (lt?.byFeature ?? []).forEach((f) => rows.push([f.feature, "lifetime", "", "", f.calls, f.input, f.output, +(f.cost / Math.max(1, f.calls)).toFixed(4), f.cost, "", ""]));
-    if (rg) rows.push(["TOTAL", "range", rFrom, rTo, rg.calls, rg.input, rg.output, rg.avgCost, rg.cost, rg.exactPct, rg.errors]);
-    (rg?.byFeature ?? []).forEach((f) => rows.push([f.feature, "range", rFrom, rTo, f.calls, f.input, f.output, +(f.cost / Math.max(1, f.calls)).toFixed(4), f.cost, "", ""]));
-    (d.ai_logs ?? []).forEach((l: any) => rows.push([l.feature, "call", l.created_at ?? "", l.model ?? "", 1, l.input_tokens, l.output_tokens, "", Number(l.cost_inr) || 0, l.token_source === "exact" ? 100 : 0, l.status === "error" ? 1 : 0]));
+    const fromIso = `${rFrom}T00:00:00`;
+    const toIso = `${rTo}T23:59:59`;
+    if (rg) rows.push(["TOTAL", "range-total", "", "", rg.calls, rg.input, rg.output, rg.avgCost, rg.cost, rg.exactPct, rg.errors]);
+    (rg?.byFeature ?? []).forEach((f) => rows.push([f.feature, "by-feature", "", "", f.calls, f.input, f.output, +(f.cost / Math.max(1, f.calls)).toFixed(4), f.cost, "", ""]));
+    (rg?.byModel ?? []).forEach((f) => rows.push([f.feature, "by-model", "", "", f.calls, f.input, f.output, +(f.cost / Math.max(1, f.calls)).toFixed(4), f.cost, "", ""]));
+    (d.ai_logs ?? [])
+      .filter((l: any) => (l.created_at ?? "") >= fromIso && (l.created_at ?? "") <= toIso)
+      .forEach((l: any) => rows.push([l.feature, "call", l.created_at ?? "", l.model ?? "", 1, l.input_tokens, l.output_tokens, "", Number(l.cost_inr) || 0, l.token_source === "exact" ? 100 : 0, l.status === "error" ? 1 : 0]));
     const csv = toCsv(
-      ["feature", "scope", "from_or_time", "to_or_model", "calls", "input_tokens", "output_tokens", "avg_cost_inr", "cost_inr", "exact_pct", "errors"],
+      ["feature", "scope", "time", "model", "calls", "input_tokens", "output_tokens", "avg_cost_inr", "cost_inr", "exact_pct", "errors"],
       rows,
     );
-    downloadCsv(`ai-ledger_${d.profile?.email ?? userId}_${rFrom}_to_${rTo}.csv`, csv);
+    downloadCsv(`ai-ledger_${d.profile?.email ?? userId}_${rFrom}_to_${rTo}_${filterSuffix}.csv`, csv);
   };
+
+  const refundOffer = async (o: any, partial: boolean) => {
+    const paidRupees = (Number(o.amount_paise) || 0) / 100;
+    let amount_rupees: number | undefined;
+    if (partial) {
+      const input = prompt(`Refund amount in ₹ (max ₹${paidRupees})`, String(paidRupees));
+      if (!input) return;
+      amount_rupees = Number(input);
+      if (!Number.isFinite(amount_rupees) || amount_rupees <= 0 || amount_rupees > paidRupees) {
+        toast({ title: "Invalid amount", variant: "destructive" });
+        return;
+      }
+    }
+    const defaultRevoke = partial
+      ? Math.floor(((Number(o.scans) || 0) * (amount_rupees ?? 0)) / Math.max(1, paidRupees))
+      : Number(o.scans) || 0;
+    const revokeInput = prompt(`Extra scans to revoke from this customer (granted ${o.scans})`, String(defaultRevoke));
+    if (revokeInput === null) return;
+    const revoke_scans = Number(revokeInput);
+    if (!Number.isFinite(revoke_scans) || revoke_scans < 0) {
+      toast({ title: "Invalid scan count", variant: "destructive" });
+      return;
+    }
+    const res = await call(
+      "refund_custom_offer",
+      { offer_id: o.id, amount_rupees, revoke_scans },
+      `Refund ₹${amount_rupees ?? paidRupees} and revoke ${revoke_scans} scans?`,
+    );
+    if (res) toast({ title: "Refund processed", description: `₹${amount_rupees ?? paidRupees} refunded · ${revoke_scans} scans revoked` });
+  };
+
 
 
   const call = async (action: string, body: any = {}, confirmMsg?: string) => {
@@ -345,7 +394,7 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                   <h4 className="font-semibold text-sm">AI totals ({rangePreset === "custom" ? `${rFrom} → ${rTo}` : `last ${rangePreset} days`})</h4>
                   <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={exportLedgerCsv} disabled={!d.ai_totals}>
-                    <Download className="h-3.5 w-3.5 mr-1" /> Export CSV
+                    <Download className="h-3.5 w-3.5 mr-1" /> Export range CSV
                   </Button>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -358,7 +407,7 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
                       onClick={() => {
                         const from = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
                         const to = new Date().toISOString().slice(0, 10);
-                        setRangePreset(String(days)); setRFrom(from); setRTo(to); load(from, to);
+                        setRangePreset(String(days)); setRFrom(from); setRTo(to); load({ from, to });
                       }}
                     >
                       Last {days}d
@@ -368,6 +417,27 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
                   <span className="text-[11px] text-muted-foreground">to</span>
                   <Input type="date" value={rTo} min={rFrom} onChange={(e) => { setRTo(e.target.value); setRangePreset("custom"); }} className="h-7 w-[132px] text-[11px]" />
                   <Button size="sm" variant="secondary" className="h-7 text-[11px]" onClick={() => load()}>Apply</Button>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <Select value={fFeature} onValueChange={(v) => { setFFeature(v); load({ feature: v }); }}>
+                    <SelectTrigger className="h-7 w-[180px] text-[11px]"><SelectValue placeholder="All features" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All features</SelectItem>
+                      {(d.ai_filters?.features ?? []).map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Select value={fModel} onValueChange={(v) => { setFModel(v); load({ model: v }); }}>
+                    <SelectTrigger className="h-7 w-[200px] text-[11px]"><SelectValue placeholder="All models" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All models</SelectItem>
+                      {(d.ai_filters?.models ?? []).map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  {(fFeature !== "all" || fModel !== "all") && (
+                    <Button size="sm" variant="ghost" className="h-7 text-[11px]" onClick={() => { setFFeature("all"); setFModel("all"); load({ feature: "all", model: "all" }); }}>
+                      Clear filters
+                    </Button>
+                  )}
                 </div>
                 {d.ai_range ? (
                   <div className="space-y-2">
@@ -389,7 +459,19 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
                       ))}
                       {d.ai_range.byFeature.length === 0 && <p className="p-3 text-xs text-muted-foreground">No AI usage in this range.</p>}
                     </div>
+                    {(d.ai_range.byModel ?? []).length > 0 && (
+                      <div className="border rounded divide-y">
+                        <p className="p-2 text-[11px] text-muted-foreground bg-muted/40">By model</p>
+                        {(d.ai_range.byModel ?? []).map((m) => (
+                          <div key={m.feature} className="p-2 text-xs flex justify-between">
+                            <span className="font-medium">{m.feature}</span>
+                            <span className="text-muted-foreground">{m.calls} calls · {m.input.toLocaleString()}→{m.output.toLocaleString()} tok · ₹{m.cost.toFixed(4)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
+
                 ) : <p className="text-xs text-muted-foreground">None</p>}
               </div>
 
@@ -450,17 +532,42 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
                           {o.paid_at ? ` · paid ${new Date(o.paid_at).toLocaleDateString()}` : ""}
                         </div>
                       </div>
-                      {o.status === "pending" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-[11px]"
-                          disabled={busy === "cancel_custom_offer"}
-                          onClick={() => call("cancel_custom_offer", { offer_id: o.id }, "Cancel this offer?")}
-                        >
-                          Cancel
-                        </Button>
-                      )}
+                      <div className="flex items-center gap-1">
+                        {o.status === "pending" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-[11px]"
+                            disabled={busy === "cancel_custom_offer"}
+                            onClick={() => call("cancel_custom_offer", { offer_id: o.id }, "Cancel this offer?")}
+                          >
+                            Cancel
+                          </Button>
+                        )}
+                        {(o.status === "paid" || o.status === "partially_refunded") && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-[11px]"
+                              disabled={busy === "refund_custom_offer"}
+                              onClick={() => refundOffer(o, false)}
+                            >
+                              <RotateCcw className="h-3 w-3 mr-1" /> Refund full
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 text-[11px]"
+                              disabled={busy === "refund_custom_offer"}
+                              onClick={() => refundOffer(o, true)}
+                            >
+                              Partial
+                            </Button>
+                          </>
+                        )}
+                      </div>
+
                     </div>
                   ))}
                 </div>
