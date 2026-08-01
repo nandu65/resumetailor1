@@ -418,6 +418,27 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
                   <Input type="date" value={rTo} min={rFrom} onChange={(e) => { setRTo(e.target.value); setRangePreset("custom"); }} className="h-7 w-[132px] text-[11px]" />
                   <Button size="sm" variant="secondary" className="h-7 text-[11px]" onClick={() => load()}>Apply</Button>
                 </div>
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <Select value={fFeature} onValueChange={(v) => { setFFeature(v); load({ feature: v }); }}>
+                    <SelectTrigger className="h-7 w-[180px] text-[11px]"><SelectValue placeholder="All features" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All features</SelectItem>
+                      {(d.ai_filters?.features ?? []).map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Select value={fModel} onValueChange={(v) => { setFModel(v); load({ model: v }); }}>
+                    <SelectTrigger className="h-7 w-[200px] text-[11px]"><SelectValue placeholder="All models" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All models</SelectItem>
+                      {(d.ai_filters?.models ?? []).map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  {(fFeature !== "all" || fModel !== "all") && (
+                    <Button size="sm" variant="ghost" className="h-7 text-[11px]" onClick={() => { setFFeature("all"); setFModel("all"); load({ feature: "all", model: "all" }); }}>
+                      Clear filters
+                    </Button>
+                  )}
+                </div>
                 {d.ai_range ? (
                   <div className="space-y-2">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
@@ -438,7 +459,19 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
                       ))}
                       {d.ai_range.byFeature.length === 0 && <p className="p-3 text-xs text-muted-foreground">No AI usage in this range.</p>}
                     </div>
+                    {(d.ai_range.byModel ?? []).length > 0 && (
+                      <div className="border rounded divide-y">
+                        <p className="p-2 text-[11px] text-muted-foreground bg-muted/40">By model</p>
+                        {(d.ai_range.byModel ?? []).map((m) => (
+                          <div key={m.feature} className="p-2 text-xs flex justify-between">
+                            <span className="font-medium">{m.feature}</span>
+                            <span className="text-muted-foreground">{m.calls} calls · {m.input.toLocaleString()}→{m.output.toLocaleString()} tok · ₹{m.cost.toFixed(4)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
+
                 ) : <p className="text-xs text-muted-foreground">None</p>}
               </div>
 
