@@ -77,25 +77,37 @@ Deno.serve(async (req) => {
           ? new Date(rToRaw.getTime() + (String(body.ai_to).length <= 10 ? 86399999 : 0)).toISOString()
           : new Date().toISOString();
 
+        const fFeature = String(body.ai_feature || "").trim();
+        const fModel = String(body.ai_model || "").trim();
+
         const blank = () => ({ calls: 0, input: 0, output: 0, cost: 0, exactCalls: 0, errors: 0 });
         const totals = blank();
         const rangeTotals = blank();
-        const byFeature: Record<string, { feature: string; calls: number; input: number; output: number; cost: number }> = {};
-        const byFeatureRange: Record<string, { feature: string; calls: number; input: number; output: number; cost: number }> = {};
+        type Bucket = { feature: string; calls: number; input: number; output: number; cost: number };
+        const byFeature: Record<string, Bucket> = {};
+        const byFeatureRange: Record<string, Bucket> = {};
+        const byModelRange: Record<string, Bucket> = {};
+        const featureSet = new Set<string>();
+        const modelSet = new Set<string>();
         const PAGE = 1000;
         for (let page = 0; page < 100; page++) {
           const { data: rows, error: rowsErr } = await admin
             .from("ai_usage_logs")
-            .select("feature,input_tokens,output_tokens,cost_inr,status,token_source,created_at")
+            .select("feature,model,input_tokens,output_tokens,cost_inr,status,token_source,created_at")
             .eq("user_id", target)
             .range(page * PAGE, page * PAGE + PAGE - 1);
           if (rowsErr) break;
           (rows || []).forEach((l: any) => {
+            const f = l.feature || "unknown";
+            const m = l.model || "unknown";
+            featureSet.add(f);
+            modelSet.add(m);
+            if (fFeature && f !== fFeature) return;
+            if (fModel && m !== fModel) return;
             const inp = l.input_tokens || 0, outp = l.output_tokens || 0, cost = Number(l.cost_inr) || 0;
             totals.calls++; totals.input += inp; totals.output += outp; totals.cost += cost;
             if (l.token_source === "exact") totals.exactCalls++;
             if (l.status === "error") totals.errors++;
-            const f = l.feature || "unknown";
             if (!byFeature[f]) byFeature[f] = { feature: f, calls: 0, input: 0, output: 0, cost: 0 };
             byFeature[f].calls++; byFeature[f].input += inp; byFeature[f].output += outp; byFeature[f].cost += cost;
 
@@ -106,10 +118,13 @@ Deno.serve(async (req) => {
               if (l.status === "error") rangeTotals.errors++;
               if (!byFeatureRange[f]) byFeatureRange[f] = { feature: f, calls: 0, input: 0, output: 0, cost: 0 };
               byFeatureRange[f].calls++; byFeatureRange[f].input += inp; byFeatureRange[f].output += outp; byFeatureRange[f].cost += cost;
+              if (!byModelRange[m]) byModelRange[m] = { feature: m, calls: 0, input: 0, output: 0, cost: 0 };
+              byModelRange[m].calls++; byModelRange[m].input += inp; byModelRange[m].output += outp; byModelRange[m].cost += cost;
             }
           });
           if (!rows || rows.length < PAGE) break;
         }
+
 
 
         const au = authUser?.user;
