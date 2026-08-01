@@ -141,7 +141,16 @@ Deno.serve(async (req) => {
             banned_until: (au as any).banned_until ?? null,
           } : null,
           optimizations: opts ?? [],
-          ai_logs: aiLogs ?? [],
+          ai_logs: (aiLogs ?? []).filter((l: any) =>
+            (!fFeature || (l.feature || "unknown") === fFeature) &&
+            (!fModel || (l.model || "unknown") === fModel)
+          ),
+          ai_filters: {
+            feature: fFeature || null,
+            model: fModel || null,
+            features: Array.from(featureSet).sort(),
+            models: Array.from(modelSet).sort(),
+          },
           ai_totals: {
             ...totals,
             cost: +totals.cost.toFixed(4),
@@ -160,6 +169,9 @@ Deno.serve(async (req) => {
             avgCost: +(rangeTotals.cost / Math.max(1, rangeTotals.calls)).toFixed(4),
             exactPct: +((rangeTotals.exactCalls / Math.max(1, rangeTotals.calls)) * 100).toFixed(1),
             byFeature: Object.values(byFeatureRange)
+              .map((f) => ({ ...f, cost: +f.cost.toFixed(4) }))
+              .sort((a, b) => b.cost - a.cost),
+            byModel: Object.values(byModelRange)
               .map((f) => ({ ...f, cost: +f.cost.toFixed(4) }))
               .sort((a, b) => b.cost - a.cost),
           },
