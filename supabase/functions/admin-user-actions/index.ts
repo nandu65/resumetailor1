@@ -606,6 +606,74 @@ Deno.serve(async (req) => {
         return json({ ok: true });
       }
 
+      case "refund_custom_offer": {
+        const offerId = String(body.offer_id || "");
+        if (!offerId) return json({ error: "offer_id required" }, 400);
+        const { data: offer } = await admin.from("custom_offers").select("*").eq("id", offerId).maybeSingle();
+        if (!offer) return json({ error: "offer not found" }, 404);
+        if (offer.status !== "paid") return json({ error: "only paid offers can be refunded" }, 400);
+        if (!offer.payment_id) return json({ error: "offer has no payment id" }, 400);
+
+        const paid = Number(offer.amount_paise) || 0;
+        const reqRupees = body.amount_rupees === undefined || body.amount_rupees === null || body.amount_rupees === ""
+          ? null
+          : Number(body.amount_rupees);
+        if (reqRupees !== null && (!Number.isFinite(reqRupees) || reqRupees <= 0)) {
+          return json({ error: "invalid refund amount" }, 400);
+        }
+        const refundPaise = reqRupees === null ? paid : Math.round(reqRupees * 100);
+        if (refundPaise > paid) return json({ error: "refund exceeds amount paid" }, 400);
+        const isPartial = refundPaise < paid;
+
+        const keyId = Deno.env.get("RAZORPAY_KEY_ID");
+        const keySecret = Deno.env.get("RAZORPAY_KEY_SECRET");
+        const rzAuth = "Basic " + btoa(`${keyId}:${keySecret}`);
+        const rz = await fetch(`https://api.razorpay.com/v1/payments/${offer.payment_id}/refund`, {
+          method: "POST",
+          headers: { Authorization: rzAuth, "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: refundPaise, notes: { offer_id: offerId } }),
+        });
+        const rzJson = await rz.json();
+        if (!rz.ok) {
+          await audit({ offer_id: offerId, error: rzJson });
+          return json({ error: rzJson?.error?.description || "refund failed" }, 400);
+        }
+
+        // Revoke the credited scans (proportional for partial refunds unless overridden)
+        const granted = Number(offer.scans) || 0;
+        const requestedRevoke = body.revoke_scans === undefined || body.revoke_scans === null || body.revoke_scans === ""
+          ? (isPartial ? Math.floor((granted * refundPaise) / Math.max(1, paid)) : granted)
+          : Number(body.revoke_scans);
+        const revoke = Math.max(0, Math.min(granted, Math.round(Number.isFinite(requestedRevoke) ? requestedRevoke : 0)));
+
+        let bonusAfter: number | null = null;
+        if (revoke > 0) {
+          const { data: prof } = await admin.from("profiles").select("bonus_scans").eq("user_id", offer.user_id).maybeSingle();
+          const current = Number(prof?.bonus_scans) || 0;
+          bonusAfter = Math.max(0, current - revoke);
+          await admin.from("profiles").update({ bonus_scans: bonusAfter }).eq("user_id", offer.user_id);
+        }
+
+        await admin.from("custom_offers").update({
+          status: isPartial ? "partially_refunded" : "refunded",
+        }).eq("id", offerId);
+
+        // Reflect the refund on the matching payment row when present
+        if (offer.payment_id) {
+          const { data: pay } = await admin.from("payments").select("id,refunded_paise").eq("payment_id", offer.payment_id).maybeSingle();
+          if (pay) {
+            await admin.from("payments").update({
+              refunded_paise: (Number(pay.refunded_paise) || 0) + refundPaise,
+              refund_id: rzJson?.id ?? null,
+              status: isPartial ? "partially_refunded" : "refunded",
+            }).eq("id", pay.id);
+          }
+        }
+
+        await audit({ offer_id: offerId, refund_paise: refundPaise, revoked_scans: revoke, refund_id: rzJson?.id });
+        return json({ ok: true, refund: rzJson, refunded_paise: refundPaise, revoked_scans: revoke, bonus_scans: bonusAfter });
+      }
+
       case "list_custom_offers": {
         const { data: offers, error } = await admin
           .from("custom_offers").select("*").order("created_at", { ascending: false }).limit(200);
