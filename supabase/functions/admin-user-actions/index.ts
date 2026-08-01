@@ -114,6 +114,7 @@ Deno.serve(async (req) => {
               .sort((a, b) => b.cost - a.cost),
           },
           pricing_events: payments ?? [],
+          custom_offers: customOffers ?? [],
         });
       }
 
