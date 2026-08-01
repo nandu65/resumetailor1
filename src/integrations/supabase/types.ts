@@ -305,6 +305,60 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_offers: {
+        Row: {
+          amount_paise: number
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          order_id: string | null
+          paid_at: string | null
+          payment_id: string | null
+          scans: number
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_paise: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          order_id?: string | null
+          paid_at?: string | null
+          payment_id?: string | null
+          scans?: number
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_paise?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          order_id?: string | null
+          paid_at?: string | null
+          payment_id?: string | null
+          scans?: number
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       feature_flags: {
         Row: {
           created_at: string
