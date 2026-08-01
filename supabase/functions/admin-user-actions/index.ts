@@ -65,14 +65,28 @@ Deno.serve(async (req) => {
         const { data: customOffers } = await admin
           .from("custom_offers").select("*").eq("user_id", target).order("created_at", { ascending: false }).limit(50);
 
-        // Lifetime exact AI totals for this user (paginated, all rows)
-        const totals = { calls: 0, input: 0, output: 0, cost: 0, exactCalls: 0, errors: 0 };
+        // Lifetime + date-range AI totals for this user (paginated, all rows)
+        const parseDate = (v: unknown) => {
+          const t = Date.parse(String(v ?? ""));
+          return Number.isFinite(t) ? new Date(t) : null;
+        };
+        const rFrom = parseDate(body.ai_from);
+        const rToRaw = parseDate(body.ai_to);
+        const rFromIso = rFrom ? rFrom.toISOString() : null;
+        const rToIso = rToRaw
+          ? new Date(rToRaw.getTime() + (String(body.ai_to).length <= 10 ? 86399999 : 0)).toISOString()
+          : new Date().toISOString();
+
+        const blank = () => ({ calls: 0, input: 0, output: 0, cost: 0, exactCalls: 0, errors: 0 });
+        const totals = blank();
+        const rangeTotals = blank();
         const byFeature: Record<string, { feature: string; calls: number; input: number; output: number; cost: number }> = {};
+        const byFeatureRange: Record<string, { feature: string; calls: number; input: number; output: number; cost: number }> = {};
         const PAGE = 1000;
         for (let page = 0; page < 100; page++) {
           const { data: rows, error: rowsErr } = await admin
             .from("ai_usage_logs")
-            .select("feature,input_tokens,output_tokens,cost_inr,status,token_source")
+            .select("feature,input_tokens,output_tokens,cost_inr,status,token_source,created_at")
             .eq("user_id", target)
             .range(page * PAGE, page * PAGE + PAGE - 1);
           if (rowsErr) break;
@@ -84,9 +98,19 @@ Deno.serve(async (req) => {
             const f = l.feature || "unknown";
             if (!byFeature[f]) byFeature[f] = { feature: f, calls: 0, input: 0, output: 0, cost: 0 };
             byFeature[f].calls++; byFeature[f].input += inp; byFeature[f].output += outp; byFeature[f].cost += cost;
+
+            const inRange = (!rFromIso || l.created_at >= rFromIso) && l.created_at <= rToIso;
+            if (inRange) {
+              rangeTotals.calls++; rangeTotals.input += inp; rangeTotals.output += outp; rangeTotals.cost += cost;
+              if (l.token_source === "exact") rangeTotals.exactCalls++;
+              if (l.status === "error") rangeTotals.errors++;
+              if (!byFeatureRange[f]) byFeatureRange[f] = { feature: f, calls: 0, input: 0, output: 0, cost: 0 };
+              byFeatureRange[f].calls++; byFeatureRange[f].input += inp; byFeatureRange[f].output += outp; byFeatureRange[f].cost += cost;
+            }
           });
           if (!rows || rows.length < PAGE) break;
         }
+
 
         const au = authUser?.user;
         return json({
@@ -110,6 +134,17 @@ Deno.serve(async (req) => {
             exactPct: +((totals.exactCalls / Math.max(1, totals.calls)) * 100).toFixed(1),
             usdToInr: Number(Deno.env.get("USD_TO_INR") ?? 83),
             byFeature: Object.values(byFeature)
+              .map((f) => ({ ...f, cost: +f.cost.toFixed(4) }))
+              .sort((a, b) => b.cost - a.cost),
+          },
+          ai_range: {
+            from: rFromIso,
+            to: rToIso,
+            ...rangeTotals,
+            cost: +rangeTotals.cost.toFixed(4),
+            avgCost: +(rangeTotals.cost / Math.max(1, rangeTotals.calls)).toFixed(4),
+            exactPct: +((rangeTotals.exactCalls / Math.max(1, rangeTotals.calls)) * 100).toFixed(1),
+            byFeature: Object.values(byFeatureRange)
               .map((f) => ({ ...f, cost: +f.cost.toFixed(4) }))
               .sort((a, b) => b.cost - a.cost),
           },

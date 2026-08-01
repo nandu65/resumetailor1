@@ -5,10 +5,11 @@ import { Navbar } from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Users, IndianRupee, Crown, Shield, LogOut, TrendingDown, Activity, Target, AlertCircle, FlaskConical, Sparkles, Cpu, Zap } from "lucide-react";
+import { Loader2, Users, IndianRupee, Crown, Shield, LogOut, TrendingDown, Activity, Target, AlertCircle, FlaskConical, Sparkles, Cpu, Zap, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { toCsv, downloadCsv, csvDateStamp } from "@/lib/csv";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -51,7 +52,9 @@ interface AdminData {
       calls: number; input: number; output: number; cost: number; avgCost: number;
       exactPct: number; errors: number; last: string | null;
       calls30d: number; input30d: number; output30d: number; cost30d: number;
+      avgCostRange?: number; exactPctRange?: number; errorsRange?: number;
     }[];
+    range?: { from: string; to: string };
     series: { date: string; cost: number }[];
   };
 }
@@ -69,18 +72,59 @@ export default function Admin() {
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [planFilter, setPlanFilter] = useState<string>("all");
+  const [rangePreset, setRangePreset] = useState<string>("30");
+  const [aiFrom, setAiFrom] = useState<string>(() => new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10));
+  const [aiTo, setAiTo] = useState<string>(() => new Date().toISOString().slice(0, 10));
 
   const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
-  const load = async () => {
+  const load = async (from?: string | null, to?: string | null) => {
     setBusy(true);
-    const { data: res, error } = await supabase.functions.invoke("admin-list-users");
+    const body: Record<string, string> = {};
+    const f = from === undefined ? aiFrom : from;
+    const t = to === undefined ? aiTo : to;
+    if (f) body.ai_from = f;
+    if (t) body.ai_to = t;
+    const { data: res, error } = await supabase.functions.invoke("admin-list-users", { body });
     if (error) toast({ title: "Failed to load", description: error.message, variant: "destructive" });
     else setData(res as AdminData);
     setBusy(false);
   };
 
+  const applyPreset = (days: number) => {
+    const from = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+    const to = new Date().toISOString().slice(0, 10);
+    setRangePreset(String(days));
+    setAiFrom(from);
+    setAiTo(to);
+    load(from, to);
+  };
+
+  const rangeLabel = rangePreset === "custom" ? `${aiFrom} → ${aiTo}` : `${rangePreset}d`;
+
+  const exportUserLedgerCsv = () => {
+    const rows = data?.aiCost?.byUser ?? [];
+    if (rows.length === 0) return;
+    const csv = toCsv(
+      [
+        "user_id", "email", "plan", "calls_lifetime", "input_tokens_lifetime", "output_tokens_lifetime",
+        "avg_cost_inr_lifetime", "total_cost_inr_lifetime", "exact_token_pct_lifetime", "errors_lifetime", "last_used",
+        "range_from", "range_to", "calls_range", "input_tokens_range", "output_tokens_range",
+        "avg_cost_inr_range", "cost_inr_range", "exact_token_pct_range", "errors_range",
+      ],
+      rows.map((r) => [
+        r.user_id, r.email ?? "", r.plan ?? "", r.calls, r.input, r.output,
+        r.avgCost, r.cost, r.exactPct, r.errors, r.last ?? "",
+        aiFrom, aiTo, r.calls30d, r.input30d, r.output30d,
+        r.avgCostRange ?? "", r.cost30d, r.exactPctRange ?? "", r.errorsRange ?? "",
+      ]),
+    );
+    downloadCsv(`ai-cost-by-user_${aiFrom}_to_${aiTo}_${csvDateStamp()}.csv`, csv);
+  };
+
+
   useEffect(() => { if (isAdmin) load(); }, [isAdmin]);
+
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,7 +209,7 @@ export default function Admin() {
             <p className="text-muted-foreground">Growth, revenue, and product metrics — last 30 days.</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={load} disabled={busy}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}</Button>
+            <Button variant="outline" size="sm" onClick={() => load()} disabled={busy}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}</Button>
             <Button variant="outline" size="sm" onClick={handleSignOut}><LogOut className="h-4 w-4 mr-2" /> Sign out</Button>
           </div>
         </div>
@@ -362,9 +406,48 @@ export default function Admin() {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2"><Cpu className="h-4 w-4 text-primary" /> Cost by User (lifetime)</CardTitle>
-            <p className="text-xs text-muted-foreground">Exact token counts and cost per user. Click a row to open the full user profile.</p>
+          <CardHeader className="space-y-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="text-base flex items-center gap-2"><Cpu className="h-4 w-4 text-primary" /> Cost by User (lifetime)</CardTitle>
+                <p className="text-xs text-muted-foreground">Exact token counts and cost per user. Click a row to open the full user profile.</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={exportUserLedgerCsv} disabled={!data?.aiCost?.byUser?.length}>
+                <Download className="h-4 w-4 mr-2" /> Export CSV
+              </Button>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-muted-foreground">Range:</span>
+              {[7, 30, 90].map((d) => (
+                <Button
+                  key={d}
+                  size="sm"
+                  variant={rangePreset === String(d) ? "default" : "outline"}
+                  className="h-7 text-xs"
+                  onClick={() => applyPreset(d)}
+                  disabled={busy}
+                >
+                  Last {d}d
+                </Button>
+              ))}
+              <Input
+                type="date"
+                value={aiFrom}
+                max={aiTo}
+                onChange={(e) => { setAiFrom(e.target.value); setRangePreset("custom"); }}
+                className="h-7 w-[140px] text-xs"
+              />
+              <span className="text-xs text-muted-foreground">to</span>
+              <Input
+                type="date"
+                value={aiTo}
+                min={aiFrom}
+                onChange={(e) => { setAiTo(e.target.value); setRangePreset("custom"); }}
+                className="h-7 w-[140px] text-xs"
+              />
+              <Button size="sm" variant="secondary" className="h-7 text-xs" onClick={() => load()} disabled={busy}>Apply</Button>
+              {busy && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -372,9 +455,10 @@ export default function Admin() {
                 <TableHeader><TableRow>
                   <TableHead>User</TableHead><TableHead>Plan</TableHead><TableHead>Calls</TableHead>
                   <TableHead>Input tokens</TableHead><TableHead>Output tokens</TableHead>
-                  <TableHead>Avg cost</TableHead><TableHead>Cost (30d)</TableHead><TableHead>Total cost</TableHead>
+                  <TableHead>Avg cost</TableHead><TableHead>Cost ({rangeLabel})</TableHead><TableHead>Total cost</TableHead>
                   <TableHead>Exact</TableHead><TableHead>Errors</TableHead><TableHead>Last used</TableHead>
                 </TableRow></TableHeader>
+
                 <TableBody>
                   {(data?.aiCost?.byUser ?? []).map((r) => (
                     <TableRow

@@ -12,8 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import {
   Loader2, Mail, KeyRound, ShieldOff, ShieldCheck, Trash2, IndianRupee, XCircle,
-  Ban, UserCheck, Copy, Plus, Minus, RotateCcw, Eye, CheckCircle2, Tag, Activity, Flag,
+  Ban, UserCheck, Copy, Plus, Minus, RotateCcw, Eye, CheckCircle2, Tag, Activity, Flag, Download,
 } from "lucide-react";
+import { toCsv, downloadCsv } from "@/lib/csv";
 import { UserActivityTimeline } from "@/components/admin/AdminOpsPanels";
 
 interface Props {
@@ -31,6 +32,12 @@ interface Detail {
   ai_totals?: {
     calls: number; input: number; output: number; cost: number;
     exactCalls: number; errors: number; avgCost: number; exactPct: number; usdToInr: number;
+    byFeature: { feature: string; calls: number; input: number; output: number; cost: number }[];
+  };
+  ai_range?: {
+    from: string | null; to: string;
+    calls: number; input: number; output: number; cost: number;
+    exactCalls: number; errors: number; avgCost: number; exactPct: number;
     byFeature: { feature: string; calls: number; input: number; output: number; cost: number }[];
   };
   pricing_events: any[];
@@ -63,11 +70,17 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
   const [offerScans, setOfferScans] = useState("10");
   const [offerDays, setOfferDays] = useState("7");
 
-  const load = async () => {
+  const [rangePreset, setRangePreset] = useState("30");
+  const [rFrom, setRFrom] = useState(() => new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10));
+  const [rTo, setRTo] = useState(() => new Date().toISOString().slice(0, 10));
+
+  const load = async (from?: string, to?: string) => {
     if (!userId) return;
     setLoading(true);
+    const ai_from = from ?? rFrom;
+    const ai_to = to ?? rTo;
     const [{ data: r1 }, { data: r2 }] = await Promise.all([
-      supabase.functions.invoke("admin-user-actions", { body: { action: "get_user_detail", user_id: userId } }),
+      supabase.functions.invoke("admin-user-actions", { body: { action: "get_user_detail", user_id: userId, ai_from, ai_to } }),
       supabase.functions.invoke("admin-user-actions", { body: { action: "list_audit", user_id: userId } }),
     ]);
     const detail = r1 as Detail;
@@ -83,6 +96,23 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
   };
 
   useEffect(() => { if (open && userId) load(); /* eslint-disable-next-line */ }, [open, userId]);
+
+  const exportLedgerCsv = () => {
+    if (!d) return;
+    const lt = d.ai_totals, rg = d.ai_range;
+    const rows: unknown[][] = [];
+    if (lt) rows.push(["TOTAL", "lifetime", "", "", lt.calls, lt.input, lt.output, lt.avgCost, lt.cost, lt.exactPct, lt.errors]);
+    (lt?.byFeature ?? []).forEach((f) => rows.push([f.feature, "lifetime", "", "", f.calls, f.input, f.output, +(f.cost / Math.max(1, f.calls)).toFixed(4), f.cost, "", ""]));
+    if (rg) rows.push(["TOTAL", "range", rFrom, rTo, rg.calls, rg.input, rg.output, rg.avgCost, rg.cost, rg.exactPct, rg.errors]);
+    (rg?.byFeature ?? []).forEach((f) => rows.push([f.feature, "range", rFrom, rTo, f.calls, f.input, f.output, +(f.cost / Math.max(1, f.calls)).toFixed(4), f.cost, "", ""]));
+    (d.ai_logs ?? []).forEach((l: any) => rows.push([l.feature, "call", l.created_at ?? "", l.model ?? "", 1, l.input_tokens, l.output_tokens, "", Number(l.cost_inr) || 0, l.token_source === "exact" ? 100 : 0, l.status === "error" ? 1 : 0]));
+    const csv = toCsv(
+      ["feature", "scope", "from_or_time", "to_or_model", "calls", "input_tokens", "output_tokens", "avg_cost_inr", "cost_inr", "exact_pct", "errors"],
+      rows,
+    );
+    downloadCsv(`ai-ledger_${d.profile?.email ?? userId}_${rFrom}_to_${rTo}.csv`, csv);
+  };
+
 
   const call = async (action: string, body: any = {}, confirmMsg?: string) => {
     if (confirmMsg && !confirm(confirmMsg)) return;
@@ -310,6 +340,59 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
                   </div>
                 ) : <p className="text-xs text-muted-foreground">None</p>}
               </div>
+
+              <div>
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <h4 className="font-semibold text-sm">AI totals ({rangePreset === "custom" ? `${rFrom} → ${rTo}` : `last ${rangePreset} days`})</h4>
+                  <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={exportLedgerCsv} disabled={!d.ai_totals}>
+                    <Download className="h-3.5 w-3.5 mr-1" /> Export CSV
+                  </Button>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  {[7, 30, 90].map((days) => (
+                    <Button
+                      key={days}
+                      size="sm"
+                      variant={rangePreset === String(days) ? "default" : "outline"}
+                      className="h-7 text-[11px]"
+                      onClick={() => {
+                        const from = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+                        const to = new Date().toISOString().slice(0, 10);
+                        setRangePreset(String(days)); setRFrom(from); setRTo(to); load(from, to);
+                      }}
+                    >
+                      Last {days}d
+                    </Button>
+                  ))}
+                  <Input type="date" value={rFrom} max={rTo} onChange={(e) => { setRFrom(e.target.value); setRangePreset("custom"); }} className="h-7 w-[132px] text-[11px]" />
+                  <span className="text-[11px] text-muted-foreground">to</span>
+                  <Input type="date" value={rTo} min={rFrom} onChange={(e) => { setRTo(e.target.value); setRangePreset("custom"); }} className="h-7 w-[132px] text-[11px]" />
+                  <Button size="sm" variant="secondary" className="h-7 text-[11px]" onClick={() => load()}>Apply</Button>
+                </div>
+                {d.ai_range ? (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                      <div className="border rounded p-2"><p className="text-muted-foreground">Calls</p><p className="font-semibold text-sm">{d.ai_range.calls.toLocaleString()}</p></div>
+                      <div className="border rounded p-2"><p className="text-muted-foreground">Input tokens</p><p className="font-semibold text-sm">{d.ai_range.input.toLocaleString()}</p></div>
+                      <div className="border rounded p-2"><p className="text-muted-foreground">Output tokens</p><p className="font-semibold text-sm">{d.ai_range.output.toLocaleString()}</p></div>
+                      <div className="border rounded p-2"><p className="text-muted-foreground">Cost</p><p className="font-semibold text-sm">₹{d.ai_range.cost.toFixed(4)}</p></div>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Avg ₹{d.ai_range.avgCost.toFixed(4)}/call · {d.ai_range.exactPct.toFixed(0)}% exact provider token counts · {d.ai_range.errors} errors
+                    </p>
+                    <div className="border rounded divide-y">
+                      {d.ai_range.byFeature.map((f) => (
+                        <div key={f.feature} className="p-2 text-xs flex justify-between">
+                          <span className="font-medium">{f.feature}</span>
+                          <span className="text-muted-foreground">{f.calls} calls · {f.input.toLocaleString()}→{f.output.toLocaleString()} tok · ₹{f.cost.toFixed(4)}</span>
+                        </div>
+                      ))}
+                      {d.ai_range.byFeature.length === 0 && <p className="p-3 text-xs text-muted-foreground">No AI usage in this range.</p>}
+                    </div>
+                  </div>
+                ) : <p className="text-xs text-muted-foreground">None</p>}
+              </div>
+
               <div>
                 <h4 className="font-semibold mb-2 text-sm">Recent AI calls ({d.ai_logs.length})</h4>
                 <div className="max-h-64 overflow-y-auto border rounded divide-y">
