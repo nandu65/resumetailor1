@@ -97,6 +97,23 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
 
   useEffect(() => { if (open && userId) load(); /* eslint-disable-next-line */ }, [open, userId]);
 
+  const exportLedgerCsv = () => {
+    if (!d) return;
+    const lt = d.ai_totals, rg = d.ai_range;
+    const rows: unknown[][] = [];
+    if (lt) rows.push(["TOTAL", "lifetime", "", "", lt.calls, lt.input, lt.output, lt.avgCost, lt.cost, lt.exactPct, lt.errors]);
+    (lt?.byFeature ?? []).forEach((f) => rows.push([f.feature, "lifetime", "", "", f.calls, f.input, f.output, +(f.cost / Math.max(1, f.calls)).toFixed(4), f.cost, "", ""]));
+    if (rg) rows.push(["TOTAL", "range", rFrom, rTo, rg.calls, rg.input, rg.output, rg.avgCost, rg.cost, rg.exactPct, rg.errors]);
+    (rg?.byFeature ?? []).forEach((f) => rows.push([f.feature, "range", rFrom, rTo, f.calls, f.input, f.output, +(f.cost / Math.max(1, f.calls)).toFixed(4), f.cost, "", ""]));
+    (d.ai_logs ?? []).forEach((l: any) => rows.push([l.feature, "call", l.created_at ?? "", l.model ?? "", 1, l.input_tokens, l.output_tokens, "", Number(l.cost_inr) || 0, l.token_source === "exact" ? 100 : 0, l.status === "error" ? 1 : 0]));
+    const csv = toCsv(
+      ["feature", "scope", "from_or_time", "to_or_model", "calls", "input_tokens", "output_tokens", "avg_cost_inr", "cost_inr", "exact_pct", "errors"],
+      rows,
+    );
+    downloadCsv(`ai-ledger_${d.profile?.email ?? userId}_${rFrom}_to_${rTo}.csv`, csv);
+  };
+
+
   const call = async (action: string, body: any = {}, confirmMsg?: string) => {
     if (confirmMsg && !confirm(confirmMsg)) return;
     setBusy(action);
