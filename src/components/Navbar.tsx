@@ -30,6 +30,7 @@ export function Navbar() {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-2">
+          <NotificationBell />
           <ThemeToggle />
           <Button variant="ghost" size="sm" title="Take the product tour" onClick={startTour} className="text-muted-foreground hover:text-foreground">
             <HelpCircle className="h-4 w-4 mr-1" /> Tour
