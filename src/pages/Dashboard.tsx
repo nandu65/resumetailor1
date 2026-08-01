@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/Navbar";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
+import { CustomOffers } from "@/components/CustomOffers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { extractTextFromFile } from "@/lib/extractText";
