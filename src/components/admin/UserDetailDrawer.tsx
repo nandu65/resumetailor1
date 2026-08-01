@@ -450,17 +450,42 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
                           {o.paid_at ? ` · paid ${new Date(o.paid_at).toLocaleDateString()}` : ""}
                         </div>
                       </div>
-                      {o.status === "pending" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-[11px]"
-                          disabled={busy === "cancel_custom_offer"}
-                          onClick={() => call("cancel_custom_offer", { offer_id: o.id }, "Cancel this offer?")}
-                        >
-                          Cancel
-                        </Button>
-                      )}
+                      <div className="flex items-center gap-1">
+                        {o.status === "pending" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-[11px]"
+                            disabled={busy === "cancel_custom_offer"}
+                            onClick={() => call("cancel_custom_offer", { offer_id: o.id }, "Cancel this offer?")}
+                          >
+                            Cancel
+                          </Button>
+                        )}
+                        {(o.status === "paid" || o.status === "partially_refunded") && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-[11px]"
+                              disabled={busy === "refund_custom_offer"}
+                              onClick={() => refundOffer(o, false)}
+                            >
+                              <RotateCcw className="h-3 w-3 mr-1" /> Refund full
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 text-[11px]"
+                              disabled={busy === "refund_custom_offer"}
+                              onClick={() => refundOffer(o, true)}
+                            >
+                              Partial
+                            </Button>
+                          </>
+                        )}
+                      </div>
+
                     </div>
                   ))}
                 </div>
