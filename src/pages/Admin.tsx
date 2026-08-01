@@ -415,7 +415,7 @@ export default function Admin() {
                 <p className="text-xs text-muted-foreground">Exact token counts and cost per user. Click a row to open the full user profile.</p>
               </div>
               <Button variant="outline" size="sm" onClick={exportUserLedgerCsv} disabled={!data?.aiCost?.byUser?.length}>
-                <Download className="h-4 w-4 mr-2" /> Export CSV
+                <Download className="h-4 w-4 mr-2" /> Export range CSV
               </Button>
             </div>
             <div className="flex flex-wrap items-center gap-2">
