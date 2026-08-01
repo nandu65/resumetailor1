@@ -670,6 +670,21 @@ Deno.serve(async (req) => {
           }
         }
 
+        // In-app notification for the customer
+        {
+          const refundRupees = refundPaise / 100;
+          await admin.from("user_notifications").insert({
+            user_id: offer.user_id,
+            type: isPartial ? "custom_offer_partially_refunded" : "custom_offer_refunded",
+            severity: "warn",
+            title: isPartial ? "Partial refund processed" : "Refund processed",
+            body: `₹${refundRupees.toLocaleString("en-IN")} has been refunded for "${offer.title}". ${revoke > 0 ? `${revoke} extra scan${revoke === 1 ? "" : "s"} removed.` : "No scans were removed."}${bonusAfter !== null ? ` You now have ${bonusAfter} bonus scan${bonusAfter === 1 ? "" : "s"}.` : ""} It may take 5-7 business days to reflect in your account.`,
+            cta_label: "View dashboard",
+            cta_url: "/dashboard",
+            metadata: { offer_id: offerId, refund_paise: refundPaise, revoked_scans: revoke, bonus_scans: bonusAfter },
+          });
+        }
+
         await audit({ offer_id: offerId, refund_paise: refundPaise, revoked_scans: revoke, refund_id: rzJson?.id });
         return json({ ok: true, refund: rzJson, refunded_paise: refundPaise, revoked_scans: revoke, bonus_scans: bonusAfter });
       }
