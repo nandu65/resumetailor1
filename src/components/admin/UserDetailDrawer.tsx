@@ -12,8 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import {
   Loader2, Mail, KeyRound, ShieldOff, ShieldCheck, Trash2, IndianRupee, XCircle,
-  Ban, UserCheck, Copy, Plus, Minus, RotateCcw, Eye, CheckCircle2, Tag, Activity, Flag,
+  Ban, UserCheck, Copy, Plus, Minus, RotateCcw, Eye, CheckCircle2, Tag, Activity, Flag, Download,
 } from "lucide-react";
+import { toCsv, downloadCsv } from "@/lib/csv";
 import { UserActivityTimeline } from "@/components/admin/AdminOpsPanels";
 
 interface Props {
