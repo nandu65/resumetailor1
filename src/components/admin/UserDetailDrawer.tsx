@@ -407,7 +407,7 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
                       onClick={() => {
                         const from = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
                         const to = new Date().toISOString().slice(0, 10);
-                        setRangePreset(String(days)); setRFrom(from); setRTo(to); load(from, to);
+                        setRangePreset(String(days)); setRFrom(from); setRTo(to); load({ from, to });
                       }}
                     >
                       Last {days}d
