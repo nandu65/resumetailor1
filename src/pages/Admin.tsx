@@ -46,6 +46,12 @@ interface AdminData {
     usdToInr?: number;
     byFeature: { feature: string; calls: number; input: number; output: number; cost: number; errors: number; avgCost: number }[];
     byPlan: { plan: string; calls: number; input: number; output: number; cost: number; avgCost: number }[];
+    byUser?: {
+      user_id: string; email: string | null; plan: string | null;
+      calls: number; input: number; output: number; cost: number; avgCost: number;
+      exactPct: number; errors: number; last: string | null;
+      calls30d: number; input30d: number; output30d: number; cost30d: number;
+    }[];
     series: { date: string; cost: number }[];
   };
 }
@@ -354,6 +360,51 @@ export default function Admin() {
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2"><Cpu className="h-4 w-4 text-primary" /> Cost by User (lifetime)</CardTitle>
+            <p className="text-xs text-muted-foreground">Exact token counts and cost per user. Click a row to open the full user profile.</p>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead>User</TableHead><TableHead>Plan</TableHead><TableHead>Calls</TableHead>
+                  <TableHead>Input tokens</TableHead><TableHead>Output tokens</TableHead>
+                  <TableHead>Avg cost</TableHead><TableHead>Cost (30d)</TableHead><TableHead>Total cost</TableHead>
+                  <TableHead>Exact</TableHead><TableHead>Errors</TableHead><TableHead>Last used</TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  {(data?.aiCost?.byUser ?? []).map((r) => (
+                    <TableRow
+                      key={r.user_id}
+                      className={r.user_id !== "anonymous" ? "cursor-pointer" : ""}
+                      onClick={() => r.user_id !== "anonymous" && setSelectedUser(r.user_id)}
+                    >
+                      <TableCell className="font-medium max-w-[220px] truncate">{r.email || r.user_id}</TableCell>
+                      <TableCell><Badge variant={r.plan === "pro" || r.plan === "basic" ? "default" : "secondary"}>{r.plan || "—"}</Badge></TableCell>
+                      <TableCell>{r.calls.toLocaleString()}</TableCell>
+                      <TableCell>{r.input.toLocaleString()}</TableCell>
+                      <TableCell>{r.output.toLocaleString()}</TableCell>
+                      <TableCell>₹{r.avgCost.toFixed(4)}</TableCell>
+                      <TableCell>₹{r.cost30d.toFixed(4)}</TableCell>
+                      <TableCell className="font-semibold">₹{r.cost.toFixed(4)}</TableCell>
+                      <TableCell className={r.exactPct < 100 ? "text-amber-500" : "text-muted-foreground"}>{r.exactPct.toFixed(0)}%</TableCell>
+                      <TableCell className={r.errors > 0 ? "text-amber-500" : "text-muted-foreground"}>{r.errors}</TableCell>
+                      <TableCell className="text-muted-foreground whitespace-nowrap">{r.last ? new Date(r.last).toLocaleDateString() : "—"}</TableCell>
+                    </TableRow>
+                  ))}
+                  {(!data?.aiCost?.byUser || data.aiCost.byUser.length === 0) && (
+                    <TableRow><TableCell colSpan={11} className="text-center text-muted-foreground py-6">No AI usage logged yet.</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+
 
         {/* Ops, moderation, audit */}
         <AdminOpsPanels selectUser={setSelectedUser} />

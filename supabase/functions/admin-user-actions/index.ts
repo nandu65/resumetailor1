@@ -59,9 +59,33 @@ Deno.serve(async (req) => {
           admin.from("profiles").select("*").eq("user_id", target).maybeSingle(),
           admin.auth.admin.getUserById(target),
           admin.from("optimizations").select("id,title,company,role,ats_score,created_at").eq("user_id", target).order("created_at", { ascending: false }).limit(50),
-          admin.from("ai_usage_logs").select("feature,model,input_tokens,output_tokens,cost_inr,status,created_at,token_source").eq("user_id", target).order("created_at", { ascending: false }).limit(50),
+          admin.from("ai_usage_logs").select("feature,model,input_tokens,output_tokens,cost_inr,status,created_at,token_source").eq("user_id", target).order("created_at", { ascending: false }).limit(200),
           admin.from("pricing_experiments").select("variant,event,tier,created_at").eq("user_id", target).order("created_at", { ascending: false }).limit(30),
         ]);
+
+        // Lifetime exact AI totals for this user (paginated, all rows)
+        const totals = { calls: 0, input: 0, output: 0, cost: 0, exactCalls: 0, errors: 0 };
+        const byFeature: Record<string, { feature: string; calls: number; input: number; output: number; cost: number }> = {};
+        const PAGE = 1000;
+        for (let page = 0; page < 100; page++) {
+          const { data: rows, error: rowsErr } = await admin
+            .from("ai_usage_logs")
+            .select("feature,input_tokens,output_tokens,cost_inr,status,token_source")
+            .eq("user_id", target)
+            .range(page * PAGE, page * PAGE + PAGE - 1);
+          if (rowsErr) break;
+          (rows || []).forEach((l: any) => {
+            const inp = l.input_tokens || 0, outp = l.output_tokens || 0, cost = Number(l.cost_inr) || 0;
+            totals.calls++; totals.input += inp; totals.output += outp; totals.cost += cost;
+            if (l.token_source === "exact") totals.exactCalls++;
+            if (l.status === "error") totals.errors++;
+            const f = l.feature || "unknown";
+            if (!byFeature[f]) byFeature[f] = { feature: f, calls: 0, input: 0, output: 0, cost: 0 };
+            byFeature[f].calls++; byFeature[f].input += inp; byFeature[f].output += outp; byFeature[f].cost += cost;
+          });
+          if (!rows || rows.length < PAGE) break;
+        }
+
         const au = authUser?.user;
         return json({
           profile,
@@ -77,6 +101,16 @@ Deno.serve(async (req) => {
           } : null,
           optimizations: opts ?? [],
           ai_logs: aiLogs ?? [],
+          ai_totals: {
+            ...totals,
+            cost: +totals.cost.toFixed(4),
+            avgCost: +(totals.cost / Math.max(1, totals.calls)).toFixed(4),
+            exactPct: +((totals.exactCalls / Math.max(1, totals.calls)) * 100).toFixed(1),
+            usdToInr: Number(Deno.env.get("USD_TO_INR") ?? 83),
+            byFeature: Object.values(byFeature)
+              .map((f) => ({ ...f, cost: +f.cost.toFixed(4) }))
+              .sort((a, b) => b.cost - a.cost),
+          },
           pricing_events: payments ?? [],
         });
       }

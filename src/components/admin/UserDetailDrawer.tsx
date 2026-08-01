@@ -28,6 +28,11 @@ interface Detail {
   auth: any;
   optimizations: any[];
   ai_logs: any[];
+  ai_totals?: {
+    calls: number; input: number; output: number; cost: number;
+    exactCalls: number; errors: number; avgCost: number; exactPct: number; usdToInr: number;
+    byFeature: { feature: string; calls: number; input: number; output: number; cost: number }[];
+  };
   pricing_events: any[];
 }
 
@@ -275,17 +280,43 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
                 </div>
               </div>
               <div>
-                <h4 className="font-semibold mb-2 text-sm">AI usage ({d.ai_logs.length})</h4>
+                <h4 className="font-semibold mb-2 text-sm">AI totals (lifetime)</h4>
+                {d.ai_totals ? (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                      <div className="border rounded p-2"><p className="text-muted-foreground">Calls</p><p className="font-semibold text-sm">{d.ai_totals.calls.toLocaleString()}</p></div>
+                      <div className="border rounded p-2"><p className="text-muted-foreground">Input tokens</p><p className="font-semibold text-sm">{d.ai_totals.input.toLocaleString()}</p></div>
+                      <div className="border rounded p-2"><p className="text-muted-foreground">Output tokens</p><p className="font-semibold text-sm">{d.ai_totals.output.toLocaleString()}</p></div>
+                      <div className="border rounded p-2"><p className="text-muted-foreground">Total cost</p><p className="font-semibold text-sm">₹{d.ai_totals.cost.toFixed(4)}</p></div>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Avg ₹{d.ai_totals.avgCost.toFixed(4)}/call · {d.ai_totals.exactPct.toFixed(0)}% exact provider token counts · {d.ai_totals.errors} errors · 1 USD = ₹{d.ai_totals.usdToInr}
+                    </p>
+                    <div className="border rounded divide-y">
+                      {d.ai_totals.byFeature.map((f) => (
+                        <div key={f.feature} className="p-2 text-xs flex justify-between">
+                          <span className="font-medium">{f.feature}</span>
+                          <span className="text-muted-foreground">{f.calls} calls · {f.input.toLocaleString()}→{f.output.toLocaleString()} tok · ₹{f.cost.toFixed(4)}</span>
+                        </div>
+                      ))}
+                      {d.ai_totals.byFeature.length === 0 && <p className="p-3 text-xs text-muted-foreground">None</p>}
+                    </div>
+                  </div>
+                ) : <p className="text-xs text-muted-foreground">None</p>}
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2 text-sm">Recent AI calls ({d.ai_logs.length})</h4>
                 <div className="max-h-64 overflow-y-auto border rounded divide-y">
                   {d.ai_logs.length === 0 && <p className="p-3 text-xs text-muted-foreground">None</p>}
                   {d.ai_logs.map((l, i) => (
-                    <div key={i} className="p-2 text-xs flex justify-between">
+                    <div key={i} className="p-2 text-xs flex justify-between gap-2">
                       <span>{l.feature} · {l.model}</span>
-                      <span className="text-muted-foreground">{l.input_tokens}→{l.output_tokens} tok{(l as any).token_source === "exact" ? "" : " (est)"} · ₹{Number(l.cost_inr).toFixed(3)}</span>
+                      <span className="text-muted-foreground whitespace-nowrap">{l.input_tokens}→{l.output_tokens} tok{(l as any).token_source === "exact" ? "" : " (est)"} · ₹{Number(l.cost_inr).toFixed(4)}</span>
                     </div>
                   ))}
                 </div>
               </div>
+
             </TabsContent>
 
             {/* BILLING */}
