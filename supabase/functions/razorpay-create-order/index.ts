@@ -74,6 +74,28 @@ Deno.serve(async (req) => {
       notes.discount_paise = String(discount);
     }
 
+    // ---- CUSTOM OFFER (admin-issued personal price) ----
+    let offerRow: any = null;
+    const offerId = String(body?.offer_id || notes?.offer_id || "").trim();
+    if (offerId) {
+      if (!userId) return j({ error: "Sign in to pay this offer" }, 401);
+      const { data: offer } = await admin.from("custom_offers").select("*").eq("id", offerId).maybeSingle();
+      if (!offer) return j({ error: "Offer not found" }, 404);
+      if (offer.user_id !== userId) return j({ error: "This offer belongs to another account" }, 403);
+      if (offer.status !== "pending") return j({ error: `Offer is already ${offer.status}` }, 400);
+      if (offer.expires_at && new Date(offer.expires_at).getTime() < Date.now()) {
+        await admin.from("custom_offers").update({ status: "expired" }).eq("id", offer.id);
+        return j({ error: "Offer has expired" }, 400);
+      }
+      // Server is the source of truth for the price — ignore anything the client sent.
+      amount = Number(offer.amount_paise);
+      discount = 0;
+      couponRow = null;
+      offerRow = offer;
+      notes.offer_id = offer.id;
+      notes.offer_scans = String(offer.scans ?? 0);
+    }
+
     const auth = btoa(`${KEY_ID}:${KEY_SECRET}`);
     const rzpRes = await fetch("https://api.razorpay.com/v1/orders", {
       method: "POST",
