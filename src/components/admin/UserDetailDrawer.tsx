@@ -63,11 +63,17 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
   const [offerScans, setOfferScans] = useState("10");
   const [offerDays, setOfferDays] = useState("7");
 
-  const load = async () => {
+  const [rangePreset, setRangePreset] = useState("30");
+  const [rFrom, setRFrom] = useState(() => new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10));
+  const [rTo, setRTo] = useState(() => new Date().toISOString().slice(0, 10));
+
+  const load = async (from?: string, to?: string) => {
     if (!userId) return;
     setLoading(true);
+    const ai_from = from ?? rFrom;
+    const ai_to = to ?? rTo;
     const [{ data: r1 }, { data: r2 }] = await Promise.all([
-      supabase.functions.invoke("admin-user-actions", { body: { action: "get_user_detail", user_id: userId } }),
+      supabase.functions.invoke("admin-user-actions", { body: { action: "get_user_detail", user_id: userId, ai_from, ai_to } }),
       supabase.functions.invoke("admin-user-actions", { body: { action: "list_audit", user_id: userId } }),
     ]);
     const detail = r1 as Detail;
