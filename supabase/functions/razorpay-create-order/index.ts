@@ -125,6 +125,13 @@ Deno.serve(async (req) => {
       });
     } catch (e) { console.error("payments insert failed", e); }
 
+    if (offerRow) {
+      try { await admin.from("custom_offers").update({ order_id: data.id }).eq("id", offerRow.id); }
+      catch (e) { console.error("offer order link failed", e); }
+    }
+
+
+
     return j({
       order_id: data.id,
       amount: data.amount,
