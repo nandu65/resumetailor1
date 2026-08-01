@@ -46,6 +46,12 @@ interface AdminData {
     usdToInr?: number;
     byFeature: { feature: string; calls: number; input: number; output: number; cost: number; errors: number; avgCost: number }[];
     byPlan: { plan: string; calls: number; input: number; output: number; cost: number; avgCost: number }[];
+    byUser?: {
+      user_id: string; email: string | null; plan: string | null;
+      calls: number; input: number; output: number; cost: number; avgCost: number;
+      exactPct: number; errors: number; last: string | null;
+      calls30d: number; input30d: number; output30d: number; cost30d: number;
+    }[];
     series: { date: string; cost: number }[];
   };
 }
