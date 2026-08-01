@@ -34,6 +34,7 @@ interface Detail {
     byFeature: { feature: string; calls: number; input: number; output: number; cost: number }[];
   };
   pricing_events: any[];
+  custom_offers?: any[];
 }
 
 const STATUS_BADGE: Record<string, string> = {
@@ -56,6 +57,11 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
   const [refundId, setRefundId] = useState("");
   const [refundAmount, setRefundAmount] = useState("");
   const [grantDelta, setGrantDelta] = useState("5");
+  const [offerTitle, setOfferTitle] = useState("Extra scan pack");
+  const [offerDesc, setOfferDesc] = useState("");
+  const [offerAmount, setOfferAmount] = useState("199");
+  const [offerScans, setOfferScans] = useState("10");
+  const [offerDays, setOfferDays] = useState("7");
 
   const load = async () => {
     if (!userId) return;
@@ -321,6 +327,62 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
 
             {/* BILLING */}
             <TabsContent value="billing" className="space-y-4 mt-4">
+              <Section title="Custom pricing offer">
+                <p className="text-xs text-muted-foreground mb-2">
+                  Quote a personal price for this customer. It shows up on their dashboard with a Pay now button, and the scans are credited automatically once they pay.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input value={offerTitle} onChange={(e) => setOfferTitle(e.target.value)} placeholder="Title (e.g. 25 extra scans)" className="h-8 text-xs col-span-2" />
+                  <Input value={offerDesc} onChange={(e) => setOfferDesc(e.target.value)} placeholder="Note shown to the customer (optional)" className="h-8 text-xs col-span-2" />
+                  <Input value={offerAmount} onChange={(e) => setOfferAmount(e.target.value)} type="number" placeholder="Amount ₹" className="h-8 text-xs" />
+                  <Input value={offerScans} onChange={(e) => setOfferScans(e.target.value)} type="number" placeholder="Extra scans" className="h-8 text-xs" />
+                  <Input value={offerDays} onChange={(e) => setOfferDays(e.target.value)} type="number" placeholder="Expires in days (0 = never)" className="h-8 text-xs" />
+                  <Button
+                    size="sm"
+                    className="h-8 text-xs"
+                    disabled={busy === "create_custom_offer"}
+                    onClick={() => call("create_custom_offer", {
+                      title: offerTitle,
+                      description: offerDesc,
+                      amount_rupees: Number(offerAmount),
+                      scans: Number(offerScans),
+                      expires_in_days: Number(offerDays),
+                    })}
+                  >
+                    Send offer
+                  </Button>
+                </div>
+
+                <div className="mt-3 border rounded divide-y">
+                  {(d.custom_offers ?? []).length === 0 && (
+                    <p className="p-3 text-xs text-muted-foreground">No custom offers for this user yet.</p>
+                  )}
+                  {(d.custom_offers ?? []).map((o: any) => (
+                    <div key={o.id} className="p-2 text-xs flex items-center justify-between gap-2">
+                      <div>
+                        <div className="font-semibold">{o.title} · ₹{(o.amount_paise / 100).toLocaleString("en-IN")}</div>
+                        <div className="text-muted-foreground">
+                          {o.scans} scans · {o.status}
+                          {o.expires_at ? ` · expires ${new Date(o.expires_at).toLocaleDateString()}` : ""}
+                          {o.paid_at ? ` · paid ${new Date(o.paid_at).toLocaleDateString()}` : ""}
+                        </div>
+                      </div>
+                      {o.status === "pending" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-[11px]"
+                          disabled={busy === "cancel_custom_offer"}
+                          onClick={() => call("cancel_custom_offer", { offer_id: o.id }, "Cancel this offer?")}
+                        >
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </Section>
+
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <Field label="Razorpay customer">{p?.razorpay_customer_id || "—"}</Field>
                 <Field label="Razorpay subscription">{p?.razorpay_subscription_id || "—"}</Field>
