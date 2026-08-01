@@ -69,6 +69,9 @@ export default function Admin() {
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [planFilter, setPlanFilter] = useState<string>("all");
+  const [rangePreset, setRangePreset] = useState<string>("30");
+  const [aiFrom, setAiFrom] = useState<string>(() => new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10));
+  const [aiTo, setAiTo] = useState<string>(() => new Date().toISOString().slice(0, 10));
 
   const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
