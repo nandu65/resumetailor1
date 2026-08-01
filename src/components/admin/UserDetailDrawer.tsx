@@ -33,6 +33,12 @@ interface Detail {
     exactCalls: number; errors: number; avgCost: number; exactPct: number; usdToInr: number;
     byFeature: { feature: string; calls: number; input: number; output: number; cost: number }[];
   };
+  ai_range?: {
+    from: string | null; to: string;
+    calls: number; input: number; output: number; cost: number;
+    exactCalls: number; errors: number; avgCost: number; exactPct: number;
+    byFeature: { feature: string; calls: number; input: number; output: number; cost: number }[];
+  };
   pricing_events: any[];
   custom_offers?: any[];
 }
