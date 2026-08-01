@@ -205,6 +205,7 @@ Deno.serve(async (req) => {
         usdToInr: Number(Deno.env.get("USD_TO_INR") ?? 83),
         byFeature: aiFeatureRows,
         byPlan: aiPlanRows,
+        byUser: aiUserRows,
         series: aiCostSeries,
       },
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
