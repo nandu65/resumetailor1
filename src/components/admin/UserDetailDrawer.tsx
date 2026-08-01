@@ -57,6 +57,11 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
   const [refundId, setRefundId] = useState("");
   const [refundAmount, setRefundAmount] = useState("");
   const [grantDelta, setGrantDelta] = useState("5");
+  const [offerTitle, setOfferTitle] = useState("Extra scan pack");
+  const [offerDesc, setOfferDesc] = useState("");
+  const [offerAmount, setOfferAmount] = useState("199");
+  const [offerScans, setOfferScans] = useState("10");
+  const [offerDays, setOfferDays] = useState("7");
 
   const load = async () => {
     if (!userId) return;
