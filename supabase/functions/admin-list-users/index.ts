@@ -131,6 +131,49 @@ Deno.serve(async (req) => {
     const aiPlanRows = Object.entries(aiByPlan)
       .map(([plan, v]) => ({ plan, ...v, cost: +v.cost.toFixed(4), avgCost: +(v.cost / Math.max(1, v.calls)).toFixed(4) }));
 
+    // ---- Per-user AI usage (lifetime, exact token counts) ----
+    type UserAgg = {
+      user_id: string; calls: number; input: number; output: number; cost: number;
+      exactCalls: number; errors: number; last: string | null;
+      calls30d: number; input30d: number; output30d: number; cost30d: number;
+    };
+    const byUser: Record<string, UserAgg> = {};
+    const since30 = since.toISOString();
+    const PAGE = 1000;
+    for (let page = 0; page < 100; page++) {
+      const { data: rows, error: rowsErr } = await admin
+        .from("ai_usage_logs")
+        .select("user_id,input_tokens,output_tokens,cost_inr,token_source,status,created_at")
+        .order("created_at", { ascending: false })
+        .range(page * PAGE, page * PAGE + PAGE - 1);
+      if (rowsErr) break;
+      (rows || []).forEach((l: any) => {
+        const uid = l.user_id || "anonymous";
+        if (!byUser[uid]) byUser[uid] = { user_id: uid, calls: 0, input: 0, output: 0, cost: 0, exactCalls: 0, errors: 0, last: null, calls30d: 0, input30d: 0, output30d: 0, cost30d: 0 };
+        const u = byUser[uid];
+        const inp = l.input_tokens || 0, outp = l.output_tokens || 0, cost = Number(l.cost_inr) || 0;
+        u.calls++; u.input += inp; u.output += outp; u.cost += cost;
+        if (l.token_source === "exact") u.exactCalls++;
+        if (l.status === "error") u.errors++;
+        if (!u.last || l.created_at > u.last) u.last = l.created_at;
+        if (l.created_at >= since30) { u.calls30d++; u.input30d += inp; u.output30d += outp; u.cost30d += cost; }
+      });
+      if (!rows || rows.length < PAGE) break;
+    }
+    const emailMap: Record<string, { email: string | null; plan: string | null }> = {};
+    (profiles || []).forEach((p: any) => { emailMap[p.user_id] = { email: p.email ?? null, plan: p.plan ?? null }; });
+    const aiUserRows = Object.values(byUser)
+      .map((u) => ({
+        ...u,
+        email: emailMap[u.user_id]?.email ?? (u.user_id === "anonymous" ? "(anonymous)" : null),
+        plan: emailMap[u.user_id]?.plan ?? null,
+        cost: +u.cost.toFixed(4),
+        cost30d: +u.cost30d.toFixed(4),
+        avgCost: +(u.cost / Math.max(1, u.calls)).toFixed(4),
+        exactPct: +((u.exactCalls / Math.max(1, u.calls)) * 100).toFixed(1),
+      }))
+      .sort((a, b) => b.cost - a.cost);
+
     const activeSubs = counts.basic + counts.pro;
     const churnRate = activeSubs + cancelled > 0 ? (cancelled / (activeSubs + cancelled)) * 100 : 0;
     const conversionRate = (profiles?.length || 0) > 0 ? (activeSubs / (profiles?.length || 1)) * 100 : 0;
