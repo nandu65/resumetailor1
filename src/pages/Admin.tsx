@@ -72,15 +72,30 @@ export default function Admin() {
 
   const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
-  const load = async () => {
+  const load = async (from?: string | null, to?: string | null) => {
     setBusy(true);
-    const { data: res, error } = await supabase.functions.invoke("admin-list-users");
+    const body: Record<string, string> = {};
+    const f = from === undefined ? aiFrom : from;
+    const t = to === undefined ? aiTo : to;
+    if (f) body.ai_from = f;
+    if (t) body.ai_to = t;
+    const { data: res, error } = await supabase.functions.invoke("admin-list-users", { body });
     if (error) toast({ title: "Failed to load", description: error.message, variant: "destructive" });
     else setData(res as AdminData);
     setBusy(false);
   };
 
+  const applyPreset = (days: number) => {
+    const from = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+    const to = new Date().toISOString().slice(0, 10);
+    setRangePreset(String(days));
+    setAiFrom(from);
+    setAiTo(to);
+    load(from, to);
+  };
+
   useEffect(() => { if (isAdmin) load(); }, [isAdmin]);
+
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
