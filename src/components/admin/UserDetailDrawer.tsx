@@ -310,6 +310,59 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
                   </div>
                 ) : <p className="text-xs text-muted-foreground">None</p>}
               </div>
+
+              <div>
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <h4 className="font-semibold text-sm">AI totals ({rangePreset === "custom" ? `${rFrom} → ${rTo}` : `last ${rangePreset} days`})</h4>
+                  <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={exportLedgerCsv} disabled={!d.ai_totals}>
+                    <Download className="h-3.5 w-3.5 mr-1" /> Export CSV
+                  </Button>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  {[7, 30, 90].map((days) => (
+                    <Button
+                      key={days}
+                      size="sm"
+                      variant={rangePreset === String(days) ? "default" : "outline"}
+                      className="h-7 text-[11px]"
+                      onClick={() => {
+                        const from = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+                        const to = new Date().toISOString().slice(0, 10);
+                        setRangePreset(String(days)); setRFrom(from); setRTo(to); load(from, to);
+                      }}
+                    >
+                      Last {days}d
+                    </Button>
+                  ))}
+                  <Input type="date" value={rFrom} max={rTo} onChange={(e) => { setRFrom(e.target.value); setRangePreset("custom"); }} className="h-7 w-[132px] text-[11px]" />
+                  <span className="text-[11px] text-muted-foreground">to</span>
+                  <Input type="date" value={rTo} min={rFrom} onChange={(e) => { setRTo(e.target.value); setRangePreset("custom"); }} className="h-7 w-[132px] text-[11px]" />
+                  <Button size="sm" variant="secondary" className="h-7 text-[11px]" onClick={() => load()}>Apply</Button>
+                </div>
+                {d.ai_range ? (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                      <div className="border rounded p-2"><p className="text-muted-foreground">Calls</p><p className="font-semibold text-sm">{d.ai_range.calls.toLocaleString()}</p></div>
+                      <div className="border rounded p-2"><p className="text-muted-foreground">Input tokens</p><p className="font-semibold text-sm">{d.ai_range.input.toLocaleString()}</p></div>
+                      <div className="border rounded p-2"><p className="text-muted-foreground">Output tokens</p><p className="font-semibold text-sm">{d.ai_range.output.toLocaleString()}</p></div>
+                      <div className="border rounded p-2"><p className="text-muted-foreground">Cost</p><p className="font-semibold text-sm">₹{d.ai_range.cost.toFixed(4)}</p></div>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Avg ₹{d.ai_range.avgCost.toFixed(4)}/call · {d.ai_range.exactPct.toFixed(0)}% exact provider token counts · {d.ai_range.errors} errors
+                    </p>
+                    <div className="border rounded divide-y">
+                      {d.ai_range.byFeature.map((f) => (
+                        <div key={f.feature} className="p-2 text-xs flex justify-between">
+                          <span className="font-medium">{f.feature}</span>
+                          <span className="text-muted-foreground">{f.calls} calls · {f.input.toLocaleString()}→{f.output.toLocaleString()} tok · ₹{f.cost.toFixed(4)}</span>
+                        </div>
+                      ))}
+                      {d.ai_range.byFeature.length === 0 && <p className="p-3 text-xs text-muted-foreground">No AI usage in this range.</p>}
+                    </div>
+                  </div>
+                ) : <p className="text-xs text-muted-foreground">None</p>}
+              </div>
+
               <div>
                 <h4 className="font-semibold mb-2 text-sm">Recent AI calls ({d.ai_logs.length})</h4>
                 <div className="max-h-64 overflow-y-auto border rounded divide-y">
