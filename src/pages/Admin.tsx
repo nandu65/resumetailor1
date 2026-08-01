@@ -102,23 +102,25 @@ export default function Admin() {
 
   const rangeLabel = rangePreset === "custom" ? `${aiFrom} → ${aiTo}` : `${rangePreset}d`;
 
+  // Exports ONLY the currently selected date range (no lifetime columns).
   const exportUserLedgerCsv = () => {
     const rows = data?.aiCost?.byUser ?? [];
     if (rows.length === 0) return;
     const csv = toCsv(
       [
-        "user_id", "email", "plan", "calls_lifetime", "input_tokens_lifetime", "output_tokens_lifetime",
-        "avg_cost_inr_lifetime", "total_cost_inr_lifetime", "exact_token_pct_lifetime", "errors_lifetime", "last_used",
-        "range_from", "range_to", "calls_range", "input_tokens_range", "output_tokens_range",
-        "avg_cost_inr_range", "cost_inr_range", "exact_token_pct_range", "errors_range",
+        "user_id", "email", "plan", "range_from", "range_to",
+        "calls", "input_tokens", "output_tokens",
+        "avg_cost_inr", "cost_inr", "exact_token_pct", "errors",
       ],
-      rows.map((r) => [
-        r.user_id, r.email ?? "", r.plan ?? "", r.calls, r.input, r.output,
-        r.avgCost, r.cost, r.exactPct, r.errors, r.last ?? "",
-        aiFrom, aiTo, r.calls30d, r.input30d, r.output30d,
-        r.avgCostRange ?? "", r.cost30d, r.exactPctRange ?? "", r.errorsRange ?? "",
-      ]),
+      rows
+        .filter((r) => (r.calls30d ?? 0) > 0)
+        .map((r) => [
+          r.user_id, r.email ?? "", r.plan ?? "", aiFrom, aiTo,
+          r.calls30d, r.input30d, r.output30d,
+          r.avgCostRange ?? "", r.cost30d, r.exactPctRange ?? "", r.errorsRange ?? "",
+        ]),
     );
+
     downloadCsv(`ai-cost-by-user_${aiFrom}_to_${aiTo}_${csvDateStamp()}.csv`, csv);
   };
 
