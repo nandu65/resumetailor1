@@ -52,7 +52,9 @@ interface AdminData {
       calls: number; input: number; output: number; cost: number; avgCost: number;
       exactPct: number; errors: number; last: string | null;
       calls30d: number; input30d: number; output30d: number; cost30d: number;
+      avgCostRange?: number; exactPctRange?: number; errorsRange?: number;
     }[];
+    range?: { from: string; to: string };
     series: { date: string; cost: number }[];
   };
 }
