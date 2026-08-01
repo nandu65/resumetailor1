@@ -394,7 +394,7 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                   <h4 className="font-semibold text-sm">AI totals ({rangePreset === "custom" ? `${rFrom} → ${rTo}` : `last ${rangePreset} days`})</h4>
                   <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={exportLedgerCsv} disabled={!d.ai_totals}>
-                    <Download className="h-3.5 w-3.5 mr-1" /> Export CSV
+                    <Download className="h-3.5 w-3.5 mr-1" /> Export range CSV
                   </Button>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 mb-2">
