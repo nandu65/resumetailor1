@@ -28,6 +28,11 @@ interface Detail {
   auth: any;
   optimizations: any[];
   ai_logs: any[];
+  ai_totals?: {
+    calls: number; input: number; output: number; cost: number;
+    exactCalls: number; errors: number; avgCost: number; exactPct: number; usdToInr: number;
+    byFeature: { feature: string; calls: number; input: number; output: number; cost: number }[];
+  };
   pricing_events: any[];
 }
 
