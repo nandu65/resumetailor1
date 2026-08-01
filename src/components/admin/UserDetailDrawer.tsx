@@ -39,7 +39,9 @@ interface Detail {
     calls: number; input: number; output: number; cost: number;
     exactCalls: number; errors: number; avgCost: number; exactPct: number;
     byFeature: { feature: string; calls: number; input: number; output: number; cost: number }[];
+    byModel?: { feature: string; calls: number; input: number; output: number; cost: number }[];
   };
+  ai_filters?: { feature: string | null; model: string | null; features: string[]; models: string[] };
   pricing_events: any[];
   custom_offers?: any[];
 }
