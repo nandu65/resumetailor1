@@ -183,7 +183,7 @@ export default function Admin() {
             <p className="text-muted-foreground">Growth, revenue, and product metrics — last 30 days.</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={load} disabled={busy}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}</Button>
+            <Button variant="outline" size="sm" onClick={() => load()} disabled={busy}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}</Button>
             <Button variant="outline" size="sm" onClick={handleSignOut}><LogOut className="h-4 w-4 mr-2" /> Sign out</Button>
           </div>
         </div>
