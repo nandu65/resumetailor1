@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Users, IndianRupee, Crown, Shield, LogOut, TrendingDown, Activity, Target, AlertCircle, FlaskConical, Sparkles, Cpu, Zap } from "lucide-react";
+import { Loader2, Users, IndianRupee, Crown, Shield, LogOut, TrendingDown, Activity, Target, AlertCircle, FlaskConical, Sparkles, Cpu, Zap, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
