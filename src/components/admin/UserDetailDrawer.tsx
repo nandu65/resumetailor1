@@ -34,6 +34,7 @@ interface Detail {
     byFeature: { feature: string; calls: number; input: number; output: number; cost: number }[];
   };
   pricing_events: any[];
+  custom_offers?: any[];
 }
 
 const STATUS_BADGE: Record<string, string> = {
