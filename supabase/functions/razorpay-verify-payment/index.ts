@@ -62,7 +62,34 @@ Deno.serve(async (req) => {
             });
           }
         }
+
+        // ---- Custom offer fulfilment: grant the extra scans it was sold for ----
+        const offerId = (pay.notes as any)?.offer_id;
+        if (offerId) {
+          const { data: offer } = await admin.from("custom_offers").select("*").eq("id", offerId).maybeSingle();
+          if (offer && offer.status === "pending") {
+            await admin.from("custom_offers").update({
+              status: "paid",
+              payment_id: razorpay_payment_id,
+              order_id: razorpay_order_id,
+              paid_at: new Date().toISOString(),
+            }).eq("id", offer.id);
+
+            const grant = Number(offer.scans ?? 0);
+            if (grant > 0) {
+              const { data: prof } = await admin.from("profiles")
+                .select("scans_used_month,bonus_scans").eq("user_id", offer.user_id).maybeSingle();
+              if (prof) {
+                await admin.from("profiles").update({
+                  scans_used_month: Math.max(0, (prof.scans_used_month ?? 0) - grant),
+                  bonus_scans: (prof.bonus_scans ?? 0) + grant,
+                }).eq("user_id", offer.user_id);
+              }
+            }
+          }
+        }
       }
+
     } catch (e) { console.error("verify update failed", e); }
 
     return new Response(JSON.stringify({ success: true, razorpay_order_id, razorpay_payment_id }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
