@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { resetTour } from "@/components/OnboardingTour";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export function Navbar() {
   const { user } = useAuth();
@@ -54,6 +55,7 @@ export function Navbar() {
 
         {/* Mobile controls */}
         <div className="flex md:hidden items-center gap-1">
+          <NotificationBell />
           <ThemeToggle />
           <Button
             variant="ghost"
