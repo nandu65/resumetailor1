@@ -137,6 +137,17 @@ Deno.serve(async (req) => {
               .map((f) => ({ ...f, cost: +f.cost.toFixed(4) }))
               .sort((a, b) => b.cost - a.cost),
           },
+          ai_range: {
+            from: rFromIso,
+            to: rToIso,
+            ...rangeTotals,
+            cost: +rangeTotals.cost.toFixed(4),
+            avgCost: +(rangeTotals.cost / Math.max(1, rangeTotals.calls)).toFixed(4),
+            exactPct: +((rangeTotals.exactCalls / Math.max(1, rangeTotals.calls)) * 100).toFixed(1),
+            byFeature: Object.values(byFeatureRange)
+              .map((f) => ({ ...f, cost: +f.cost.toFixed(4) }))
+              .sort((a, b) => b.cost - a.cost),
+          },
           pricing_events: payments ?? [],
           custom_offers: customOffers ?? [],
         });
