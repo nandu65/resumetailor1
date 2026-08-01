@@ -62,6 +62,13 @@ Deno.serve(async (req) => {
           admin.from("ai_usage_logs").select("feature,model,input_tokens,output_tokens,cost_inr,status,created_at,token_source").eq("user_id", target).order("created_at", { ascending: false }).limit(200),
           admin.from("pricing_experiments").select("variant,event,tier,created_at").eq("user_id", target).order("created_at", { ascending: false }).limit(30),
         ]);
+        const { data: customOffers } = await admin
+          .from("custom_offers").select("*").eq("user_id", target).order("created_at", { ascending: false }).limit(50);
+        const _unused = ([] as unknown[]);
+        void _unused;
+        const __offers = customOffers ?? [];
+        const __dummy = await Promise.resolve([
+        ]);
 
         // Lifetime exact AI totals for this user (paginated, all rows)
         const totals = { calls: 0, input: 0, output: 0, cost: 0, exactCalls: 0, errors: 0 };
