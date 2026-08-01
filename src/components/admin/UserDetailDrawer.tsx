@@ -73,14 +73,24 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
   const [rangePreset, setRangePreset] = useState("30");
   const [rFrom, setRFrom] = useState(() => new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10));
   const [rTo, setRTo] = useState(() => new Date().toISOString().slice(0, 10));
+  const [fFeature, setFFeature] = useState("all");
+  const [fModel, setFModel] = useState("all");
 
-  const load = async (from?: string, to?: string) => {
+  const load = async (opts: { from?: string; to?: string; feature?: string; model?: string } = {}) => {
     if (!userId) return;
     setLoading(true);
-    const ai_from = from ?? rFrom;
-    const ai_to = to ?? rTo;
+    const ai_from = opts.from ?? rFrom;
+    const ai_to = opts.to ?? rTo;
+    const feat = opts.feature ?? fFeature;
+    const mod = opts.model ?? fModel;
     const [{ data: r1 }, { data: r2 }] = await Promise.all([
-      supabase.functions.invoke("admin-user-actions", { body: { action: "get_user_detail", user_id: userId, ai_from, ai_to } }),
+      supabase.functions.invoke("admin-user-actions", {
+        body: {
+          action: "get_user_detail", user_id: userId, ai_from, ai_to,
+          ai_feature: feat === "all" ? "" : feat,
+          ai_model: mod === "all" ? "" : mod,
+        },
+      }),
       supabase.functions.invoke("admin-user-actions", { body: { action: "list_audit", user_id: userId } }),
     ]);
     const detail = r1 as Detail;
@@ -97,21 +107,58 @@ export function UserDetailDrawer({ userId, open, onClose, onChanged }: Props) {
 
   useEffect(() => { if (open && userId) load(); /* eslint-disable-next-line */ }, [open, userId]);
 
+  const filterSuffix = `${fFeature === "all" ? "all-features" : fFeature}_${fModel === "all" ? "all-models" : fModel}`;
+
+  // Exports ONLY the currently selected date range (+ active feature/model filters).
   const exportLedgerCsv = () => {
     if (!d) return;
-    const lt = d.ai_totals, rg = d.ai_range;
+    const rg = d.ai_range;
     const rows: unknown[][] = [];
-    if (lt) rows.push(["TOTAL", "lifetime", "", "", lt.calls, lt.input, lt.output, lt.avgCost, lt.cost, lt.exactPct, lt.errors]);
-    (lt?.byFeature ?? []).forEach((f) => rows.push([f.feature, "lifetime", "", "", f.calls, f.input, f.output, +(f.cost / Math.max(1, f.calls)).toFixed(4), f.cost, "", ""]));
-    if (rg) rows.push(["TOTAL", "range", rFrom, rTo, rg.calls, rg.input, rg.output, rg.avgCost, rg.cost, rg.exactPct, rg.errors]);
-    (rg?.byFeature ?? []).forEach((f) => rows.push([f.feature, "range", rFrom, rTo, f.calls, f.input, f.output, +(f.cost / Math.max(1, f.calls)).toFixed(4), f.cost, "", ""]));
-    (d.ai_logs ?? []).forEach((l: any) => rows.push([l.feature, "call", l.created_at ?? "", l.model ?? "", 1, l.input_tokens, l.output_tokens, "", Number(l.cost_inr) || 0, l.token_source === "exact" ? 100 : 0, l.status === "error" ? 1 : 0]));
+    const fromIso = `${rFrom}T00:00:00`;
+    const toIso = `${rTo}T23:59:59`;
+    if (rg) rows.push(["TOTAL", "range-total", "", "", rg.calls, rg.input, rg.output, rg.avgCost, rg.cost, rg.exactPct, rg.errors]);
+    (rg?.byFeature ?? []).forEach((f) => rows.push([f.feature, "by-feature", "", "", f.calls, f.input, f.output, +(f.cost / Math.max(1, f.calls)).toFixed(4), f.cost, "", ""]));
+    (rg?.byModel ?? []).forEach((f) => rows.push([f.feature, "by-model", "", "", f.calls, f.input, f.output, +(f.cost / Math.max(1, f.calls)).toFixed(4), f.cost, "", ""]));
+    (d.ai_logs ?? [])
+      .filter((l: any) => (l.created_at ?? "") >= fromIso && (l.created_at ?? "") <= toIso)
+      .forEach((l: any) => rows.push([l.feature, "call", l.created_at ?? "", l.model ?? "", 1, l.input_tokens, l.output_tokens, "", Number(l.cost_inr) || 0, l.token_source === "exact" ? 100 : 0, l.status === "error" ? 1 : 0]));
     const csv = toCsv(
-      ["feature", "scope", "from_or_time", "to_or_model", "calls", "input_tokens", "output_tokens", "avg_cost_inr", "cost_inr", "exact_pct", "errors"],
+      ["feature", "scope", "time", "model", "calls", "input_tokens", "output_tokens", "avg_cost_inr", "cost_inr", "exact_pct", "errors"],
       rows,
     );
-    downloadCsv(`ai-ledger_${d.profile?.email ?? userId}_${rFrom}_to_${rTo}.csv`, csv);
+    downloadCsv(`ai-ledger_${d.profile?.email ?? userId}_${rFrom}_to_${rTo}_${filterSuffix}.csv`, csv);
   };
+
+  const refundOffer = async (o: any, partial: boolean) => {
+    const paidRupees = (Number(o.amount_paise) || 0) / 100;
+    let amount_rupees: number | undefined;
+    if (partial) {
+      const input = prompt(`Refund amount in ₹ (max ₹${paidRupees})`, String(paidRupees));
+      if (!input) return;
+      amount_rupees = Number(input);
+      if (!Number.isFinite(amount_rupees) || amount_rupees <= 0 || amount_rupees > paidRupees) {
+        toast({ title: "Invalid amount", variant: "destructive" });
+        return;
+      }
+    }
+    const defaultRevoke = partial
+      ? Math.floor(((Number(o.scans) || 0) * (amount_rupees ?? 0)) / Math.max(1, paidRupees))
+      : Number(o.scans) || 0;
+    const revokeInput = prompt(`Extra scans to revoke from this customer (granted ${o.scans})`, String(defaultRevoke));
+    if (revokeInput === null) return;
+    const revoke_scans = Number(revokeInput);
+    if (!Number.isFinite(revoke_scans) || revoke_scans < 0) {
+      toast({ title: "Invalid scan count", variant: "destructive" });
+      return;
+    }
+    const res = await call(
+      "refund_custom_offer",
+      { offer_id: o.id, amount_rupees, revoke_scans },
+      `Refund ₹${amount_rupees ?? paidRupees} and revoke ${revoke_scans} scans?`,
+    );
+    if (res) toast({ title: "Refund processed", description: `₹${amount_rupees ?? paidRupees} refunded · ${revoke_scans} scans revoked` });
+  };
+
 
 
   const call = async (action: string, body: any = {}, confirmMsg?: string) => {
