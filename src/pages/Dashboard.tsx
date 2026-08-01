@@ -214,6 +214,7 @@ export default function Dashboard() {
       <Navbar />
       <div className="container py-10 max-w-6xl">
         <div className="mb-4"><AnnouncementBanner /></div>
+        <CustomOffers onPaid={loadProfile} />
         {profile?.payment_failed && (
           <div className="mb-6 rounded-xl border border-destructive/40 bg-destructive/10 p-4 flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
