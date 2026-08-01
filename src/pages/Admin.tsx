@@ -380,9 +380,48 @@ export default function Admin() {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2"><Cpu className="h-4 w-4 text-primary" /> Cost by User (lifetime)</CardTitle>
-            <p className="text-xs text-muted-foreground">Exact token counts and cost per user. Click a row to open the full user profile.</p>
+          <CardHeader className="space-y-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="text-base flex items-center gap-2"><Cpu className="h-4 w-4 text-primary" /> Cost by User (lifetime)</CardTitle>
+                <p className="text-xs text-muted-foreground">Exact token counts and cost per user. Click a row to open the full user profile.</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={exportUserLedgerCsv} disabled={!data?.aiCost?.byUser?.length}>
+                <Download className="h-4 w-4 mr-2" /> Export CSV
+              </Button>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-muted-foreground">Range:</span>
+              {[7, 30, 90].map((d) => (
+                <Button
+                  key={d}
+                  size="sm"
+                  variant={rangePreset === String(d) ? "default" : "outline"}
+                  className="h-7 text-xs"
+                  onClick={() => applyPreset(d)}
+                  disabled={busy}
+                >
+                  Last {d}d
+                </Button>
+              ))}
+              <Input
+                type="date"
+                value={aiFrom}
+                max={aiTo}
+                onChange={(e) => { setAiFrom(e.target.value); setRangePreset("custom"); }}
+                className="h-7 w-[140px] text-xs"
+              />
+              <span className="text-xs text-muted-foreground">to</span>
+              <Input
+                type="date"
+                value={aiTo}
+                min={aiFrom}
+                onChange={(e) => { setAiTo(e.target.value); setRangePreset("custom"); }}
+                className="h-7 w-[140px] text-xs"
+              />
+              <Button size="sm" variant="secondary" className="h-7 text-xs" onClick={() => load()} disabled={busy}>Apply</Button>
+              {busy && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -390,9 +429,10 @@ export default function Admin() {
                 <TableHeader><TableRow>
                   <TableHead>User</TableHead><TableHead>Plan</TableHead><TableHead>Calls</TableHead>
                   <TableHead>Input tokens</TableHead><TableHead>Output tokens</TableHead>
-                  <TableHead>Avg cost</TableHead><TableHead>Cost (30d)</TableHead><TableHead>Total cost</TableHead>
+                  <TableHead>Avg cost</TableHead><TableHead>Cost ({rangeLabel})</TableHead><TableHead>Total cost</TableHead>
                   <TableHead>Exact</TableHead><TableHead>Errors</TableHead><TableHead>Last used</TableHead>
                 </TableRow></TableHeader>
+
                 <TableBody>
                   {(data?.aiCost?.byUser ?? []).map((r) => (
                     <TableRow
