@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { resetTour } from "@/components/OnboardingTour";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export function Navbar() {
   const { user } = useAuth();
@@ -30,6 +31,7 @@ export function Navbar() {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-2">
+          <NotificationBell />
           <ThemeToggle />
           <Button variant="ghost" size="sm" title="Take the product tour" onClick={startTour} className="text-muted-foreground hover:text-foreground">
             <HelpCircle className="h-4 w-4 mr-1" /> Tour
@@ -53,6 +55,7 @@ export function Navbar() {
 
         {/* Mobile controls */}
         <div className="flex md:hidden items-center gap-1">
+          <NotificationBell />
           <ThemeToggle />
           <Button
             variant="ghost"

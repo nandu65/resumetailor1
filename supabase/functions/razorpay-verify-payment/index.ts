@@ -76,16 +76,31 @@ Deno.serve(async (req) => {
             }).eq("id", offer.id);
 
             const grant = Number(offer.scans ?? 0);
+            let bonusAfter: number | null = null;
             if (grant > 0) {
               const { data: prof } = await admin.from("profiles")
                 .select("scans_used_month,bonus_scans").eq("user_id", offer.user_id).maybeSingle();
               if (prof) {
+                bonusAfter = (prof.bonus_scans ?? 0) + grant;
                 await admin.from("profiles").update({
                   scans_used_month: Math.max(0, (prof.scans_used_month ?? 0) - grant),
-                  bonus_scans: (prof.bonus_scans ?? 0) + grant,
+                  bonus_scans: bonusAfter,
                 }).eq("user_id", offer.user_id);
               }
             }
+
+            // In-app notification for the customer
+            const rupees = (Number(offer.amount_paise) || 0) / 100;
+            await admin.from("user_notifications").insert({
+              user_id: offer.user_id,
+              type: "custom_offer_paid",
+              severity: "success",
+              title: "Payment received — extra scans added",
+              body: `Your payment of ₹${rupees.toLocaleString("en-IN")} for "${offer.title}" was successful. ${grant} extra scan${grant === 1 ? "" : "s"} ${grant > 0 ? "credited" : "applied"}.${bonusAfter !== null ? ` You now have ${bonusAfter} bonus scan${bonusAfter === 1 ? "" : "s"}.` : ""}`,
+              cta_label: "Go to dashboard",
+              cta_url: "/dashboard",
+              metadata: { offer_id: offer.id, payment_id: razorpay_payment_id, scans: grant, bonus_scans: bonusAfter },
+            });
           }
         }
       }

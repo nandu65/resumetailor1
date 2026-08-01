@@ -963,6 +963,48 @@ export type Database = {
           },
         ]
       }
+      user_notifications: {
+        Row: {
+          body: string
+          created_at: string
+          cta_label: string | null
+          cta_url: string | null
+          id: string
+          metadata: Json
+          read_at: string | null
+          severity: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          id?: string
+          metadata?: Json
+          read_at?: string | null
+          severity?: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          id?: string
+          metadata?: Json
+          read_at?: string | null
+          severity?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_presence: {
         Row: {
           last_seen: string
