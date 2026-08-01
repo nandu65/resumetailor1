@@ -503,7 +503,55 @@ Deno.serve(async (req) => {
         return json({ items: detected.slice(0, 200) });
       }
 
+      // -------- CUSTOM PRICING OFFERS --------
+      case "create_custom_offer": {
+        if (!target) return json({ error: "user_id required" }, 400);
+        const title = String(body.title || "").trim();
+        const description = String(body.description || "").trim() || null;
+        const amountRupees = Number(body.amount_rupees);
+        const scans = Number(body.scans ?? 0);
+        const expiresInDays = Number(body.expires_in_days ?? 0);
+        if (!title) return json({ error: "title required" }, 400);
+        if (!Number.isFinite(amountRupees) || amountRupees < 1) return json({ error: "amount must be at least ₹1" }, 400);
+        if (!Number.isFinite(scans) || scans < 0) return json({ error: "invalid scans" }, 400);
+
+        const { data: offer, error } = await admin.from("custom_offers").insert({
+          user_id: target,
+          title,
+          description,
+          amount_paise: Math.round(amountRupees * 100),
+          scans: Math.round(scans),
+          created_by: user.email,
+          expires_at: expiresInDays > 0 ? new Date(Date.now() + expiresInDays * 86400000).toISOString() : null,
+        }).select().maybeSingle();
+        if (error) throw error;
+        await audit({ offer_id: offer?.id, amountRupees, scans });
+        return json({ ok: true, offer });
+      }
+
+      case "cancel_custom_offer": {
+        const offerId = String(body.offer_id || "");
+        if (!offerId) return json({ error: "offer_id required" }, 400);
+        const { error } = await admin.from("custom_offers")
+          .update({ status: "cancelled" }).eq("id", offerId).eq("status", "pending");
+        if (error) throw error;
+        await audit({ offer_id: offerId });
+        return json({ ok: true });
+      }
+
+      case "list_custom_offers": {
+        const { data: offers, error } = await admin
+          .from("custom_offers").select("*").order("created_at", { ascending: false }).limit(200);
+        if (error) throw error;
+        const ids = Array.from(new Set((offers ?? []).map((o: any) => o.user_id)));
+        const { data: profs } = await admin.from("profiles").select("user_id,email,plan").in("user_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
+        const map: Record<string, any> = {};
+        (profs ?? []).forEach((p: any) => { map[p.user_id] = p; });
+        return json({ items: (offers ?? []).map((o: any) => ({ ...o, email: map[o.user_id]?.email ?? null, plan: map[o.user_id]?.plan ?? null })) });
+      }
+
       // -------- HEALTH / STATS --------
+
       case "quick_stats": {
         const [{ count: onlineCount }, { count: failedCount }, { count: flaggedCount }] = await Promise.all([
           admin.from("user_presence").select("*", { count: "exact", head: true }).gte("last_seen", new Date(Date.now() - 15 * 60000).toISOString()),
