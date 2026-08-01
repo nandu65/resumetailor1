@@ -227,6 +227,7 @@ Deno.serve(async (req) => {
         byFeature: aiFeatureRows,
         byPlan: aiPlanRows,
         byUser: aiUserRows,
+        range: { from: aiFromIso, to: aiToIso },
         series: aiCostSeries,
       },
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
