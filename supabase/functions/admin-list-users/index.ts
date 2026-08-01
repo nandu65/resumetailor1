@@ -25,6 +25,20 @@ Deno.serve(async (req) => {
     }
 
     const admin = createClient(supabaseUrl, serviceKey);
+
+    // Optional AI-ledger date range (defaults to last 30 days)
+    let reqBody: any = {};
+    try { reqBody = await req.json(); } catch { /* no body */ }
+    const parseDate = (v: unknown) => {
+      const t = Date.parse(String(v ?? ""));
+      return Number.isFinite(t) ? new Date(t) : null;
+    };
+    const aiFrom = parseDate(reqBody?.ai_from) ?? new Date(Date.now() - 30 * 86400000);
+    const aiToRaw = parseDate(reqBody?.ai_to);
+    const aiTo = aiToRaw ? new Date(aiToRaw.getTime() + (String(reqBody?.ai_to).length <= 10 ? 86399999 : 0)) : new Date();
+    const aiFromIso = aiFrom.toISOString();
+    const aiToIso = aiTo.toISOString();
+
     const { data: profiles, error } = await admin
       .from("profiles")
       .select("user_id,email,display_name,plan,subscription_status,scans_used_month,current_period_end,created_at,payment_failed,status,tags,bonus_scans")
