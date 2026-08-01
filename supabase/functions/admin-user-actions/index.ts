@@ -594,8 +594,13 @@ Deno.serve(async (req) => {
       case "cancel_custom_offer": {
         const offerId = String(body.offer_id || "");
         if (!offerId) return json({ error: "offer_id required" }, 400);
+        const { data: offer } = await admin.from("custom_offers").select("*").eq("id", offerId).maybeSingle();
+        if (!offer) return json({ error: "offer not found" }, 404);
+        if (offer.status === "paid") {
+          return json({ error: "Offer is already paid — use refund instead so the payment and scans are reversed." }, 400);
+        }
         const { error } = await admin.from("custom_offers")
-          .update({ status: "cancelled" }).eq("id", offerId).eq("status", "pending");
+          .update({ status: "cancelled" }).eq("id", offerId).neq("status", "paid");
         if (error) throw error;
         await audit({ offer_id: offerId });
         return json({ ok: true });
