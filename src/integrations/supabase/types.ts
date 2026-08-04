@@ -44,6 +44,54 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_messages: {
+        Row: {
+          body: string
+          created_at: string
+          cta_label: string | null
+          cta_url: string | null
+          id: string
+          message_type: string
+          notification_id: string | null
+          recipient_email: string | null
+          recipient_name: string | null
+          recipient_user_id: string
+          sent_by: string | null
+          severity: string
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          id?: string
+          message_type?: string
+          notification_id?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          recipient_user_id: string
+          sent_by?: string | null
+          severity?: string
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          id?: string
+          message_type?: string
+          notification_id?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          recipient_user_id?: string
+          sent_by?: string | null
+          severity?: string
+          title?: string
+        }
+        Relationships: []
+      }
       ai_usage_logs: {
         Row: {
           cost_inr: number

@@ -139,6 +139,9 @@ export function NotificationBell() {
             })
           )}
         </div>
+        <Link to="/notifications" className="block px-3 py-2 border-t text-center text-xs font-medium text-primary hover:underline">
+          View all
+        </Link>
       </DropdownMenuContent>
     </DropdownMenu>
   );

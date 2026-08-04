@@ -26,6 +26,7 @@ import Refund from "./pages/legal/Refund.tsx";
 import Admin from "./pages/Admin.tsx";
 import SharePage from "./pages/SharePage.tsx";
 import Applications from "./pages/Applications.tsx";
+import Notifications from "./pages/Notifications.tsx";
 import { usePresence } from "./hooks/usePresence";
 
 function AppRoutes() {
@@ -37,6 +38,7 @@ function AppRoutes() {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
       <Route path="/results/:id" element={<ProtectedRoute><Results /></ProtectedRoute>} />
       <Route path="/tools/cover-letter" element={<CoverLetterTool />} />
       <Route path="/tools/company-brief" element={<CompanyBriefTool />} />

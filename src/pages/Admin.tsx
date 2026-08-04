@@ -18,6 +18,7 @@ import { UserDetailDrawer } from "@/components/admin/UserDetailDrawer";
 import { AdminOpsPanels } from "@/components/admin/AdminOpsPanels";
 import { FinancialPanel } from "@/components/admin/FinancialPanel";
 import { GrowthPanel } from "@/components/admin/GrowthPanel";
+import { UserMessagesPanel } from "@/components/admin/UserMessagesPanel";
 
 const ADMIN_EMAIL = "nandunaidu656565@gmail.com";
 
@@ -491,6 +492,9 @@ export default function Admin() {
         </Card>
 
 
+
+        {/* Admin → user messaging */}
+        <UserMessagesPanel />
 
         {/* Ops, moderation, audit */}
         <AdminOpsPanels selectUser={setSelectedUser} />

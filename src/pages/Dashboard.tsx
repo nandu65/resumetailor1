@@ -243,6 +243,7 @@ export default function Dashboard() {
           <div>
             <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">Tailor your resume</h1>
             <p className="text-muted-foreground mt-1">Upload your resume and paste a job description to get a tailored version.</p>
+            <Link to="/notifications" className="text-sm text-primary underline mt-1 inline-block">View your notifications & messages</Link>
           </div>
           <div className="rounded-xl border border-border bg-gradient-card px-4 py-3 text-sm shadow-card min-w-[240px]">
             <div className="text-xs text-muted-foreground uppercase font-semibold tracking-wide">Plan · {plan}</div>
