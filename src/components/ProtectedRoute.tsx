@@ -9,7 +9,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   }
   if (!user) {
-    const redirectTo = `${location.pathname}${location.search}${location.hash}`;
+    const redirectTo = `${location?.pathname ?? ""}${location?.search ?? ""}${location?.hash ?? ""}`;
     return <Navigate to="/auth" replace state={{ from: redirectTo }} />;
   }
   return <>{children}</>;
