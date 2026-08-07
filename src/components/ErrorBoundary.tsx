@@ -28,28 +28,37 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-background px-4">
-          <div className="max-w-md w-full text-center space-y-6 p-8 rounded-2xl border border-border bg-gradient-card shadow-elegant animate-fade-in">
-            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive mb-2">
-              <AlertTriangle className="h-8 w-8" />
+        <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB] px-4 font-sans">
+          <div className="max-w-[480px] w-full text-center space-y-8 p-12 rounded-[24px] border border-gray-100 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.04)] animate-fade-in">
+            <div className="flex justify-center">
+              <div className="h-16 w-16 flex items-center justify-center rounded-full bg-[#FEF2F2]">
+                <AlertTriangle className="h-8 w-8 text-[#EF4444]" strokeWidth={1.5} />
+              </div>
             </div>
-            <h1 className="font-display text-2xl font-bold tracking-tight">Something went wrong</h1>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              The application encountered an unexpected error. This usually happens due to a temporary connection issue or a data loading glitch.
-            </p>
+            
+            <div className="space-y-4">
+              <h1 className="text-[28px] font-bold tracking-tight text-[#111827]">Something went wrong</h1>
+              <p className="text-[#6B7280] text-[16px] leading-[1.6] max-w-[340px] mx-auto">
+                The application encountered an unexpected error. This usually happens due to a temporary connection issue or a data loading glitch.
+              </p>
+            </div>
+
             <div className="pt-2">
               <Button 
                 onClick={() => window.location.reload()} 
-                className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow"
+                className="h-[52px] px-8 bg-[#10B981] hover:bg-[#059669] text-white font-semibold rounded-xl shadow-[0_4px_14px_0_rgba(16,185,129,0.39)] transition-all active:scale-95 flex items-center gap-2 mx-auto"
               >
-                <RefreshCw className="mr-2 h-4 w-4" />
+                <RefreshCw className="h-5 w-5" />
                 Reload Application
               </Button>
             </div>
+
             {process.env.NODE_ENV === "development" && (
-              <pre className="mt-4 p-4 bg-muted rounded-lg text-[10px] text-left overflow-auto max-h-40 text-muted-foreground border border-border">
-                {this.state.error?.toString()}
-              </pre>
+              <div className="mt-8 p-4 bg-gray-50 rounded-xl text-left border border-gray-100">
+                <p className="text-[10px] font-mono text-gray-400 break-all">
+                  {this.state.error?.toString()}
+                </p>
+              </div>
             )}
           </div>
         </div>
