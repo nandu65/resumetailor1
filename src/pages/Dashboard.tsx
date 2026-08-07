@@ -476,7 +476,8 @@ export default function Dashboard() {
                     <div className="text-sm font-display font-semibold">Score <span className="text-primary">{h.ats_score ?? "—"}</span></div>
                   </div>
                 </button>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
