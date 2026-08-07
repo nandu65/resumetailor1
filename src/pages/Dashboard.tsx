@@ -294,12 +294,15 @@ export default function Dashboard() {
                 <div className="rounded-lg border border-border bg-background p-3"><div className="text-[11px] uppercase text-muted-foreground">Active</div><div className="font-display text-xl font-bold">{appStats.total - appStats.recent.filter((r: any) => r.status === "rejected" || r.status === "withdrawn").length}</div></div>
               </div>
               <div className="grid gap-2">
-                {appStats.recent.map((r: any) => (
-                  <Link key={r.id} to="/applications" className="flex items-center justify-between rounded-lg border border-border bg-background/60 px-3 py-2 text-sm hover:bg-accent/50">
-                    <div className="min-w-0"><div className="font-medium truncate">{r.company_name}</div><div className="text-xs text-muted-foreground truncate">{r.job_title}</div></div>
-                    <span className="text-xs capitalize text-muted-foreground shrink-0 ml-3">{r.status}</span>
-                  </Link>
-                ))}
+                {appStats.recent.map((r: any) => {
+                  if (!r) return null;
+                  return (
+                    <Link key={r.id} to="/applications" className="flex items-center justify-between rounded-lg border border-border bg-background/60 px-3 py-2 text-sm hover:bg-accent/50">
+                      <div className="min-w-0"><div className="font-medium truncate">{r.company_name}</div><div className="text-xs text-muted-foreground truncate">{r.job_title}</div></div>
+                      <span className="text-xs capitalize text-muted-foreground shrink-0 ml-3">{r.status}</span>
+                    </Link>
+                  );
+                })}
               </div>
             </>
           ) : (
