@@ -459,7 +459,9 @@ export default function Dashboard() {
               </Button>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {history.map((h) => (
+              {history.map((h) => {
+                if (!h) return null;
+                return (
                 <button key={h.id} onClick={() => navigate(`/results/${h.id}`)}
                   className="text-left rounded-xl border border-border bg-card p-4 shadow-card hover:shadow-elegant hover:-translate-y-0.5 transition-all">
                   <div className="font-display font-semibold truncate">{h.title || "Untitled"}</div>
