@@ -23,7 +23,11 @@ interface Notification {
 }
 
 function timeAgo(iso: string) {
-  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const s = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (s < 0) return "just now";
   if (s < 60) return "just now";
   if (s < 3600) return `${Math.floor(s / 60)}m ago`;
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
@@ -108,6 +112,7 @@ export function NotificationBell() {
             <div className="px-3 py-6 text-center text-xs text-muted-foreground">You're all caught up.</div>
           ) : (
             items.map((n) => {
+              if (!n) return null;
               const Icon = n.severity === "warn" ? AlertTriangle : n.severity === "success" ? CheckCircle2 : Info;
               const tone =
                 n.severity === "warn" ? "text-amber-600 dark:text-amber-400"

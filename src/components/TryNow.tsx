@@ -88,7 +88,7 @@ export function TryNow() {
       <div className="w-full rounded-3xl border-2 border-primary/30 bg-gradient-card p-2.5 max-[360px]:p-2 sm:p-6 md:p-10 shadow-elegant">
         <div className="text-center mb-3 sm:mb-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-accent px-2 py-0.5 sm:px-4 sm:py-1.5 text-[8px] max-[360px]:text-[7px] sm:text-xs font-semibold text-accent-foreground mb-1.5 sm:mb-3">
-            <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                            \n                                            check again now , and let me know any discrepencies or issues in the code and website\nwhere its blank white page after opening"
+            <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                            \n                                            its happening only after login , before login its goos
           </div>
           <h2 className="font-display text-[11px] max-[360px]:text-[10px] leading-tight sm:text-2xl md:text-3xl font-bold tracking-tight">
             Instant ATS score in 30 seconds
