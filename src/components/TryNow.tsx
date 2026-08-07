@@ -189,7 +189,7 @@ export function TryNow() {
               <div>
                 <div className="text-sm font-semibold mb-2">Top missing keywords</div>
                 <div className="flex flex-wrap gap-2">
-                  {result.missing_keywords?.slice(0, 3).map((k) => (
+                  {result.missing_keywords.slice(0, 3).map((k) => (
                     <span key={k} className="text-xs font-medium bg-destructive/10 text-destructive border border-destructive/20 rounded-full px-3 py-1">
                       {k}
                     </span>

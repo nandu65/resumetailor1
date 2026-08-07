@@ -89,7 +89,7 @@ export default function Dashboard() {
   };
 
   const loadProfile = () => {
-    if (!user?.id) return;
+    if (!user) return;
     supabase
       .from("profiles")
       .select("plan, optimizations_used, scans_used_month, subscription_status, current_period_end, payment_failed, pending_plan")
@@ -99,13 +99,13 @@ export default function Dashboard() {
   };
 
   const loadHistory = () => {
-    if (!user?.id) return;
+    if (!user) return;
     supabase.from("optimizations").select("id, ats_score, created_at, title, company, role").eq("user_id", user.id).order("created_at", { ascending: false }).limit(9)
       .then(({ data }) => setHistory(data ?? []));
   };
 
   const loadAppStats = async () => {
-    if (!user?.id) return;
+    if (!user) return;
     const { data } = await supabase.from("job_applications")
       .select("id, company_name, job_title, status, application_date, created_at")
       .eq("user_id", user.id).order("created_at", { ascending: false });

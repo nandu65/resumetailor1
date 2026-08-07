@@ -16,9 +16,9 @@ export function usePresence() {
       if (cancelled) return;
       try {
         await (supabase as any).from("user_presence").upsert({
-          user_id: user?.id,
+          user_id: user.id,
           last_seen: new Date().toISOString(),
-          path: location.pathname?.slice(0, 200),
+          path: location.pathname.slice(0, 200),
         });
       } catch {}
     };

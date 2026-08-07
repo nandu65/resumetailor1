@@ -35,7 +35,7 @@ export function NotificationBell() {
   const [items, setItems] = useState<Notification[]>([]);
 
   const load = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user) return;
     const { data } = await supabase
       .from("user_notifications")
       .select("id,type,title,body,severity,cta_label,cta_url,read_at,created_at")
@@ -43,7 +43,7 @@ export function NotificationBell() {
       .order("created_at", { ascending: false })
       .limit(20);
     setItems((data as Notification[]) ?? []);
-  }, [user?.id]);
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
@@ -55,7 +55,7 @@ export function NotificationBell() {
       .channel("user-notifications")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "user_notifications", filter: `user_id=eq.${user?.id}` },
+        { event: "INSERT", schema: "public", table: "user_notifications", filter: `user_id=eq.${user.id}` },
         (payload) => setItems((prev) => [payload.new as Notification, ...prev].slice(0, 20)),
       )
       .subscribe();
