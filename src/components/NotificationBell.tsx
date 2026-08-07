@@ -112,6 +112,7 @@ export function NotificationBell() {
             <div className="px-3 py-6 text-center text-xs text-muted-foreground">You're all caught up.</div>
           ) : (
             items.map((n) => {
+              if (!n) return null;
               const Icon = n.severity === "warn" ? AlertTriangle : n.severity === "success" ? CheckCircle2 : Info;
               const tone =
                 n.severity === "warn" ? "text-amber-600 dark:text-amber-400"
