@@ -83,6 +83,7 @@ export default function Notifications() {
         ) : (
           <div className="space-y-3">
             {items.map((n) => {
+              if (!n) return null;
               const Icon = n.severity === "warn" ? AlertTriangle : n.severity === "success" ? CheckCircle2 : Info;
               const tone = n.severity === "warn" ? "text-amber-600 dark:text-amber-400"
                 : n.severity === "success" ? "text-emerald-600 dark:text-emerald-400" : "text-primary";
