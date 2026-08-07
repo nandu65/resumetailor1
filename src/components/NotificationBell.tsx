@@ -56,13 +56,20 @@ export function NotificationBell() {
     }
     load();
     const channel = supabase
-      .channel("user-notifications")
+      .channel(`user-notifications-${user.id}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "user_notifications", filter: `user_id=eq.${user.id}` },
-        (payload) => setItems((prev) => [payload.new as Notification, ...prev].slice(0, 20)),
-      )
-      .subscribe();
+        { 
+          event: "INSERT", 
+          schema: "public", 
+          table: "user_notifications", 
+          filter: `user_id=eq.${user.id}` 
+        },
+        (payload) => setItems((prev) => [payload.new as Notification, ...prev].slice(0, 20))
+      );
+
+    channel.subscribe();
+
     return () => {
       supabase.removeChannel(channel);
     };
