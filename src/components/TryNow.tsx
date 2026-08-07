@@ -94,7 +94,7 @@ For the code present, I get the error below.
 
 Please think step-by-step in order to resolve it.
 ```
-Uncaught Error: cannot add `postgres_changes` callbacks for realtime:user-notifications after `subscribe()`.
+Uncaught Error: cannot add `postgres_changes` callbacks for realtime:user-notifications-7081470f-70b1-46ab-bfc3-1af54447508a after `subscribe()`.
 ```
           </div>
           <h2 className="font-display text-[11px] max-[360px]:text-[10px] leading-tight sm:text-2xl md:text-3xl font-bold tracking-tight">

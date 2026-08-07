@@ -55,8 +55,14 @@ export function NotificationBell() {
       return;
     }
     load();
+    const channelName = `user-notifications-${user.id}`;
+    
+    // Cleanup any existing channel with this name before creating a new one
+    // This is a defensive measure against React StrictMode or fast re-renders
+    supabase.removeChannel(supabase.channel(channelName));
+
     const channel = supabase
-      .channel(`user-notifications-${user.id}`)
+      .channel(channelName)
       .on(
         "postgres_changes",
         { 
@@ -66,9 +72,12 @@ export function NotificationBell() {
           filter: `user_id=eq.${user.id}` 
         },
         (payload) => setItems((prev) => [payload.new as Notification, ...prev].slice(0, 20))
-      );
-
-    channel.subscribe();
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to notifications');
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
