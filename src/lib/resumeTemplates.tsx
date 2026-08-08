@@ -1260,7 +1260,7 @@ function PhotoGridPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
   const on = (patch: Partial<ResumeData>) => update?.(patch);
   const achievements = r.skills?.slice(0, 3) ?? [];
   return (
-    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg p-8 font-sans text-[11px] leading-snug" style={{ minHeight: "var(--page-h, auto)" }}>
+    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg p-8 font-sans text-[11px] leading-snug" style={{ minHeight: "var(--page-h, auto)", fontSize: r.settings?.fontSize ? `${r.settings.fontSize}px` : undefined, fontFamily: r.settings?.fontFamily || undefined }}>
       <div className="flex flex-col items-center text-center pb-4 border-b border-neutral-300">
         <div className="h-16 w-16 rounded-full bg-neutral-200 ring-2 ring-neutral-300 flex items-center justify-center text-lg font-bold text-neutral-700 mb-2">{initials(r.name)}</div>
         <Editable as="div" value={r.name || "Your Name"} onChange={update && (v => on({ name: v }))} className="font-bold text-[22px] tracking-tight" />
@@ -1308,7 +1308,7 @@ function LogoBoxedPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
     return <div className={`h-7 w-7 rounded ${cls} flex items-center justify-center text-[12px] font-bold shrink-0`}>{c}</div>;
   };
   return (
-    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg p-8 font-sans text-[11px] leading-snug" style={{ minHeight: "var(--page-h, auto)" }}>
+    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg p-8 font-sans text-[11px] leading-snug" style={{ minHeight: "var(--page-h, auto)", fontSize: r.settings?.fontSize ? `${r.settings.fontSize}px` : undefined, fontFamily: r.settings?.fontFamily || undefined }}>
       <div className="text-center pb-2">
         <Editable as="div" value={r.name || "Your Name"} onChange={update && (v => on({ name: v }))} className="font-bold text-[22px] text-sky-800 tracking-tight" />
         <Editable as="div" value={r.title} onChange={update && (v => on({ title: v }))} className="text-neutral-700 text-[11px] mt-0.5" />
@@ -1401,12 +1401,12 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
     lines.forEach((l: string) => { ensure(13); doc.text(l, margin, y); y += 13; });
   };
   const bullet = (t: string) => {
-    doc.setFont(font, "normal"); doc.setFontSize(10);
-    const lines = doc.splitTextToSize(t, pageW - margin * 2 - 14);
+    doc.setFont(font, "normal"); doc.setFontSize(data.settings?.fontSize || 10);
+    const lines = doc.splitTextToSize(t, pageW - margin * 2 - (data.settings?.fontSize || 10) * 1.4);
     lines.forEach((l: string, i: number) => {
       ensure(13);
       if (i === 0) doc.text("•", margin + 4, y);
-      doc.text(l, margin + 14, y); y += 13;
+      doc.text(l, margin + (data.settings?.fontSize || 10) * 1.4, y); y += 13;
     });
   };
 
