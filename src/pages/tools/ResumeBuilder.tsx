@@ -489,15 +489,6 @@ export default function ResumeBuilder() {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-                        <button onClick={() => setExperience(experience.filter((_, idx) => idx !== i))} className="absolute top-4 right-4 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 className="h-4 w-4" /></button>
-                        <div className="grid sm:grid-cols-2 gap-4">
-                          <Input value={exp.company} onChange={e => { const n = [...experience]; n[i].company = e.target.value; setExperience(n); }} placeholder="Company Name" />
-                          <Input value={exp.role} onChange={e => { const n = [...experience]; n[i].role = e.target.value; setExperience(n); }} placeholder="Job Title" />
-                          <Input value={exp.start} onChange={e => { const n = [...experience]; n[i].start = e.target.value; setExperience(n); }} placeholder="Start (e.g. Jan 2022)" />
-                          <Input value={exp.end} onChange={e => { const n = [...experience]; n[i].end = e.target.value; setExperience(n); }} placeholder="End (e.g. Present)" />
-                          <Textarea value={exp.description} onChange={e => { const n = [...experience]; n[i].description = e.target.value; setExperience(n); }} placeholder="What did you do there?" className="sm:col-span-2" />
-                        </div>
-                      </div>
                     ))}
                   </div>
                 </div>
