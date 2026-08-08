@@ -88,14 +88,7 @@ export function TryNow() {
       <div className="w-full rounded-3xl border-2 border-primary/30 bg-gradient-card p-2.5 max-[360px]:p-2 sm:p-6 md:p-10 shadow-elegant">
         <div className="text-center mb-3 sm:mb-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-accent px-2 py-0.5 sm:px-4 sm:py-1.5 text-[8px] max-[360px]:text-[7px] sm:text-xs font-semibold text-accent-foreground mb-1.5 sm:mb-3">
-            <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-
-For the code present, I get the error below.
-
-Please think step-by-step in order to resolve it.
-```
-Uncaught Error: cannot add `postgres_changes` callbacks for realtime:user-notifications-7081470f-70b1-46ab-bfc3-1af54447508a after `subscribe()`.
-```
+            <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> AI Analysis Ready
           </div>
           <h2 className="font-display text-[11px] max-[360px]:text-[10px] leading-tight sm:text-2xl md:text-3xl font-bold tracking-tight">
             Instant ATS score in 30 seconds
