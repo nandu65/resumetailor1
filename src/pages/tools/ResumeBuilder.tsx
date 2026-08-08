@@ -147,7 +147,8 @@ export default function ResumeBuilder() {
   const generate = async () => {
     if (!basics.name.trim()) return toast.error("Add your name at minimum");
     if (mode === "verbatim") {
-      setResume(buildResumeDataVerbatim({ ...basics, summary, experience, education, projects, skills, certifications }));
+      const data = buildResumeDataVerbatim({ ...basics, summary, experience, education, projects, skills, certifications });
+      setResume(data);
       setShowEditHint(true);
       return;
     }
@@ -178,8 +179,34 @@ export default function ResumeBuilder() {
     }
   };
 
-  const downloadPdf = () => resume && downloadResumePdfFromData(resume, template);
-  const downloadDocx = () => resume && downloadResumeDocxFromData(resume, template);
+  const isResumeSync = () => {
+    if (!resume) return false;
+    const currentData = buildResumeDataVerbatim({ ...basics, summary, experience, education, projects, skills, certifications });
+    return JSON.stringify(currentData) === JSON.stringify(resume);
+  };
+
+  const downloadPdf = () => {
+    if (!resume) return;
+    if (!isResumeSync()) {
+      toast.error("Form data has changed. Please click 'Generate' again to update the preview before downloading.", {
+        action: {
+          label: "Sync Now",
+          onClick: () => generate()
+        }
+      });
+      return;
+    }
+    downloadResumePdfFromData(resume, template);
+  };
+  
+  const downloadDocx = () => {
+    if (!resume) return;
+    if (!isResumeSync()) {
+      toast.error("Form data has changed. Please click 'Generate' again to update the preview before downloading.");
+      return;
+    }
+    downloadResumeDocxFromData(resume, template);
+  };
 
   return (
     <div className="min-h-screen bg-background">

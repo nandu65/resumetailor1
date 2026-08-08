@@ -1564,13 +1564,16 @@ export interface RawProfileInput {
 }
 
 export function buildResumeDataVerbatim(input: RawProfileInput): ResumeData {
-  const toBullets = (text: string) =>
-    text
+  const toBullets = (text: string) => {
+    if (!text) return [];
+    return text
       .split(/\r?\n/)
       .map(l => l.replace(/^\s*[-*•]\s?/, "").trim())
       .filter(Boolean);
+  };
 
   const parseSkills = (raw: string): ResumeData["skills"] => {
+    if (!raw) return [];
     const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
     const grouped: ResumeData["skills"] = [];
     const flat: string[] = [];
@@ -1589,21 +1592,39 @@ export function buildResumeDataVerbatim(input: RawProfileInput): ResumeData {
   };
 
   return {
-    name: input.name, title: input.title,
-    email: input.email, phone: input.phone, location: input.location,
-    links: [
+    name: input.name || "",
+    title: input.title || "",
+    email: input.email || "",
+    phone: input.phone || "",
+    location: input.location || "",
+    links: (input as any).links || [
       input.linkedin && { label: "LinkedIn", url: input.linkedin },
       input.github && { label: "GitHub", url: input.github },
       input.portfolio && { label: "Portfolio", url: input.portfolio },
-    ].filter(Boolean) as { label: string; url: string }[],
+    ].filter(Boolean),
     summary: input.summary || "",
-    experience: input.experience.map(e => ({
-      company: e.company, role: e.role, location: e.location, start: e.start, end: e.end,
+    experience: (input.experience || []).map(e => ({
+      company: e.company || "",
+      role: e.role || "",
+      location: e.location || "",
+      start: e.start || "",
+      end: e.end || "",
       bullets: toBullets(e.description),
     })),
-    education: input.education.map(e => ({ ...e })),
-    projects: input.projects.map(p => ({ name: p.name, tech: p.tech, bullets: toBullets(p.description) })),
+    education: (input.education || []).map(e => ({
+      school: e.school || "",
+      degree: e.degree || "",
+      location: e.location || "",
+      start: e.start || "",
+      end: e.end || "",
+      details: e.details || "",
+    })),
+    projects: (input.projects || []).map(p => ({
+      name: p.name || "",
+      tech: p.tech || "",
+      bullets: toBullets(p.description),
+    })),
     skills: parseSkills(input.skills),
-    certifications: input.certifications.split(/\r?\n/).map(s => s.trim()).filter(Boolean),
+    certifications: input.certifications ? input.certifications.split(/\r?\n/).map(s => s.trim()).filter(Boolean) : [],
   };
 }
