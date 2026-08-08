@@ -402,7 +402,76 @@ export default function ResumeBuilder() {
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-10">
+            <div className="flex flex-col lg:flex-col gap-10">
+              {/* Resume Preview on Top */}
+              <div className="lg:sticky lg:top-[64px] z-30 space-y-6 h-fit animate-in fade-in slide-in-from-top-4 duration-500" ref={previewRef}>
+                <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="font-display text-xl font-bold">Resume Preview</h2>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={downloadPdf} disabled={!resume}><Download className="h-4 w-4 mr-1" /> PDF</Button>
+                      <Button variant="outline" size="sm" onClick={downloadDocx} disabled={!resume}><Download className="h-4 w-4 mr-1" /> DOCX</Button>
+                    </div>
+                  </div>
+                  <div className="mb-6">
+                    <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-10 gap-3 mb-6 p-1 overflow-x-auto pb-2">
+                      {TEMPLATES.map(t => (
+                        <button
+                          key={t.id}
+                          onClick={() => setTemplate(t.id)}
+                          className={`group relative aspect-[3/4] min-w-[80px] rounded-lg border-2 transition-all overflow-hidden ${
+                            template === t.id ? "border-primary ring-2 ring-primary/20 shadow-glow" : "border-border hover:border-primary/40"
+                          }`}
+                        >
+                          <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground">
+                            <FileText className="h-8 w-8 opacity-20" />
+                          </div>
+
+                          <div className={`absolute inset-x-0 bottom-0 py-1.5 px-2 bg-background/90 backdrop-blur-sm border-t border-border transition-colors ${
+                            template === t.id ? "bg-primary text-primary-foreground" : ""
+                          }`}>
+                            <div className="text-[10px] font-bold truncate">{t.name}</div>
+                          </div>
+                          {template === t.id && (
+                            <div className="absolute top-1 right-1 bg-primary text-primary-foreground rounded-full p-0.5 shadow-sm">
+                              <CheckCircle2 className="h-3 w-3" />
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    <PreferenceFilterBar 
+                      prefs={prefs} 
+                      onChange={setPrefs} 
+                      onOpenWizard={() => setStarter("wizard")} 
+                    />
+                  </div>
+
+                  {resume ? (
+                    <div className="max-h-[60vh] overflow-y-auto rounded-xl border border-border shadow-inner bg-muted/20">
+                      <div className="text-[11px] text-muted-foreground p-3 border-b border-border bg-card/80 sticky top-0 z-10 backdrop-blur-sm"><FileEdit className="inline h-3 w-3 mr-1" /> Tip: click text in preview to edit.</div>
+                      <div className="p-4 sm:p-8">
+                        <ResumePreview template={template} data={resume} onChange={setResume} />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl border-2 border-dashed border-border bg-background/50 p-12 text-center">
+                      <FileText className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+                      <div className="font-display font-semibold">Your resume appears here</div>
+                      <div className="text-xs text-muted-foreground mt-1">Fill the form below and click Generate.</div>
+                      <Button variant="ghost" size="sm" className="mt-4" onClick={() => {
+                        const target = document.getElementById('builder-form');
+                        target?.scrollIntoView({ behavior: 'smooth' });
+                      }}>
+                        <ArrowDown className="h-4 w-4 mr-2" /> Start Filling Form
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Builder Options Below */}
+              <div id="builder-form" className="grid lg:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
                 <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
                   <div className="flex items-center gap-2 mb-6 border-b border-border pb-4">
