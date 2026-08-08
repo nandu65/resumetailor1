@@ -1396,7 +1396,7 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
   };
   const line = (t: string, opts: { bold?: boolean; size?: number; italic?: boolean } = {}) => {
     doc.setFont(font, opts.bold ? "bold" : opts.italic ? "italic" : "normal");
-    doc.setFontSize(opts.size ?? 10);
+    doc.setFontSize(opts.size ?? (data.settings?.fontSize || 10));
     const lines = doc.splitTextToSize(t, pageW - margin * 2);
     lines.forEach((l: string) => { ensure(13); doc.text(l, margin, y); y += 13; });
   };
