@@ -347,7 +347,10 @@ export default function ResumeBuilder() {
                             template === t.id ? "border-primary ring-2 ring-primary/20 shadow-glow" : "border-border hover:border-primary/40"
                           }`}
                         >
-                          <img src={t.preview} alt={t.name} className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all" />
+                          <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground">
+                            <FileText className="h-8 w-8 opacity-20" />
+                          </div>
+
                           <div className={`absolute inset-x-0 bottom-0 py-1.5 px-2 bg-background/90 backdrop-blur-sm border-t border-border transition-colors ${
                             template === t.id ? "bg-primary text-primary-foreground" : ""
                           }`}>
