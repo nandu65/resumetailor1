@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown, Link2, Wand, CheckCircle2 } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown, Link2, Wand, CheckCircle2, ArrowLeft } from "lucide-react";
 import { extractTextFromFile } from "@/lib/extractText";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -308,82 +308,127 @@ export default function ResumeBuilder() {
           </div>
         )}
 
-        {/* Starter chooser */}
-        <div className="mb-6 rounded-2xl border-2 border-border bg-gradient-card p-6 shadow-card">
-          <div className="text-center mb-5">
-            <h2 className="font-display text-xl font-bold">How would you like to start?</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
 
-              before these steps, ask the user whether he wanna build resume from scratch or he wanna upload the resume
-              if he wanna upload resume , it shd fetch the details in the uploaded resume and auto fill in the appropriate sections
-            </p>
+        {/* Step 1: Entry Point Selection */}
+        {starter === "choose" && (
+          <div className="mb-6 rounded-2xl border-2 border-border bg-gradient-card p-6 shadow-card animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+
+
+            <div className="text-center mb-8">
+              <h2 className="font-display text-2xl font-bold">How would you like to start?</h2>
+              <p className="text-muted-foreground mt-2 max-w-lg mx-auto">
+                Choose to build a fresh resume from scratch or import your existing one for an instant AI-powered upgrade.
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
+              {/* Build from Scratch */}
+              <button
+                type="button"
+                onClick={() => setStarter("wizard")}
+                className="group relative text-left rounded-2xl border-2 border-border bg-background p-6 transition-all duration-300 hover:border-primary/60 hover:-translate-y-1 hover:shadow-glow"
+              >
+                <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4 transition-transform group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground">
+                  <FilePlus2 className="h-6 w-6" />
+                </div>
+                <h3 className="font-display text-lg font-bold">Build from scratch</h3>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Follow our 4-step wizard to find the perfect template and layout for your goals.
+                </p>
+                <div className="mt-4 flex items-center text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                  Get Started <Sparkles className="ml-1 h-3 w-3" />
+                </div>
+              </button>
+
+              {/* Upload Existing */}
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+                className="group relative text-left rounded-2xl border-2 border-border bg-background p-6 transition-all duration-300 hover:border-primary/60 hover:-translate-y-1 hover:shadow-glow"
+              >
+                {uploading && (
+                  <div className="absolute inset-0 z-10 bg-background/60 backdrop-blur-sm flex items-center justify-center rounded-2xl">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                )}
+                <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4 transition-transform group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground">
+                  <Upload className="h-6 w-6" />
+                </div>
+                <h3 className="font-display text-lg font-bold">Upload my resume</h3>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Import your PDF/DOCX. AI extracts all data so you can just review and polish.
+                </p>
+                <div className="mt-4 flex items-center text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                  Upload File <ArrowDown className="ml-1 h-3 w-3" />
+                </div>
+              </button>
+            </div>
+            
+            {/* Try with Sample Data link for convenience */}
+            <div className="mt-8 pt-6 border-t border-border flex justify-center">
+              <button 
+                type="button" 
+                onClick={fillSample}
+                className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
+              >
+                <Wand className="h-3 w-3" /> Try with sample data instead
+              </button>
+            </div>
+
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".pdf,.docx,.txt"
+              className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) onUpload(f); }}
+            />
+            {!user && (
+              <p className="text-[11px] text-muted-foreground text-center mt-6">
+                <Link to="/auth" className="underline text-primary">Sign in</Link> to save your progress and use AI features.
+              </p>
+            )}
           </div>
-          <div className="grid sm:grid-cols-3 gap-3">
-            {/* Upload */}
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              disabled={uploading}
-              className={`group relative text-left rounded-xl border-2 p-5 pt-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow overflow-hidden ${starter === "uploaded" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/60"}`}
-            >
-              <div className="absolute -top-px left-4 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-b bg-primary text-primary-foreground">Recommended</div>
-              <div className={`h-10 w-10 rounded-lg flex items-center justify-center mb-3 transition-all ${starter === "uploaded" ? "bg-primary text-primary-foreground shadow-glow" : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110"}`}>
-                {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
-              </div>
-              <div className="font-display font-semibold flex items-center gap-1.5">
-                Upload my resume
-                {starter === "uploaded" && <CheckCircle2 className="h-4 w-4 text-primary" />}
-              </div>
-              <div className="text-xs text-muted-foreground mt-1 leading-snug">PDF, DOCX, or TXT. AI extracts everything so you can review & polish.</div>
-            </button>
-
-            {/* Scratch */}
-            <button
-              type="button"
-              onClick={() => setStarter("wizard")}
-              className={`group text-left rounded-xl border-2 p-5 pt-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow ${starter === "wizard" || starter === "scratch" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/60"}`}
-            >
-              <div className={`h-10 w-10 rounded-lg flex items-center justify-center mb-3 transition-all ${starter === "wizard" || starter === "scratch" ? "bg-primary text-primary-foreground shadow-glow" : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110"}`}>
-                <FilePlus2 className="h-5 w-5" />
-              </div>
-              <div className="font-display font-semibold flex items-center gap-1.5">
-                Build from scratch
-                {(starter === "scratch" || starter === "wizard") && <CheckCircle2 className="h-4 w-4 text-primary" />}
-              </div>
-              <div className="text-xs text-muted-foreground mt-1 leading-snug">Choose your style preferences and fill in your details manually.</div>
-            </button>
-
-            {/* Sample data */}
-            <button
-              type="button"
-              onClick={fillSample}
-              className="group text-left rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 p-5 pt-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow hover:border-primary hover:bg-primary/10"
-            >
-              <div className="h-10 w-10 rounded-lg bg-gradient-primary text-primary-foreground flex items-center justify-center mb-3 shadow-glow group-hover:scale-110 transition-transform">
-                <Wand className="h-5 w-5" />
-              </div>
-              <div className="font-display font-semibold">Try with sample data</div>
-              <div className="text-xs text-muted-foreground mt-1 leading-snug">Fill everything (incl. JD) so you can see the resume in every template instantly.</div>
-            </button>
-          </div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".pdf,.docx,.txt"
-            className="hidden"
-            onChange={e => { const f = e.target.files?.[0]; if (f) onUpload(f); }}
-          />
-          {!user && (
-            <p className="text-[11px] text-muted-foreground text-center mt-3">
-              <Link to="/auth" className="underline text-primary">Sign in</Link> to upload and parse an existing resume.
-            </p>
-          )}
-        </div>
-
-        <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6">
-          {/* FORM */}
+        )}
+        {(starter === "scratch" || starter === "uploaded") && (
           <div className="space-y-6">
+            <div className="flex items-center justify-between bg-card border-2 border-border rounded-xl p-4 mb-6 shadow-sm">
+
+
+
+
+
+
+
+
+
+
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="sm" onClick={() => setStarter("choose")} className="text-muted-foreground hover:text-foreground">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+                <div className="h-4 w-px bg-border hidden sm:block" />
+                <span className="text-sm font-medium text-muted-foreground hidden sm:inline">
+                  {starter === "uploaded" ? "Imported from file" : "Building from scratch"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {starter === "uploaded" && (
+                  <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
+                    AI Parsed
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6">
+
+
+
+
+              {/* FORM */}
+              <div className="space-y-6">
             {/* Basics */}
             <section className="rounded-2xl border border-border bg-gradient-card p-6 shadow-card">
               <h2 className="font-display font-semibold mb-4">Basics</h2>
@@ -629,10 +674,33 @@ export default function ResumeBuilder() {
               </div>
             )}
           </div>
-        </div>
+        )}
       </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       <Dialog open={showEditHint} onOpenChange={setShowEditHint}>
+
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 font-display">
