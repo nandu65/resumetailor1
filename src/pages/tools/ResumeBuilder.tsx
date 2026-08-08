@@ -147,7 +147,8 @@ export default function ResumeBuilder() {
   const generate = async () => {
     if (!basics.name.trim()) return toast.error("Add your name at minimum");
     if (mode === "verbatim") {
-      setResume(buildResumeDataVerbatim({ ...basics, summary, experience, education, projects, skills, certifications }));
+      const data = buildResumeDataVerbatim({ ...basics, summary, experience, education, projects, skills, certifications });
+      setResume(data);
       setShowEditHint(true);
       return;
     }
