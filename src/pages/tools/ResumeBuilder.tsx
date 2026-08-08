@@ -640,6 +640,7 @@ export default function ResumeBuilder() {
                       {loading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Sparkles className="h-5 w-5 mr-2" />}
                       {mode === "ai" ? "Generate with AI Polish" : "Generate Verbatim"}
                     </Button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -664,6 +665,7 @@ export default function ResumeBuilder() {
     </div>
   );
 }
+
 
 
 
