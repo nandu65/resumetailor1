@@ -337,7 +337,37 @@ export default function ResumeBuilder() {
                       <Button variant="outline" size="sm" onClick={downloadDocx} disabled={!resume}><Download className="h-4 w-4 mr-1" /> DOCX</Button>
                     </div>
                   </div>
-                  <div className="mb-6"><PreferenceFilterBar selected={template} onChange={(t) => typeof t === 'string' && setTemplate(t as TemplateId)} prefs={prefs} /></div>
+                  <div className="mb-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 mb-6 p-1 overflow-y-auto max-h-[160px]">
+                      {TEMPLATES.map(t => (
+                        <button
+                          key={t.id}
+                          onClick={() => setTemplate(t.id)}
+                          className={`group relative aspect-[3/4] rounded-lg border-2 transition-all overflow-hidden ${
+                            template === t.id ? "border-primary ring-2 ring-primary/20 shadow-glow" : "border-border hover:border-primary/40"
+                          }`}
+                        >
+                          <img src={t.preview} alt={t.name} className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all" />
+                          <div className={`absolute inset-x-0 bottom-0 py-1.5 px-2 bg-background/90 backdrop-blur-sm border-t border-border transition-colors ${
+                            template === t.id ? "bg-primary text-primary-foreground" : ""
+                          }`}>
+                            <div className="text-[10px] font-bold truncate">{t.name}</div>
+                          </div>
+                          {template === t.id && (
+                            <div className="absolute top-1 right-1 bg-primary text-primary-foreground rounded-full p-0.5 shadow-sm">
+                              <CheckCircle2 className="h-3 w-3" />
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    <PreferenceFilterBar 
+                      prefs={prefs} 
+                      onChange={setPrefs} 
+                      onOpenWizard={() => setStarter("wizard")} 
+                    />
+                  </div>
+
 
                   {resume ? (
                     <>
