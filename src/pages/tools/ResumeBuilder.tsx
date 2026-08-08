@@ -337,7 +337,8 @@ export default function ResumeBuilder() {
                       <Button variant="outline" size="sm" onClick={downloadDocx} disabled={!resume}><Download className="h-4 w-4 mr-1" /> DOCX</Button>
                     </div>
                   </div>
-                  <div className="mb-6"><PreferenceFilterBar selected={template} onChange={setTemplate} prefs={prefs} /></div>
+                  <div className="mb-6"><PreferenceFilterBar selected={template} onChange={(t) => typeof t === 'string' && setTemplate(t as TemplateId)} prefs={prefs} /></div>
+
                   {resume ? (
                     <>
                       <div className="text-[11px] text-muted-foreground px-1 mb-2"><FileEdit className="inline h-3 w-3 mr-1" /> Tip: click text in preview to edit.</div>
