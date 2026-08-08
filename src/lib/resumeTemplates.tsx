@@ -1216,9 +1216,9 @@ function TealLeftPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
             <Editable as="div" value={r.phone} onChange={update && (v => on({ phone: v }))} />
             <Editable as="div" value={r.email} onChange={update && (v => on({ email: v }))} />
             <Editable as="div" value={r.location} onChange={update && (v => on({ location: v }))} />
-            {r.links?.map((l, i) => (<Editable key={i} as="div" value={l.url} onChange={update && (v => on({ links: r.links.map((x, j) => j === i ? { ...x, url: v } : x) }))} />))}
+            {r.links?.map((l, i) => (<Editable key={i} as="div" value={l.label + ": " + l.url} onChange={update && (v => { const [label, ...rest] = v.split(":"); on({ links: r.links.map((x, j) => j === i ? { label: (label || "").trim(), url: rest.join(":").trim() } : x) }); })} />))}
           </div>
-          {r.skills?.length > 0 && (<div className="mt-5"><div className="uppercase tracking-widest text-[9px] font-bold border-b border-teal-400 pb-1 mb-2">Key Achievements</div>{r.skills.map((s, i) => { const upd = makeSkillUpdater(update, r, i); return (<div key={i} className="mb-3 flex gap-2"><div className="h-6 w-6 rounded-full bg-teal-500/30 border border-teal-300 flex items-center justify-center text-[10px] font-bold shrink-0">★</div><div><Editable as="div" value={s.category} onChange={update && (v => upd({ category: v }))} className="font-semibold text-[10px]" /><Editable as="div" value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} className="text-[9.5px] text-teal-100 leading-snug" /></div></div>); })}</div>)}
+          {r.skills?.length > 0 && (<div className="mt-5"><div className="uppercase tracking-widest text-[9px] font-bold border-b border-teal-400 pb-1 mb-2">Key Skills & Achievements</div>{r.skills.map((s, i) => { const upd = makeSkillUpdater(update, r, i); return (<div key={i} className="mb-3 flex gap-2"><div className="h-6 w-6 rounded-full bg-teal-500/30 border border-teal-300 flex items-center justify-center text-[10px] font-bold shrink-0">★</div><div className="flex-1"><Editable as="div" value={s.category} onChange={update && (v => upd({ category: v }))} className="font-semibold text-[10px]" /><Editable as="div" value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} className="text-[9.5px] text-teal-100 leading-snug" /></div></div>); })}</div>)}
           {r.certifications?.length > 0 && (<div className="mt-4"><div className="uppercase tracking-widest text-[9px] font-bold border-b border-teal-400 pb-1 mb-2">Certifications</div><Editable as="div" multiline value={r.certifications.join("\n")} onChange={update && (v => on({ certifications: v.split("\n").map(x => x.trim()).filter(Boolean) }))} className="text-[10px] whitespace-pre-wrap" /></div>)}
         </div>
         <div className="p-5">
@@ -1576,10 +1576,15 @@ export function buildResumeDataVerbatim(input: RawProfileInput): ResumeData {
     const flat: string[] = [];
     for (const l of lines) {
       const m = l.match(/^([^:]+):\s*(.+)$/);
-      if (m) grouped.push({ category: m[1].trim(), items: m[2].split(",").map(s => s.trim()).filter(Boolean) });
-      else flat.push(l);
+      if (m) {
+        grouped.push({ category: m[1].trim(), items: m[2].split(",").map(s => s.trim()).filter(Boolean) });
+      } else {
+        flat.push(l);
+      }
     }
-    if (flat.length) grouped.push({ category: "Skills", items: flat });
+    if (flat.length) {
+      grouped.push({ category: "Skills", items: flat });
+    }
     return grouped;
   };
 

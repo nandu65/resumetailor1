@@ -110,20 +110,20 @@ export default function ResumeBuilder() {
     if (!resume) return;
     setBasics(b => ({
       ...b,
-      name: resume.name ?? b.name,
-      title: resume.title ?? b.title,
-      email: resume.email ?? b.email,
-      phone: resume.phone ?? b.phone,
-      location: resume.location ?? b.location,
+      name: resume.name || b.name,
+      title: resume.title || b.title,
+      email: resume.email || b.email,
+      phone: resume.phone || b.phone,
+      location: resume.location || b.location,
     }));
     if (resume.links && resume.links.length) {
       setLinks(resume.links.map(l => ({ label: l.label || "Link", url: l.url || "" })));
     }
-    setSummary(resume.summary ?? "");
+    setSummary(resume.summary || "");
     setExperience((resume.experience || []).map(e => ({
       company: e.company || "", role: e.role || "", location: e.location || "",
       start: e.start || "", end: e.end || "",
-      description: (e.bullets || []).join("\n"),
+      description: Array.isArray(e.bullets) ? e.bullets.join("\n") : (e as any).description || "",
     })));
     setEducation((resume.education || []).map((e: any) => ({
       school: e.school || "", degree: e.degree || "", location: e.location || "",
@@ -131,9 +131,12 @@ export default function ResumeBuilder() {
     })));
     setProjects((resume.projects || []).map(p => ({
       name: p.name || "", tech: p.tech || "",
-      description: (p.bullets || []).join("\n"),
+      description: Array.isArray(p.bullets) ? p.bullets.join("\n") : (p as any).description || "",
     })));
-    setSkills((resume.skills || []).join("\n"));
+    setSkills((resume.skills || []).map(s => {
+      if (typeof s === "string") return s;
+      return s.category ? `${s.category}: ${s.items.join(", ")}` : s.items.join(", ");
+    }).join("\n"));
     setCertifications((resume.certifications || []).join("\n"));
   }, [resume]);
 
