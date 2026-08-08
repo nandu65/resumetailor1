@@ -28,10 +28,6 @@ const EMPTY_RESUME: ResumeData = {
   summary: "", experience: [], education: [], projects: [], skills: [], certifications: [],
 };
 
-const SAMPLE_JD = `We are hiring a Senior Software Engineer to build and scale our React + Node platform (used by 2M+ users).
-Responsibilities: architect microservices, own CI/CD, mentor engineers, drive code quality.
-Must have: 5+ years JS/TS, React, Node.js, PostgreSQL, AWS, Docker. Nice to have: Kubernetes, GraphQL, event-driven systems.`;
-
 export default function ResumeBuilder() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -150,63 +146,30 @@ export default function ResumeBuilder() {
     setCertifications((resume.certifications || []).join("\n"));
   }, [resume]);
 
-  const addExp = () => {
-    const newExp = [...experience, { company: "", role: "", location: "", start: "", end: "", description: "" }];
-    setExperience(newExp);
-    syncSettingsToResume(newExp, education, projects, skills, certifications);
-  };
-  const addEdu = () => {
-    const newEdu = [...education, { school: "", degree: "", location: "", start: "", end: "", details: "" }];
-    setEducation(newEdu);
-    syncSettingsToResume(experience, newEdu, projects, skills, certifications);
-  };
-  const addProj = () => {
-    const newProj = [...projects, { name: "", tech: "", description: "" }];
-    setProjects(newProj);
-    syncSettingsToResume(experience, education, newProj, skills, certifications);
-  };
-
-  const syncSettingsToResume = (
-    exp = experience, 
-    edu = education, 
-    proj = projects, 
-    sk = skills, 
-    cert = certifications
-  ) => {
+  const syncSettingsToResume = () => {
     if (!resume) return;
     setResume(prev => {
       if (!prev) return null;
       return {
         ...prev,
-        settings: {
-          fontSize: globalFontSize,
-          fontFamily: globalFontFamily
-        }
+        settings: { fontSize: globalFontSize, fontFamily: globalFontFamily }
       };
     });
   };
 
-  useEffect(() => {
-    syncSettingsToResume();
-  }, [globalFontSize, globalFontFamily]);
+  useEffect(() => { syncSettingsToResume(); }, [globalFontSize, globalFontFamily]);
+
+  const addExp = () => setExperience([...experience, { company: "", role: "", location: "", start: "", end: "", description: "" }]);
+  const addEdu = () => setEducation([...education, { school: "", degree: "", location: "", start: "", end: "", details: "" }]);
+  const addProj = () => setProjects([...projects, { name: "", tech: "", description: "" }]);
 
   const generate = async () => {
     if (!basics.name.trim()) return toast.error("Add your name at minimum");
     if (mode === "verbatim") {
-      const data = buildResumeDataVerbatim({ 
-        ...basics, 
-        summary, 
-        experience, 
-        education, 
-        projects, 
-        skills, 
-        certifications,
-        settings: {
-          fontSize: globalFontSize,
-          fontFamily: globalFontFamily
-        }
-      });
-      setResume(data);
+      setResume(buildResumeDataVerbatim({ 
+        ...basics, summary, experience, education, projects, skills, certifications,
+        settings: { fontSize: globalFontSize, fontFamily: globalFontFamily }
+      }));
       setShowEditHint(true);
       return;
     }
@@ -216,10 +179,7 @@ export default function ResumeBuilder() {
       const profile = {
         ...basics,
         links: links.filter(l => l.url.trim()).map(l => ({ label: l.label.trim() || "Link", url: l.url.trim() })),
-        summary,
-        experience,
-        education,
-        projects,
+        summary, experience, education, projects,
         skills: skills.split("\n").map(s => s.trim()).filter(Boolean),
         certifications: certifications.split("\n").map(s => s.trim()).filter(Boolean),
       };
@@ -228,14 +188,7 @@ export default function ResumeBuilder() {
         toast.error((data as any)?.error || error?.message || "Failed");
         return;
       }
-      setResume({ 
-        ...EMPTY_RESUME, 
-        ...(data as any).resume,
-        settings: {
-          fontSize: globalFontSize,
-          fontFamily: globalFontFamily
-        }
-      });
+      setResume({ ...EMPTY_RESUME, ...(data as any).resume, settings: { fontSize: globalFontSize, fontFamily: globalFontFamily } });
       setShowEditHint(true);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
@@ -247,23 +200,10 @@ export default function ResumeBuilder() {
   const isResumeSync = () => {
     if (!resume) return false;
     const currentData = buildResumeDataVerbatim({ 
-      ...basics, 
-      summary, 
-      experience, 
-      education, 
-      projects, 
-      skills, 
-      certifications,
-      settings: {
-        fontSize: globalFontSize,
-        fontFamily: globalFontFamily
-      }
+      ...basics, summary, experience, education, projects, skills, certifications,
+      settings: { fontSize: globalFontSize, fontFamily: globalFontFamily }
     });
-    // Strip settings from comparison to only check if content changed
-    const compare = (d: any) => {
-      const { settings, ...rest } = d;
-      return JSON.stringify(rest);
-    };
+    const compare = (d: any) => { const { settings, ...rest } = d; return JSON.stringify(rest); };
     return compare(currentData) === compare(resume);
   };
 
@@ -271,10 +211,7 @@ export default function ResumeBuilder() {
     if (!resume) return;
     if (!isResumeSync()) {
       toast.error("Form data has changed. Please click 'Generate' again to update the preview before downloading.", {
-        action: {
-          label: "Sync Now",
-          onClick: () => generate()
-        }
+        action: { label: "Sync Now", onClick: () => generate() }
       });
       return;
     }
@@ -319,24 +256,18 @@ export default function ResumeBuilder() {
           <div className="mb-6 rounded-2xl border-2 border-border bg-gradient-card p-6 shadow-card animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="text-center mb-8">
               <h2 className="font-display text-2xl font-bold">How would you like to start?</h2>
-              <p className="text-muted-foreground mt-2 max-w-lg mx-auto">
-                Choose to build a fresh resume from scratch or import your existing one for an instant AI-powered upgrade.
-              </p>
+              <p className="text-muted-foreground mt-2 max-w-lg mx-auto">Choose to build a fresh resume from scratch or import your existing one.</p>
             </div>
             <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
               <button onClick={() => setStarter("wizard")} className="group relative text-left rounded-2xl border-2 border-border bg-background p-6 transition-all duration-300 hover:border-primary/60 hover:-translate-y-1 hover:shadow-glow">
-                <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4 transition-transform group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground">
-                  <FilePlus2 className="h-6 w-6" />
-                </div>
+                <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4 transition-transform group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground"><FilePlus2 className="h-6 w-6" /></div>
                 <h3 className="font-display text-lg font-bold">Build from scratch</h3>
-                <p className="text-sm text-muted-foreground mt-2">Follow our 4-step wizard to find the perfect template and layout.</p>
+                <p className="text-sm text-muted-foreground mt-2">Follow our 4-step wizard to find the perfect template.</p>
               </button>
               <button onClick={() => fileRef.current?.click()} className="group relative text-left rounded-2xl border-2 border-border bg-background p-6 transition-all duration-300 hover:border-primary/60 hover:-translate-y-1 hover:shadow-glow">
-                <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4 transition-transform group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground">
-                  <Upload className="h-6 w-6" />
-                </div>
+                <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4 transition-transform group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground"><Upload className="h-6 w-6" /></div>
                 <h3 className="font-display text-lg font-bold">Upload my resume</h3>
-                <p className="text-sm text-muted-foreground mt-2">Import your existing PDF/DOCX and let AI fill everything for you.</p>
+                <p className="text-sm text-muted-foreground mt-2">Import your existing PDF/DOCX and let AI fill everything.</p>
               </button>
             </div>
             <input ref={fileRef} type="file" accept=".pdf,.docx,.txt" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) onUpload(f); }} />
@@ -347,64 +278,32 @@ export default function ResumeBuilder() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-card border-2 border-border rounded-xl p-4 mb-6 shadow-sm gap-4">
               <div className="flex items-center gap-3">
-                <Button variant="ghost" size="sm" onClick={() => setStarter("choose")} className="text-muted-foreground hover:text-foreground">
-                  <ArrowLeft className="h-4 w-4 mr-2" /> Back
-                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setStarter("choose")} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4 mr-2" /> Back</Button>
                 <div className="h-4 w-px bg-border hidden sm:block" />
-                <span className="text-sm font-medium text-muted-foreground">{starter === "uploaded" ? "Imported from file" : "Building from scratch"}</span>
+                <span className="text-sm font-medium text-muted-foreground">{starter === "uploaded" ? "Imported" : "Scratch"}</span>
               </div>
-
-              <div className="flex flex-wrap items-center gap-4 border-t sm:border-t-0 pt-4 sm:pt-0">
+              <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-2 px-3 py-1 bg-background rounded-lg border border-border">
                   <SpellCheck className={`h-4 w-4 ${spellCheckEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
                   <span className="text-xs font-medium mr-1">Spell Check</span>
-                  <input 
-                    type="checkbox" 
-                    checked={spellCheckEnabled} 
-                    onChange={e => setSpellCheckEnabled(e.target.checked)}
-                    className="h-4 w-4 accent-primary"
-                  />
+                  <input type="checkbox" checked={spellCheckEnabled} onChange={e => setSpellCheckEnabled(e.target.checked)} className="h-4 w-4 accent-primary" />
                 </div>
-
                 <div className="flex items-center gap-2 px-3 py-1 bg-background rounded-lg border border-border">
-                  <Type className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-xs font-medium">Global Font</span>
-                  <div className="flex items-center gap-1 ml-1">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-6 w-6" 
-                      onClick={() => setGlobalFontSize(Math.max(8, globalFontSize - 1))}
-                    >
-                      <span className="text-[10px]">-</span>
-                    </Button>
-                    <span className="text-xs w-4 text-center font-bold">{globalFontSize}</span>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-6 w-6" 
-                      onClick={() => setGlobalFontSize(Math.min(16, globalFontSize + 1))}
-                    >
-                      <span className="text-[10px]">+</span>
-                    </Button>
+                  <Type className="h-4 w-4 text-muted-foreground" /><span className="text-xs font-medium">Size</span>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setGlobalFontSize(Math.max(8, globalFontSize - 1))}>-</Button>
+                    <span className="text-xs font-bold">{globalFontSize}</span>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setGlobalFontSize(Math.min(16, globalFontSize + 1))}>+</Button>
                   </div>
                 </div>
-
-                <select 
-                  className="bg-background border border-border rounded-lg px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-primary"
-                  value={globalFontFamily}
-                  onChange={e => setGlobalFontFamily(e.target.value)}
-                >
-                  {fontFamilies.map(f => (
-                    <option key={f.value} value={f.value}>{f.label}</option>
-                  ))}
+                <select className="bg-background border border-border rounded-lg px-2 py-1 text-xs outline-none" value={globalFontFamily} onChange={e => setGlobalFontFamily(e.target.value)}>
+                  {fontFamilies.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                 </select>
               </div>
             </div>
 
-            <div className="flex flex-col lg:flex-col gap-10">
-              {/* Resume Preview on Top */}
-              <div className="lg:sticky lg:top-[64px] z-30 space-y-6 h-fit animate-in fade-in slide-in-from-top-4 duration-500" ref={previewRef}>
+            <div className="flex flex-col gap-10">
+              <div className="lg:sticky lg:top-[64px] z-30 space-y-6 h-fit" ref={previewRef}>
                 <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="font-display text-xl font-bold">Resume Preview</h2>
@@ -413,310 +312,78 @@ export default function ResumeBuilder() {
                       <Button variant="outline" size="sm" onClick={downloadDocx} disabled={!resume}><Download className="h-4 w-4 mr-1" /> DOCX</Button>
                     </div>
                   </div>
-                  <div className="mb-6">
-                    <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-10 gap-3 mb-6 p-1 overflow-x-auto pb-2">
+                  <div className="mb-6 overflow-x-auto pb-2">
+                    <div className="flex gap-3 mb-6 p-1">
                       {TEMPLATES.map(t => (
-                        <button
-                          key={t.id}
-                          onClick={() => setTemplate(t.id)}
-                          className={`group relative aspect-[3/4] min-w-[80px] rounded-lg border-2 transition-all overflow-hidden ${
-                            template === t.id ? "border-primary ring-2 ring-primary/20 shadow-glow" : "border-border hover:border-primary/40"
-                          }`}
-                        >
-                          <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground">
-                            <FileText className="h-8 w-8 opacity-20" />
-                          </div>
-
-                          <div className={`absolute inset-x-0 bottom-0 py-1.5 px-2 bg-background/90 backdrop-blur-sm border-t border-border transition-colors ${
-                            template === t.id ? "bg-primary text-primary-foreground" : ""
-                          }`}>
-                            <div className="text-[10px] font-bold truncate">{t.name}</div>
-                          </div>
-                          {template === t.id && (
-                            <div className="absolute top-1 right-1 bg-primary text-primary-foreground rounded-full p-0.5 shadow-sm">
-                              <CheckCircle2 className="h-3 w-3" />
-                            </div>
-                          )}
+                        <button key={t.id} onClick={() => setTemplate(t.id)} className={`group relative aspect-[3/4] min-w-[80px] rounded-lg border-2 transition-all ${template === t.id ? "border-primary shadow-glow" : "border-border hover:border-primary/40"}`}>
+                          <div className="w-full h-full bg-muted flex items-center justify-center"><FileText className="h-8 w-8 opacity-20" /></div>
+                          <div className={`absolute inset-x-0 bottom-0 py-1 px-2 text-[10px] font-bold truncate ${template === t.id ? "bg-primary text-primary-foreground" : "bg-background/90"}`}>{t.name}</div>
                         </button>
                       ))}
                     </div>
-                    <PreferenceFilterBar 
-                      prefs={prefs} 
-                      onChange={setPrefs} 
-                      onOpenWizard={() => setStarter("wizard")} 
-                    />
+                    <PreferenceFilterBar prefs={prefs} onChange={setPrefs} onOpenWizard={() => setStarter("wizard")} />
                   </div>
-
                   {resume ? (
-                    <div className="max-h-[60vh] overflow-y-auto rounded-xl border border-border shadow-inner bg-muted/20">
-                      <div className="text-[11px] text-muted-foreground p-3 border-b border-border bg-card/80 sticky top-0 z-10 backdrop-blur-sm"><FileEdit className="inline h-3 w-3 mr-1" /> Tip: click text in preview to edit.</div>
-                      <div className="p-4 sm:p-8">
-                        <ResumePreview template={template} data={resume} onChange={setResume} />
-                      </div>
+                    <div className="max-h-[60vh] overflow-y-auto rounded-xl border border-border bg-muted/20 p-4 sm:p-8">
+                      <ResumePreview template={template} data={resume} onChange={setResume} />
                     </div>
                   ) : (
-                    <div className="rounded-2xl border-2 border-dashed border-border bg-background/50 p-12 text-center">
-                      <FileText className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-                      <div className="font-display font-semibold">Your resume appears here</div>
-                      <div className="text-xs text-muted-foreground mt-1">Fill the form below and click Generate.</div>
-                      <Button variant="ghost" size="sm" className="mt-4" onClick={() => {
-                        const target = document.getElementById('builder-form');
-                        target?.scrollIntoView({ behavior: 'smooth' });
-                      }}>
-                        <ArrowDown className="h-4 w-4 mr-2" /> Start Filling Form
+                    <div className="rounded-2xl border-2 border-dashed border-border p-12 text-center text-muted-foreground">Preview appears here after generation.</div>
+                  )}
+                </div>
+              </div>
+
+              <div id="builder-form" className="grid lg:grid-cols-2 gap-8">
+                <div className="space-y-8">
+                  <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
+                    <div className="flex items-center gap-2 mb-6 border-b pb-4"><CheckCircle2 className="h-5 w-5 text-primary" /><h2 className="font-display text-xl font-bold">1. Basics</h2></div>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <Input value={basics.name} onChange={e => setBasics({ ...basics, name: e.target.value })} placeholder="Full Name" />
+                      <Input value={basics.title} onChange={e => setBasics({ ...basics, title: e.target.value })} placeholder="Title" />
+                      <Input value={basics.email} onChange={e => setBasics({ ...basics, email: e.target.value })} placeholder="Email" />
+                      <Input value={basics.phone} onChange={e => setBasics({ ...basics, phone: e.target.value })} placeholder="Phone" />
+                    </div>
+                  </div>
+                  <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
+                    <div className="flex items-center gap-2 mb-6 border-b pb-4"><Sparkles className="h-5 w-5 text-primary" /><h2 className="font-display text-xl font-bold">2. Summary</h2></div>
+                    <Textarea value={summary} onChange={e => setSummary(e.target.value)} placeholder="Summary..." className="min-h-[120px]" spellCheck={spellCheckEnabled} />
+                  </div>
+                  <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
+                    <div className="flex items-center justify-between mb-6 border-b pb-4"><h2 className="font-display text-xl font-bold">3. Experience</h2><Button variant="outline" size="sm" onClick={addExp}><Plus className="h-4 w-4 mr-1" /> Add</Button></div>
+                    <div className="space-y-6">
+                      {experience.map((exp, i) => (
+                        <div key={i} className="p-4 rounded-xl border relative group">
+                          <Input value={exp.company} onChange={e => { const n = [...experience]; n[i].company = e.target.value; setExperience(n); }} placeholder="Company" className="mb-2" />
+                          <Input value={exp.role} onChange={e => { const n = [...experience]; n[i].role = e.target.value; setExperience(n); }} placeholder="Role" className="mb-2" />
+                          <Textarea value={exp.description} onChange={e => { const n = [...experience]; n[i].description = e.target.value; setExperience(n); }} placeholder="Bullets..." spellCheck={spellCheckEnabled} />
+                          <Button variant="ghost" size="icon" className="absolute -top-2 -right-2 text-destructive" onClick={() => setExperience(experience.filter((_, j) => i !== j))}><Trash2 className="h-4 w-4" /></Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
+                    <div className="flex items-center gap-2 mb-6 border-b pb-4"><Link2 className="h-5 w-5 text-primary" /><h2 className="font-display text-xl font-bold">4. Generate</h2></div>
+                    <div className="space-y-4">
+                      <Textarea value={skills} onChange={e => setSkills(e.target.value)} placeholder="Skills (one per line)" />
+                      <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
+                        <Label className="text-primary mb-2 block">Target Job (AI Polish)</Label>
+                        <Textarea value={targetJd} onChange={e => setTargetJd(e.target.value)} placeholder="Job Description..." className="bg-background" />
+                      </div>
+                      <Button onClick={generate} disabled={loading} className="w-full h-12 text-lg font-bold bg-gradient-primary shadow-glow">
+                        {loading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Sparkles className="h-5 w-5 mr-2" />}
+                        Generate
                       </Button>
                     </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Builder Options Below */}
-              <div id="builder-form" className="grid lg:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
-                <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
-                  <div className="flex items-center gap-2 mb-6 border-b border-border pb-4">
-                    <CheckCircle2 className="h-5 w-5 text-primary" />
-                    <h2 className="font-display text-xl font-bold">1. Basics & Links</h2>
                   </div>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Full Name</Label>
-                      <Input value={basics.name} onChange={e => setBasics({ ...basics, name: e.target.value })} placeholder="John Doe" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Job Title</Label>
-                      <Input value={basics.title} onChange={e => setBasics({ ...basics, title: e.target.value })} placeholder="Senior Developer" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Email</Label>
-                      <Input value={basics.email} onChange={e => setBasics({ ...basics, email: e.target.value })} placeholder="john@example.com" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Phone</Label>
-                      <Input value={basics.phone} onChange={e => setBasics({ ...basics, phone: e.target.value })} placeholder="+1 555..." />
-                    </div>
-                    <div className="sm:col-span-2 space-y-2">
-                      <Label>Location</Label>
-                      <Input value={basics.location} onChange={e => setBasics({ ...basics, location: e.target.value })} placeholder="City, State" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
-                  <div className="flex items-center gap-2 mb-6 border-b border-border pb-4">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                    <h2 className="font-display text-xl font-bold">2. Professional Summary</h2>
-                  </div>
-                  <Textarea 
-                    value={summary} 
-                    onChange={e => setSummary(e.target.value)} 
-                    placeholder="Write a few sentences about your top achievements..." 
-                    className="min-h-[120px]" 
-                    spellCheck={spellCheckEnabled}
-                  />
-                </div>
-
-                <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
-                  <div className="flex items-center justify-between mb-6 border-b border-border pb-4">
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-5 w-5 text-primary" />
-                      <h2 className="font-display text-xl font-bold">3. Experience</h2>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={addExp}><Plus className="h-4 w-4 mr-1" /> Add</Button>
-                  </div>
-                  <div className="space-y-6">
-                    {experience.map((exp, i) => (
-                      <div key={i} className="p-4 rounded-xl border border-border bg-background/50 relative group">
-                        <div className="grid sm:grid-cols-2 gap-4 mb-4">
-                          <div className="space-y-2">
-                            <Label className="text-xs">Company</Label>
-                            <Input 
-                              value={exp.company} 
-                              onChange={e => {
-                                const newExp = [...experience];
-                                newExp[i].company = e.target.value;
-                                setExperience(newExp);
-                              }} 
-                              placeholder="Acme Corp"
-                              spellCheck={spellCheckEnabled}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label className="text-xs">Role</Label>
-                            <Input 
-                              value={exp.role} 
-                              onChange={e => {
-                                const newExp = [...experience];
-                                newExp[i].role = e.target.value;
-                                setExperience(newExp);
-                              }} 
-                              placeholder="Software Engineer"
-                              spellCheck={spellCheckEnabled}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label className="text-xs">Location</Label>
-                            <Input 
-                              value={exp.location} 
-                              onChange={e => {
-                                const newExp = [...experience];
-                                newExp[i].location = e.target.value;
-                                setExperience(newExp);
-                              }} 
-                              placeholder="San Francisco, CA"
-                              spellCheck={spellCheckEnabled}
-                            />
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="space-y-2">
-                              <Label className="text-xs">Start</Label>
-                              <Input 
-                                value={exp.start} 
-                                onChange={e => {
-                                  const newExp = [...experience];
-                                  newExp[i].start = e.target.value;
-                                  setExperience(newExp);
-                                }} 
-                                placeholder="Jan 2020"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label className="text-xs">End</Label>
-                              <Input 
-                                value={exp.end} 
-                                onChange={e => {
-                                  const newExp = [...experience];
-                                  newExp[i].end = e.target.value;
-                                  setExperience(newExp);
-                                }} 
-                                placeholder="Present"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-xs">Description / Bullets</Label>
-                          <Textarea 
-                            value={exp.description} 
-                            onChange={e => {
-                              const newExp = [...experience];
-                              newExp[i].description = e.target.value;
-                              setExperience(newExp);
-                            }} 
-                            placeholder="• Led a team of 5...
-• Reduced latency by 40%..."
-                            className="min-h-[100px] text-sm"
-                            spellCheck={spellCheckEnabled}
-                          />
-                        </div>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-background border border-border shadow-sm text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => setExperience(experience.filter((_, j) => i !== j))}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
-                  <div className="flex items-center gap-2 mb-6 border-b border-border pb-4">
-                    <Link2 className="h-5 w-5 text-primary" />
-                    <h2 className="font-display text-xl font-bold">4. Finish & Generate</h2>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Skills (one per line)</Label>
-                      <Textarea value={skills} onChange={e => setSkills(e.target.value)} placeholder="React&#10;TypeScript&#10;Tailwind" />
-                    </div>
-                    <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
-                      <Label className="flex items-center gap-2 text-primary"><Wand className="h-4 w-4" /> Optimization Goal (Optional)</Label>
-                      <Textarea value={targetJd} onChange={e => setTargetJd(e.target.value)} placeholder="Paste the Job Description here. AI will polish your bullets to highlight matching skills." className="mt-2 bg-background" />
-                    </div>
-                    <Button onClick={generate} disabled={loading} className="w-full h-12 text-lg font-bold bg-gradient-primary shadow-glow hover:opacity-90">
-                      {loading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Sparkles className="h-5 w-5 mr-2" />}
-                      {mode === "ai" ? "Generate with AI Polish" : "Generate Verbatim"}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="lg:sticky lg:top-24 space-y-6 h-fit animate-in fade-in slide-in-from-right-4 duration-500" ref={previewRef}>
-                <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="font-display text-xl font-bold">Resume Preview</h2>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={downloadPdf} disabled={!resume}><Download className="h-4 w-4 mr-1" /> PDF</Button>
-                      <Button variant="outline" size="sm" onClick={downloadDocx} disabled={!resume}><Download className="h-4 w-4 mr-1" /> DOCX</Button>
-                    </div>
-                  </div>
-                  <div className="mb-6">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 mb-6 p-1 overflow-y-auto max-h-[160px]">
-                      {TEMPLATES.map(t => (
-                        <button
-                          key={t.id}
-                          onClick={() => setTemplate(t.id)}
-                          className={`group relative aspect-[3/4] rounded-lg border-2 transition-all overflow-hidden ${
-                            template === t.id ? "border-primary ring-2 ring-primary/20 shadow-glow" : "border-border hover:border-primary/40"
-                          }`}
-                        >
-                          <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground">
-                            <FileText className="h-8 w-8 opacity-20" />
-                          </div>
-
-                          <div className={`absolute inset-x-0 bottom-0 py-1.5 px-2 bg-background/90 backdrop-blur-sm border-t border-border transition-colors ${
-                            template === t.id ? "bg-primary text-primary-foreground" : ""
-                          }`}>
-                            <div className="text-[10px] font-bold truncate">{t.name}</div>
-                          </div>
-                          {template === t.id && (
-                            <div className="absolute top-1 right-1 bg-primary text-primary-foreground rounded-full p-0.5 shadow-sm">
-                              <CheckCircle2 className="h-3 w-3" />
-                            </div>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                    <PreferenceFilterBar 
-                      prefs={prefs} 
-                      onChange={setPrefs} 
-                      onOpenWizard={() => setStarter("wizard")} 
-                    />
-                  </div>
-
-
-                  {resume ? (
-                    <>
-                      <div className="text-[11px] text-muted-foreground px-1 mb-2"><FileEdit className="inline h-3 w-3 mr-1" /> Tip: click text in preview to edit.</div>
-                      <ResumePreview template={template} data={resume} onChange={setResume} />
-                    </>
-                  ) : (
-                    <div className="rounded-2xl border-2 border-dashed border-border bg-background/50 p-12 text-center">
-                      <FileText className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-                      <div className="font-display font-semibold">Your resume appears here</div>
-                      <div className="text-xs text-muted-foreground mt-1">Fill the form and click Generate.</div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
           </div>
         )}
       </div>
-
       <Dialog open={showEditHint} onOpenChange={setShowEditHint}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 font-display">
-              <Sparkles className="h-5 w-5 text-primary" /> Your resume is ready!
-            </DialogTitle>
-            <DialogDescription className="pt-1">
-              Click any text in the preview to edit. Changes flow into your exports.
-            </DialogDescription>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Your resume is ready!</DialogTitle><DialogDescription>Click any text in the preview to edit.</DialogDescription></DialogHeader>
           <DialogFooter><Button onClick={() => setShowEditHint(false)}>Got it</Button></DialogFooter>
         </DialogContent>
       </Dialog>
