@@ -178,8 +178,34 @@ export default function ResumeBuilder() {
     }
   };
 
-  const downloadPdf = () => resume && downloadResumePdfFromData(resume, template);
-  const downloadDocx = () => resume && downloadResumeDocxFromData(resume, template);
+  const downloadPdf = () => {
+    if (!resume) return;
+    const currentData = buildResumeDataVerbatim({ ...basics, summary, experience, education, projects, skills, certifications });
+    const isSync = JSON.stringify(currentData) === JSON.stringify(resume);
+    
+    if (!isSync) {
+      toast.error("Form data has changed. Please click 'Generate' again to sync with preview before downloading.", {
+        action: {
+          label: "Sync Now",
+          onClick: () => generate()
+        }
+      });
+      return;
+    }
+    downloadResumePdfFromData(resume, template);
+  };
+  
+  const downloadDocx = () => {
+    if (!resume) return;
+    const currentData = buildResumeDataVerbatim({ ...basics, summary, experience, education, projects, skills, certifications });
+    const isSync = JSON.stringify(currentData) === JSON.stringify(resume);
+    
+    if (!isSync) {
+      toast.error("Form data has changed. Please click 'Generate' again to sync with preview before downloading.");
+      return;
+    }
+    downloadResumeDocxFromData(resume, template);
+  };
 
   return (
     <div className="min-h-screen bg-background">
