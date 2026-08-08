@@ -19,6 +19,10 @@ export interface ResumeData {
   projects: { name: string; tech: string; bullets: string[] }[];
   skills: { category: string; items: string[] }[];
   certifications: string[];
+  settings?: {
+    fontSize?: number;
+    fontFamily?: string;
+  };
 }
 
 export type TemplateId =
@@ -155,7 +159,14 @@ function makeSkillUpdater(update: UpdateFn, r: ResumeData, i: number) {
 function ModernPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
   const on = (patch: Partial<ResumeData>) => update?.(patch);
   return (
-    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg overflow-hidden font-sans text-[11px] leading-snug" style={{ minHeight: "var(--page-h, auto)" }}>
+    <div 
+      className="bg-white text-neutral-900 shadow-elegant rounded-lg overflow-hidden font-sans text-[11px] leading-snug" 
+      style={{ 
+        minHeight: "var(--page-h, auto)",
+        fontSize: r.settings?.fontSize ? `${r.settings.fontSize}px` : undefined,
+        fontFamily: r.settings?.fontFamily
+      }}
+    >
       <div className="grid grid-cols-[35%_65%] h-full">
         <div className="bg-emerald-800 text-white p-5">
           <Editable as="div" value={r.name || "Your Name"} onChange={update && (v => on({ name: v }))} className="font-bold text-lg leading-tight" />
@@ -272,7 +283,14 @@ function ModernPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
 function ClassicPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
   const on = (patch: Partial<ResumeData>) => update?.(patch);
   return (
-    <div className="bg-white text-neutral-900 shadow-elegant rounded-lg p-8 font-serif text-[11px] leading-snug" style={{ minHeight: "var(--page-h, auto)" }}>
+    <div 
+      className="bg-white text-neutral-900 shadow-elegant rounded-lg p-8 font-serif text-[11px] leading-snug" 
+      style={{ 
+        minHeight: "var(--page-h, auto)",
+        fontSize: r.settings?.fontSize ? `${r.settings.fontSize}px` : undefined,
+        fontFamily: r.settings?.fontFamily
+      }}
+    >
       <div className="text-center border-b-2 border-neutral-900 pb-2 mb-3">
         <Editable as="div" value={r.name || "Your Name"} onChange={update && (v => on({ name: v }))} className="font-bold text-2xl tracking-tight" />
         <Editable as="div" value={r.title} onChange={update && (v => on({ title: v }))} className="text-[11px] mt-0.5" />
@@ -1561,6 +1579,10 @@ export interface RawProfileInput {
   projects: { name: string; tech: string; description: string }[];
   skills: string;         // raw textarea
   certifications: string; // raw textarea
+  settings?: {
+    fontSize?: number;
+    fontFamily?: string;
+  };
 }
 
 export function buildResumeDataVerbatim(input: RawProfileInput): ResumeData {
@@ -1626,5 +1648,6 @@ export function buildResumeDataVerbatim(input: RawProfileInput): ResumeData {
     })),
     skills: parseSkills(input.skills),
     certifications: input.certifications ? input.certifications.split(/\r?\n/).map(s => s.trim()).filter(Boolean) : [],
+    settings: input.settings,
   };
 }

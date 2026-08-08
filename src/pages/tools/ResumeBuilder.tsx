@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown, Link2, Wand, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown, Link2, Wand, CheckCircle2, ArrowLeft, Type, TypeIcon, SpellCheck } from "lucide-react";
 import { extractTextFromFile } from "@/lib/extractText";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,6 +62,16 @@ export default function ResumeBuilder() {
   const [showIntro, setShowIntro] = useState(true);
   const [prefs, setPrefs] = useState<ResumePrefs>(DEFAULT_PREFS);
   const [prefsSet, setPrefsSet] = useState(false);
+  const [globalFontSize, setGlobalFontSize] = useState(11);
+  const [globalFontFamily, setGlobalFontFamily] = useState("Inter");
+  const [spellCheckEnabled, setSpellCheckEnabled] = useState(true);
+
+  const fontFamilies = [
+    { label: "Modern Sans", value: "Inter, sans-serif" },
+    { label: "Classic Serif", value: "'Libre Baskerville', serif" },
+    { label: "Clean Mono", value: "'JetBrains Mono', monospace" },
+    { label: "Professional", value: "system-ui, sans-serif" },
+  ];
 
   const onUpload = async (file: File) => {
     if (!user) return requireAuth("upload and parse your resume");
@@ -147,7 +157,19 @@ export default function ResumeBuilder() {
   const generate = async () => {
     if (!basics.name.trim()) return toast.error("Add your name at minimum");
     if (mode === "verbatim") {
-      const data = buildResumeDataVerbatim({ ...basics, summary, experience, education, projects, skills, certifications });
+      const data = buildResumeDataVerbatim({ 
+        ...basics, 
+        summary, 
+        experience, 
+        education, 
+        projects, 
+        skills, 
+        certifications,
+        settings: {
+          fontSize: globalFontSize,
+          fontFamily: globalFontFamily
+        }
+      });
       setResume(data);
       setShowEditHint(true);
       return;
@@ -263,13 +285,60 @@ export default function ResumeBuilder() {
 
         {(starter === "scratch" || starter === "uploaded") && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between bg-card border-2 border-border rounded-xl p-4 mb-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-card border-2 border-border rounded-xl p-4 mb-6 shadow-sm gap-4">
               <div className="flex items-center gap-3">
                 <Button variant="ghost" size="sm" onClick={() => setStarter("choose")} className="text-muted-foreground hover:text-foreground">
                   <ArrowLeft className="h-4 w-4 mr-2" /> Back
                 </Button>
                 <div className="h-4 w-px bg-border hidden sm:block" />
                 <span className="text-sm font-medium text-muted-foreground">{starter === "uploaded" ? "Imported from file" : "Building from scratch"}</span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4 border-t sm:border-t-0 pt-4 sm:pt-0">
+                <div className="flex items-center gap-2 px-3 py-1 bg-background rounded-lg border border-border">
+                  <SpellCheck className={`h-4 w-4 ${spellCheckEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <span className="text-xs font-medium mr-1">Spell Check</span>
+                  <input 
+                    type="checkbox" 
+                    checked={spellCheckEnabled} 
+                    onChange={e => setSpellCheckEnabled(e.target.checked)}
+                    className="h-4 w-4 accent-primary"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 px-3 py-1 bg-background rounded-lg border border-border">
+                  <Type className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs font-medium">Global Font</span>
+                  <div className="flex items-center gap-1 ml-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6" 
+                      onClick={() => setGlobalFontSize(Math.max(8, globalFontSize - 1))}
+                    >
+                      <span className="text-[10px]">-</span>
+                    </Button>
+                    <span className="text-xs w-4 text-center font-bold">{globalFontSize}</span>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6" 
+                      onClick={() => setGlobalFontSize(Math.min(16, globalFontSize + 1))}
+                    >
+                      <span className="text-[10px]">+</span>
+                    </Button>
+                  </div>
+                </div>
+
+                <select 
+                  className="bg-background border border-border rounded-lg px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-primary"
+                  value={globalFontFamily}
+                  onChange={e => setGlobalFontFamily(e.target.value)}
+                >
+                  {fontFamilies.map(f => (
+                    <option key={f.value} value={f.value}>{f.label}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -309,7 +378,13 @@ export default function ResumeBuilder() {
                     <Sparkles className="h-5 w-5 text-primary" />
                     <h2 className="font-display text-xl font-bold">2. Professional Summary</h2>
                   </div>
-                  <Textarea value={summary} onChange={e => setSummary(e.target.value)} placeholder="Write a few sentences about your top achievements..." className="min-h-[120px]" />
+                  <Textarea 
+                    value={summary} 
+                    onChange={e => setSummary(e.target.value)} 
+                    placeholder="Write a few sentences about your top achievements..." 
+                    className="min-h-[120px]" 
+                    spellCheck={spellCheckEnabled}
+                  />
                 </div>
 
                 <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
@@ -323,14 +398,96 @@ export default function ResumeBuilder() {
                   <div className="space-y-6">
                     {experience.map((exp, i) => (
                       <div key={i} className="p-4 rounded-xl border border-border bg-background/50 relative group">
-                        <button onClick={() => setExperience(experience.filter((_, idx) => idx !== i))} className="absolute top-4 right-4 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 className="h-4 w-4" /></button>
-                        <div className="grid sm:grid-cols-2 gap-4">
-                          <Input value={exp.company} onChange={e => { const n = [...experience]; n[i].company = e.target.value; setExperience(n); }} placeholder="Company Name" />
-                          <Input value={exp.role} onChange={e => { const n = [...experience]; n[i].role = e.target.value; setExperience(n); }} placeholder="Job Title" />
-                          <Input value={exp.start} onChange={e => { const n = [...experience]; n[i].start = e.target.value; setExperience(n); }} placeholder="Start (e.g. Jan 2022)" />
-                          <Input value={exp.end} onChange={e => { const n = [...experience]; n[i].end = e.target.value; setExperience(n); }} placeholder="End (e.g. Present)" />
-                          <Textarea value={exp.description} onChange={e => { const n = [...experience]; n[i].description = e.target.value; setExperience(n); }} placeholder="What did you do there?" className="sm:col-span-2" />
+                        <div className="grid sm:grid-cols-2 gap-4 mb-4">
+                          <div className="space-y-2">
+                            <Label className="text-xs">Company</Label>
+                            <Input 
+                              value={exp.company} 
+                              onChange={e => {
+                                const newExp = [...experience];
+                                newExp[i].company = e.target.value;
+                                setExperience(newExp);
+                              }} 
+                              placeholder="Acme Corp"
+                              spellCheck={spellCheckEnabled}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">Role</Label>
+                            <Input 
+                              value={exp.role} 
+                              onChange={e => {
+                                const newExp = [...experience];
+                                newExp[i].role = e.target.value;
+                                setExperience(newExp);
+                              }} 
+                              placeholder="Software Engineer"
+                              spellCheck={spellCheckEnabled}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">Location</Label>
+                            <Input 
+                              value={exp.location} 
+                              onChange={e => {
+                                const newExp = [...experience];
+                                newExp[i].location = e.target.value;
+                                setExperience(newExp);
+                              }} 
+                              placeholder="San Francisco, CA"
+                              spellCheck={spellCheckEnabled}
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-2">
+                              <Label className="text-xs">Start</Label>
+                              <Input 
+                                value={exp.start} 
+                                onChange={e => {
+                                  const newExp = [...experience];
+                                  newExp[i].start = e.target.value;
+                                  setExperience(newExp);
+                                }} 
+                                placeholder="Jan 2020"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs">End</Label>
+                              <Input 
+                                value={exp.end} 
+                                onChange={e => {
+                                  const newExp = [...experience];
+                                  newExp[i].end = e.target.value;
+                                  setExperience(newExp);
+                                }} 
+                                placeholder="Present"
+                              />
+                            </div>
+                          </div>
                         </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">Description / Bullets</Label>
+                          <Textarea 
+                            value={exp.description} 
+                            onChange={e => {
+                              const newExp = [...experience];
+                              newExp[i].description = e.target.value;
+                              setExperience(newExp);
+                            }} 
+                            placeholder="• Led a team of 5...
+• Reduced latency by 40%..."
+                            className="min-h-[100px] text-sm"
+                            spellCheck={spellCheckEnabled}
+                          />
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-background border border-border shadow-sm text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => setExperience(experience.filter((_, j) => i !== j))}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     ))}
                   </div>
