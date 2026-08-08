@@ -179,13 +179,16 @@ export default function ResumeBuilder() {
     }
   };
 
+  const isResumeSync = () => {
+    if (!resume) return false;
+    const currentData = buildResumeDataVerbatim({ ...basics, summary, experience, education, projects, skills, certifications });
+    return JSON.stringify(currentData) === JSON.stringify(resume);
+  };
+
   const downloadPdf = () => {
     if (!resume) return;
-    const currentData = buildResumeDataVerbatim({ ...basics, summary, experience, education, projects, skills, certifications });
-    const isSync = JSON.stringify(currentData) === JSON.stringify(resume);
-    
-    if (!isSync) {
-      toast.error("Form data has changed. Please click 'Generate' again to sync with preview before downloading.", {
+    if (!isResumeSync()) {
+      toast.error("Form data has changed. Please click 'Generate' again to update the preview before downloading.", {
         action: {
           label: "Sync Now",
           onClick: () => generate()
@@ -198,11 +201,8 @@ export default function ResumeBuilder() {
   
   const downloadDocx = () => {
     if (!resume) return;
-    const currentData = buildResumeDataVerbatim({ ...basics, summary, experience, education, projects, skills, certifications });
-    const isSync = JSON.stringify(currentData) === JSON.stringify(resume);
-    
-    if (!isSync) {
-      toast.error("Form data has changed. Please click 'Generate' again to sync with preview before downloading.");
+    if (!isResumeSync()) {
+      toast.error("Form data has changed. Please click 'Generate' again to update the preview before downloading.");
       return;
     }
     downloadResumeDocxFromData(resume, template);
