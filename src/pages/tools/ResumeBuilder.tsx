@@ -98,7 +98,7 @@ export default function ResumeBuilder() {
   const [loading, setLoading] = useState(false);
   const [resume, setResume] = useState<ResumeData | null>(null);
   const [mode, setMode] = useState<"ai" | "verbatim">("ai");
-  const [starter, setStarter] = useState<"choose" | "scratch" | "uploaded">("choose");
+  const [starter, setStarter] = useState<"choose" | "scratch" | "uploaded" | "wizard">("choose");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -278,13 +278,13 @@ export default function ResumeBuilder() {
 
   return (
     <div className="min-h-screen bg-background">
-      {showIntro && <BuilderIntroLoader onDone={() => { setShowIntro(false); setShowWizard(true); }} />}
+      {showIntro && <BuilderIntroLoader onDone={() => { setShowIntro(false); setStarter("choose"); }} />}
       <TemplatePreferencesWizard
-        open={showWizard}
-        onOpenChange={setShowWizard}
+        open={starter === "wizard"}
+        onOpenChange={(v) => !v && setStarter("choose")}
         initial={prefs}
         onDone={(p) => {
-          setPrefs(p); setPrefsSet(true);
+          setPrefs(p); setPrefsSet(true); setStarter("scratch");
           // auto-select top recommended template
           const ranked = [...TEMPLATES].sort((a, b) => scoreTemplate(b.id, p) - scoreTemplate(a.id, p));
           if (ranked[0]) setTemplate(ranked[0].id);
@@ -312,7 +312,12 @@ export default function ResumeBuilder() {
         <div className="mb-6 rounded-2xl border-2 border-border bg-gradient-card p-6 shadow-card">
           <div className="text-center mb-5">
             <h2 className="font-display text-xl font-bold">How would you like to start?</h2>
-            <p className="text-sm text-muted-foreground mt-1">Import an existing resume, start fresh, or preview with sample data.</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
+
+              before these steps, ask the user whether he wanna build resume from scratch or he wanna upload the resume
+              if he wanna upload resume , it shd fetch the details in the uploaded resume and auto fill in the appropriate sections
+            </p>
           </div>
           <div className="grid sm:grid-cols-3 gap-3">
             {/* Upload */}
@@ -336,17 +341,17 @@ export default function ResumeBuilder() {
             {/* Scratch */}
             <button
               type="button"
-              onClick={() => setStarter("scratch")}
-              className={`group text-left rounded-xl border-2 p-5 pt-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow ${starter === "scratch" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/60"}`}
+              onClick={() => setStarter("wizard")}
+              className={`group text-left rounded-xl border-2 p-5 pt-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow ${starter === "wizard" || starter === "scratch" ? "border-primary bg-primary/5 shadow-glow" : "border-border bg-background hover:border-primary/60"}`}
             >
-              <div className={`h-10 w-10 rounded-lg flex items-center justify-center mb-3 transition-all ${starter === "scratch" ? "bg-primary text-primary-foreground shadow-glow" : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110"}`}>
+              <div className={`h-10 w-10 rounded-lg flex items-center justify-center mb-3 transition-all ${starter === "wizard" || starter === "scratch" ? "bg-primary text-primary-foreground shadow-glow" : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110"}`}>
                 <FilePlus2 className="h-5 w-5" />
               </div>
               <div className="font-display font-semibold flex items-center gap-1.5">
-                Start from scratch
-                {starter === "scratch" && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                Build from scratch
+                {(starter === "scratch" || starter === "wizard") && <CheckCircle2 className="h-4 w-4 text-primary" />}
               </div>
-              <div className="text-xs text-muted-foreground mt-1 leading-snug">Fill the form below — we guide you section by section.</div>
+              <div className="text-xs text-muted-foreground mt-1 leading-snug">Choose your style preferences and fill in your details manually.</div>
             </button>
 
             {/* Sample data */}
