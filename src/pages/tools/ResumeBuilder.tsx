@@ -192,7 +192,14 @@ export default function ResumeBuilder() {
         toast.error((data as any)?.error || error?.message || "Failed");
         return;
       }
-      setResume({ ...EMPTY_RESUME, ...(data as any).resume });
+      setResume({ 
+        ...EMPTY_RESUME, 
+        ...(data as any).resume,
+        settings: {
+          fontSize: globalFontSize,
+          fontFamily: globalFontFamily
+        }
+      });
       setShowEditHint(true);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
@@ -203,8 +210,25 @@ export default function ResumeBuilder() {
 
   const isResumeSync = () => {
     if (!resume) return false;
-    const currentData = buildResumeDataVerbatim({ ...basics, summary, experience, education, projects, skills, certifications });
-    return JSON.stringify(currentData) === JSON.stringify(resume);
+    const currentData = buildResumeDataVerbatim({ 
+      ...basics, 
+      summary, 
+      experience, 
+      education, 
+      projects, 
+      skills, 
+      certifications,
+      settings: {
+        fontSize: globalFontSize,
+        fontFamily: globalFontFamily
+      }
+    });
+    // Strip settings from comparison to only check if content changed
+    const compare = (d: any) => {
+      const { settings, ...rest } = d;
+      return JSON.stringify(rest);
+    };
+    return compare(currentData) === compare(resume);
   };
 
   const downloadPdf = () => {

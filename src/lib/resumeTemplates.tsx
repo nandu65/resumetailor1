@@ -164,7 +164,7 @@ function ModernPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
       style={{ 
         minHeight: "var(--page-h, auto)",
         fontSize: r.settings?.fontSize ? `${r.settings.fontSize}px` : undefined,
-        fontFamily: r.settings?.fontFamily
+        fontFamily: r.settings?.fontFamily || undefined
       }}
     >
       <div className="grid grid-cols-[35%_65%] h-full">
@@ -288,7 +288,7 @@ function ClassicPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
       style={{ 
         minHeight: "var(--page-h, auto)",
         fontSize: r.settings?.fontSize ? `${r.settings.fontSize}px` : undefined,
-        fontFamily: r.settings?.fontFamily
+        fontFamily: r.settings?.fontFamily || undefined
       }}
     >
       <div className="text-center border-b-2 border-neutral-900 pb-2 mb-3">
