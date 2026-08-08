@@ -150,9 +150,45 @@ export default function ResumeBuilder() {
     setCertifications((resume.certifications || []).join("\n"));
   }, [resume]);
 
-  const addExp = () => setExperience([...experience, { company: "", role: "", location: "", start: "", end: "", description: "" }]);
-  const addEdu = () => setEducation([...education, { school: "", degree: "", location: "", start: "", end: "", details: "" }]);
-  const addProj = () => setProjects([...projects, { name: "", tech: "", description: "" }]);
+  const addExp = () => {
+    const newExp = [...experience, { company: "", role: "", location: "", start: "", end: "", description: "" }];
+    setExperience(newExp);
+    syncSettingsToResume(newExp, education, projects, skills, certifications);
+  };
+  const addEdu = () => {
+    const newEdu = [...education, { school: "", degree: "", location: "", start: "", end: "", details: "" }];
+    setEducation(newEdu);
+    syncSettingsToResume(experience, newEdu, projects, skills, certifications);
+  };
+  const addProj = () => {
+    const newProj = [...projects, { name: "", tech: "", description: "" }];
+    setProjects(newProj);
+    syncSettingsToResume(experience, education, newProj, skills, certifications);
+  };
+
+  const syncSettingsToResume = (
+    exp = experience, 
+    edu = education, 
+    proj = projects, 
+    sk = skills, 
+    cert = certifications
+  ) => {
+    if (!resume) return;
+    setResume(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        settings: {
+          fontSize: globalFontSize,
+          fontFamily: globalFontFamily
+        }
+      };
+    });
+  };
+
+  useEffect(() => {
+    syncSettingsToResume();
+  }, [globalFontSize, globalFontFamily]);
 
   const generate = async () => {
     if (!basics.name.trim()) return toast.error("Add your name at minimum");
