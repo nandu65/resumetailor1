@@ -1579,6 +1579,10 @@ export interface RawProfileInput {
   projects: { name: string; tech: string; description: string }[];
   skills: string;         // raw textarea
   certifications: string; // raw textarea
+  settings?: {
+    fontSize?: number;
+    fontFamily?: string;
+  };
 }
 
 export function buildResumeDataVerbatim(input: RawProfileInput): ResumeData {
@@ -1644,5 +1648,6 @@ export function buildResumeDataVerbatim(input: RawProfileInput): ResumeData {
     })),
     skills: parseSkills(input.skills),
     certifications: input.certifications ? input.certifications.split(/\r?\n/).map(s => s.trim()).filter(Boolean) : [],
+    settings: input.settings,
   };
 }
