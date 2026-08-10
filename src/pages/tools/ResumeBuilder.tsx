@@ -308,7 +308,17 @@ export default function ResumeBuilder() {
                 <Button variant="ghost" size="sm" onClick={() => setStarter("choose")} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4 mr-2" /> Back</Button>
                 <div className="h-4 w-px bg-border hidden sm:block" />
                 <span className="text-sm font-medium text-muted-foreground">{starter === "uploaded" ? "Imported" : "Scratch"}</span>
+                <div className="h-4 w-px bg-border hidden sm:block" />
+                <div className="flex items-center gap-1">
+                  <Button variant="outline" size="sm" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)">
+                    <Undo2 className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Undo</span>
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={redo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)">
+                    <Redo2 className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Redo</span>
+                  </Button>
+                </div>
               </div>
+
               <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-2 px-3 py-1 bg-background rounded-lg border border-border">
                   <SpellCheck className={`h-4 w-4 ${spellCheckEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
