@@ -1476,29 +1476,39 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
   const ensure = (h = 14) => { if (y + h > pageH - margin) { doc.addPage(); y = margin; } };
   const H1 = (t: string) => { doc.setFont(font, "bold"); doc.setFontSize(22); doc.setTextColor(...accent); doc.text(t, margin, y); y += 20; };
   const meta = (t: string) => { doc.setFont(font, "normal"); doc.setFontSize(9); doc.setTextColor(100); doc.text(t, margin, y); y += 14; };
+  const secStyles = data.settings?.sections;
+  let curSec: ResumeSectionKey | null = null;
+  const secOf = (t: string): ResumeSectionKey | null =>
+    (SECTION_MATCHERS.find(m => m.re.test(t.trim()))?.key ?? null);
+  const secSize = () => (curSec ? secStyles?.[curSec]?.fontSize : undefined) ?? (data.settings?.fontSize || 10);
+  const secBold = () => (curSec ? secStyles?.[curSec]?.bold : undefined);
   const H2 = (t: string) => {
+    curSec = secOf(t);
     ensure(24); y += 6;
-    doc.setFont(font, "bold"); doc.setFontSize(11); doc.setTextColor(...accent);
+    doc.setFont(font, "bold"); doc.setFontSize(secStyles?.headings?.fontSize ?? 11); doc.setTextColor(...accent);
     doc.text(t.toUpperCase(), margin, y); y += 4;
     doc.setDrawColor(...accent); doc.setLineWidth(0.8);
     doc.line(margin, y, pageW - margin, y); y += 12;
     doc.setTextColor(30, 30, 30);
   };
   const line = (t: string, opts: { bold?: boolean; size?: number; italic?: boolean } = {}) => {
-    doc.setFont(font, opts.bold ? "bold" : opts.italic ? "italic" : "normal");
-    doc.setFontSize(opts.size ?? (data.settings?.fontSize || 10));
+    const bold = opts.bold || secBold() === true;
+    doc.setFont(font, bold ? "bold" : opts.italic ? "italic" : "normal");
+    doc.setFontSize(opts.size ?? secSize());
     const lines = doc.splitTextToSize(t, pageW - margin * 2);
     lines.forEach((l: string) => { ensure(13); doc.text(l, margin, y); y += 13; });
   };
   const bullet = (t: string) => {
-    doc.setFont(font, "normal"); doc.setFontSize(data.settings?.fontSize || 10);
-    const lines = doc.splitTextToSize(t, pageW - margin * 2 - (data.settings?.fontSize || 10) * 1.4);
+    const size = secSize();
+    doc.setFont(font, secBold() === true ? "bold" : "normal"); doc.setFontSize(size);
+    const lines = doc.splitTextToSize(t, pageW - margin * 2 - size * 1.4);
     lines.forEach((l: string, i: number) => {
       ensure(13);
       if (i === 0) doc.text("•", margin + 4, y);
-      doc.text(l, margin + (data.settings?.fontSize || 10) * 1.4, y); y += 13;
+      doc.text(l, margin + size * 1.4, y); y += 13;
     });
   };
+
 
   H1(data.name || "Your Name");
   if (data.title) meta(data.title);
