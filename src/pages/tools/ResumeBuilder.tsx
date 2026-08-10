@@ -152,12 +152,33 @@ export default function ResumeBuilder() {
       if (!prev) return null;
       return {
         ...prev,
-        settings: { fontSize: globalFontSize, fontFamily: globalFontFamily }
+        settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
       };
     });
   };
 
-  useEffect(() => { syncSettingsToResume(); }, [globalFontSize, globalFontFamily]);
+  useEffect(() => { syncSettingsToResume(); }, [globalFontSize, globalFontFamily, sectionStyles]);
+
+  /* ---- Undo / Redo over the whole editing state ---- */
+  const snapshot = useMemo(() => ({
+    basics, links, summary, experience, education, projects, skills, certifications,
+    template, resume, globalFontSize, globalFontFamily, sectionStyles,
+  }), [basics, links, summary, experience, education, projects, skills, certifications,
+       template, resume, globalFontSize, globalFontFamily, sectionStyles]);
+
+  const applySnapshot = useCallback((s: typeof snapshot) => {
+    restoring.current = true;
+    setBasics(s.basics); setLinks(s.links); setSummary(s.summary);
+    setExperience(s.experience); setEducation(s.education); setProjects(s.projects);
+    setSkills(s.skills); setCertifications(s.certifications);
+    setTemplate(s.template); setResume(s.resume);
+    setGlobalFontSize(s.globalFontSize); setGlobalFontFamily(s.globalFontFamily);
+    setSectionStyles(s.sectionStyles);
+    setTimeout(() => { restoring.current = false; }, 0);
+  }, []);
+
+  const { undo, redo, canUndo, canRedo } = useUndoRedo(snapshot, applySnapshot, { delay: 450 });
+
 
   const addExp = () => setExperience([...experience, { company: "", role: "", location: "", start: "", end: "", description: "" }]);
   const addEdu = () => setEducation([...education, { school: "", degree: "", location: "", start: "", end: "", details: "" }]);
