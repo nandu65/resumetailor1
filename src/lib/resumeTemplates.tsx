@@ -1363,10 +1363,69 @@ function LogoBoxedPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
   );
 }
 
+/* ---------- Per-section styling (works across every template) ---------- */
+const SECTION_MATCHERS: { key: ResumeSectionKey; re: RegExp }[] = [
+  { key: "summary", re: /^(summary|profile|about|professional summary)$/i },
+  { key: "experience", re: /^(experience|work experience|professional experience|employment)$/i },
+  { key: "education", re: /^(education|academics)$/i },
+  { key: "skills", re: /^(skills|key skills.*|core skills|technical skills)$/i },
+  { key: "projects", re: /^(projects|selected projects)$/i },
+];
+
+function tagSections(root: HTMLElement | null) {
+  if (!root) return;
+  root.querySelectorAll("[data-rs-sec],[data-rs-head]").forEach(el => {
+    el.removeAttribute("data-rs-sec");
+    el.removeAttribute("data-rs-head");
+  });
+  const els = Array.from(root.querySelectorAll<HTMLElement>("*"));
+  for (const el of els) {
+    const txt = (el.textContent || "").trim();
+    if (!txt || txt.length > 40 || el.children.length > 0) continue;
+    const match = SECTION_MATCHERS.find(m => m.re.test(txt));
+    if (!match) continue;
+    el.setAttribute("data-rs-head", "1");
+    const container = el.closest("section");
+    if (container && container !== root) {
+      container.setAttribute("data-rs-sec", match.key);
+    } else {
+      let n = el.parentElement?.nextElementSibling ?? el.nextElementSibling;
+      let guard = 0;
+      while (n && guard++ < 12) {
+        if (n.querySelector("[data-rs-head]") || n.hasAttribute("data-rs-head")) break;
+        n.setAttribute("data-rs-sec", match.key);
+        n = n.nextElementSibling;
+      }
+    }
+  }
+}
+
+function sectionCss(scope: string, sections?: Partial<Record<ResumeSectionKey, SectionStyle>>) {
+  if (!sections) return "";
+  const rule = (sel: string, s?: SectionStyle) => {
+    if (!s) return "";
+    const decls = [
+      s.fontSize ? `font-size:${s.fontSize}px !important` : "",
+      s.fontFamily ? `font-family:${s.fontFamily} !important` : "",
+      s.bold === true ? "font-weight:700 !important" : s.bold === false ? "font-weight:400 !important" : "",
+      s.italic ? "font-style:italic !important" : "",
+      s.letterSpacing != null ? `letter-spacing:${s.letterSpacing}px !important` : "",
+    ].filter(Boolean).join(";");
+    return decls ? `${sel},${sel} * {${decls}}` : "";
+  };
+  const body = (["summary", "experience", "education", "skills", "projects"] as ResumeSectionKey[])
+    .map(k => rule(`${scope} [data-rs-sec="${k}"]`, sections[k]))
+    .join("\n");
+  // headings last so they win over section body rules
+  return `${body}\n${rule(`${scope} [data-rs-head]`, sections.headings)}`;
+}
+
 export function ResumePreview({
   template, data, onChange,
 }: { template: TemplateId; data: ResumeData; onChange?: (data: ResumeData) => void }) {
   const update: UpdateFn = onChange ? (patch) => onChange({ ...data, ...patch }) : undefined;
+  const rootRef = useRef<HTMLDivElement>(null);
+  const scopeId = React.useId().replace(/[:]/g, "");
   const inner =
     template === "modern" ? <ModernPreview r={data} update={update} /> :
     template === "compact" ? <CompactPreview r={data} update={update} /> :
@@ -1383,8 +1442,17 @@ export function ResumePreview({
     template === "photo-grid" ? <PhotoGridPreview r={data} update={update} /> :
     template === "logo-boxed" ? <LogoBoxedPreview r={data} update={update} /> :
     <ClassicPreview r={data} update={update} />;
-  return <PagedSheet>{inner}</PagedSheet>;
+
+  useEffect(() => { tagSections(rootRef.current); });
+
+  return (
+    <div ref={rootRef} data-rs-root={scopeId}>
+      <style dangerouslySetInnerHTML={{ __html: sectionCss(`[data-rs-root="${scopeId}"]`, data.settings?.sections) }} />
+      <PagedSheet>{inner}</PagedSheet>
+    </div>
+  );
 }
+
 
 
 /* ---------- PDF export ---------- */
