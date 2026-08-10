@@ -64,6 +64,9 @@ export default function ResumeBuilder() {
   const [globalFontSize, setGlobalFontSize] = useState(11);
   const [globalFontFamily, setGlobalFontFamily] = useState("Inter");
   const [spellCheckEnabled, setSpellCheckEnabled] = useState(true);
+  const [sectionStyles, setSectionStyles] = useState<SectionStyles>({});
+  const restoring = useRef(false);
+
 
   const fontFamilies = [
     { label: "Modern Sans", value: "Inter, sans-serif" },
