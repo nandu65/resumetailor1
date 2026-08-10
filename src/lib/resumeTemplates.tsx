@@ -1679,10 +1679,8 @@ export interface RawProfileInput {
   projects: { name: string; tech: string; description: string }[];
   skills: string;         // raw textarea
   certifications: string; // raw textarea
-  settings?: {
-    fontSize?: number;
-    fontFamily?: string;
-  };
+  settings?: ResumeData["settings"];
+
 }
 
 export function buildResumeDataVerbatim(input: RawProfileInput): ResumeData {
