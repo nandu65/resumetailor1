@@ -1,5 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown, Link2, Wand, CheckCircle2, ArrowLeft, Type, TypeIcon, SpellCheck } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown, Link2, Wand, CheckCircle2, ArrowLeft, Type, TypeIcon, SpellCheck, Undo2, Redo2 } from "lucide-react";
+import { useUndoRedo } from "@/hooks/useUndoRedo";
+import { SectionStyleControls, SectionStyles } from "@/components/SectionStyleControls";
+
 import { extractTextFromFile } from "@/lib/extractText";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,6 +64,9 @@ export default function ResumeBuilder() {
   const [globalFontSize, setGlobalFontSize] = useState(11);
   const [globalFontFamily, setGlobalFontFamily] = useState("Inter");
   const [spellCheckEnabled, setSpellCheckEnabled] = useState(true);
+  const [sectionStyles, setSectionStyles] = useState<SectionStyles>({});
+  const restoring = useRef(false);
+
 
   const fontFamilies = [
     { label: "Modern Sans", value: "Inter, sans-serif" },
@@ -113,7 +119,7 @@ export default function ResumeBuilder() {
   };
 
   useEffect(() => {
-    if (!resume) return;
+    if (!resume || restoring.current) return;
     setBasics(b => ({
       ...b,
       name: resume.name || b.name,
@@ -152,12 +158,33 @@ export default function ResumeBuilder() {
       if (!prev) return null;
       return {
         ...prev,
-        settings: { fontSize: globalFontSize, fontFamily: globalFontFamily }
+        settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
       };
     });
   };
 
-  useEffect(() => { syncSettingsToResume(); }, [globalFontSize, globalFontFamily]);
+  useEffect(() => { syncSettingsToResume(); }, [globalFontSize, globalFontFamily, sectionStyles]);
+
+  /* ---- Undo / Redo over the whole editing state ---- */
+  const snapshot = useMemo(() => ({
+    basics, links, summary, experience, education, projects, skills, certifications,
+    template, resume, globalFontSize, globalFontFamily, sectionStyles,
+  }), [basics, links, summary, experience, education, projects, skills, certifications,
+       template, resume, globalFontSize, globalFontFamily, sectionStyles]);
+
+  const applySnapshot = useCallback((s: typeof snapshot) => {
+    restoring.current = true;
+    setBasics(s.basics); setLinks(s.links); setSummary(s.summary);
+    setExperience(s.experience); setEducation(s.education); setProjects(s.projects);
+    setSkills(s.skills); setCertifications(s.certifications);
+    setTemplate(s.template); setResume(s.resume);
+    setGlobalFontSize(s.globalFontSize); setGlobalFontFamily(s.globalFontFamily);
+    setSectionStyles(s.sectionStyles);
+    setTimeout(() => { restoring.current = false; }, 0);
+  }, []);
+
+  const { undo, redo, canUndo, canRedo } = useUndoRedo(snapshot, applySnapshot, { delay: 450 });
+
 
   const addExp = () => setExperience([...experience, { company: "", role: "", location: "", start: "", end: "", description: "" }]);
   const addEdu = () => setEducation([...education, { school: "", degree: "", location: "", start: "", end: "", details: "" }]);
@@ -168,7 +195,7 @@ export default function ResumeBuilder() {
     if (mode === "verbatim") {
       setResume(buildResumeDataVerbatim({ 
         ...basics, summary, experience, education, projects, skills, certifications,
-        settings: { fontSize: globalFontSize, fontFamily: globalFontFamily }
+        settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
       }));
       setShowEditHint(true);
       return;
@@ -188,7 +215,7 @@ export default function ResumeBuilder() {
         toast.error((data as any)?.error || error?.message || "Failed");
         return;
       }
-      setResume({ ...EMPTY_RESUME, ...(data as any).resume, settings: { fontSize: globalFontSize, fontFamily: globalFontFamily } });
+      setResume({ ...EMPTY_RESUME, ...(data as any).resume, settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles } });
       setShowEditHint(true);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
@@ -201,7 +228,7 @@ export default function ResumeBuilder() {
     if (!resume) return false;
     const currentData = buildResumeDataVerbatim({ 
       ...basics, summary, experience, education, projects, skills, certifications,
-      settings: { fontSize: globalFontSize, fontFamily: globalFontFamily }
+      settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
     });
     const compare = (d: any) => { const { settings, ...rest } = d; return JSON.stringify(rest); };
     return compare(currentData) === compare(resume);
@@ -281,7 +308,17 @@ export default function ResumeBuilder() {
                 <Button variant="ghost" size="sm" onClick={() => setStarter("choose")} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4 mr-2" /> Back</Button>
                 <div className="h-4 w-px bg-border hidden sm:block" />
                 <span className="text-sm font-medium text-muted-foreground">{starter === "uploaded" ? "Imported" : "Scratch"}</span>
+                <div className="h-4 w-px bg-border hidden sm:block" />
+                <div className="flex items-center gap-1">
+                  <Button variant="outline" size="sm" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)">
+                    <Undo2 className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Undo</span>
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={redo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)">
+                    <Redo2 className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Redo</span>
+                  </Button>
+                </div>
               </div>
+
               <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-2 px-3 py-1 bg-background rounded-lg border border-border">
                   <SpellCheck className={`h-4 w-4 ${spellCheckEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
@@ -376,7 +413,11 @@ export default function ResumeBuilder() {
                     </div>
                   </div>
                 </div>
+                <div className="space-y-8">
+                  <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} />
+                </div>
               </div>
+
             </div>
           </div>
         )}
