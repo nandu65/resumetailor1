@@ -119,7 +119,7 @@ export default function ResumeBuilder() {
   };
 
   useEffect(() => {
-    if (!resume) return;
+    if (!resume || restoring.current) return;
     setBasics(b => ({
       ...b,
       name: resume.name || b.name,
@@ -195,7 +195,7 @@ export default function ResumeBuilder() {
     if (mode === "verbatim") {
       setResume(buildResumeDataVerbatim({ 
         ...basics, summary, experience, education, projects, skills, certifications,
-        settings: { fontSize: globalFontSize, fontFamily: globalFontFamily }
+        settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
       }));
       setShowEditHint(true);
       return;
@@ -215,7 +215,7 @@ export default function ResumeBuilder() {
         toast.error((data as any)?.error || error?.message || "Failed");
         return;
       }
-      setResume({ ...EMPTY_RESUME, ...(data as any).resume, settings: { fontSize: globalFontSize, fontFamily: globalFontFamily } });
+      setResume({ ...EMPTY_RESUME, ...(data as any).resume, settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles } });
       setShowEditHint(true);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
@@ -228,7 +228,7 @@ export default function ResumeBuilder() {
     if (!resume) return false;
     const currentData = buildResumeDataVerbatim({ 
       ...basics, summary, experience, education, projects, skills, certifications,
-      settings: { fontSize: globalFontSize, fontFamily: globalFontFamily }
+      settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
     });
     const compare = (d: any) => { const { settings, ...rest } = d; return JSON.stringify(rest); };
     return compare(currentData) === compare(resume);
