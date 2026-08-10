@@ -22,8 +22,30 @@ export interface ResumeData {
   settings?: {
     fontSize?: number;
     fontFamily?: string;
+    sections?: Partial<Record<ResumeSectionKey, SectionStyle>>;
   };
 }
+
+export type ResumeSectionKey =
+  | "headings" | "summary" | "experience" | "education" | "skills" | "projects";
+
+export interface SectionStyle {
+  fontSize?: number;
+  fontFamily?: string;
+  bold?: boolean;
+  italic?: boolean;
+  letterSpacing?: number;
+}
+
+export const RESUME_SECTIONS: { key: ResumeSectionKey; label: string }[] = [
+  { key: "headings", label: "Section headings" },
+  { key: "summary", label: "Summary" },
+  { key: "experience", label: "Experience" },
+  { key: "education", label: "Education" },
+  { key: "skills", label: "Skills" },
+  { key: "projects", label: "Projects" },
+];
+
 
 export type TemplateId =
   | "modern" | "classic" | "compact" | "executive" | "creative" | "minimal"
