@@ -413,7 +413,11 @@ export default function ResumeBuilder() {
                     </div>
                   </div>
                 </div>
+                <div className="space-y-8">
+                  <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} />
+                </div>
               </div>
+
             </div>
           </div>
         )}
