@@ -339,85 +339,72 @@ export default function ResumeBuilder() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-10">
-              <div className="lg:sticky lg:top-[64px] z-30 space-y-6 h-fit" ref={previewRef}>
-                <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="font-display text-xl font-bold">Resume Preview</h2>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={downloadPdf} disabled={!resume}><Download className="h-4 w-4 mr-1" /> PDF</Button>
-                      <Button variant="outline" size="sm" onClick={downloadDocx} disabled={!resume}><Download className="h-4 w-4 mr-1" /> DOCX</Button>
-                    </div>
+            <div className="grid lg:grid-cols-[450px_1fr] gap-8">
+              {/* LEFT COLUMN: EDITOR */}
+              <div className="space-y-6">
+                {/* TOOLBAR */}
+                <div className="sticky top-[64px] z-20 bg-background/95 backdrop-blur p-2 border-b flex items-center justify-between">
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" onClick={undo} disabled={!canUndo}><Undo2 className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="sm" onClick={redo} disabled={!canRedo}><Redo2 className="h-4 w-4" /></Button>
                   </div>
-                  <div className="mb-6 overflow-x-auto pb-2">
-                    <div className="flex gap-3 mb-6 p-1">
-                      {TEMPLATES.map(t => (
-                        <button key={t.id} onClick={() => setTemplate(t.id)} className={`group relative aspect-[3/4] min-w-[80px] rounded-lg border-2 transition-all ${template === t.id ? "border-primary shadow-glow" : "border-border hover:border-primary/40"}`}>
-                          <div className="w-full h-full bg-muted flex items-center justify-center"><FileText className="h-8 w-8 opacity-20" /></div>
-                          <div className={`absolute inset-x-0 bottom-0 py-1 px-2 text-[10px] font-bold truncate ${template === t.id ? "bg-primary text-primary-foreground" : "bg-background/90"}`}>{t.name}</div>
-                        </button>
-                      ))}
-                    </div>
-                    <PreferenceFilterBar prefs={prefs} onChange={setPrefs} onOpenWizard={() => setStarter("wizard")} />
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={downloadPdf} disabled={!resume}>PDF</Button>
+                    <Button variant="outline" size="sm" onClick={downloadDocx} disabled={!resume}>DOCX</Button>
                   </div>
-                  {resume ? (
-                    <div className="max-h-[60vh] overflow-y-auto rounded-xl border border-border bg-muted/20 p-4 sm:p-8">
-                      <ResumePreview template={template} data={resume} onChange={setResume} />
-                    </div>
-                  ) : (
-                    <div className="rounded-2xl border-2 border-dashed border-border p-12 text-center text-muted-foreground">Preview appears here after generation.</div>
-                  )}
                 </div>
-              </div>
+                
+                {/* NAVIGATION */}
+                <nav className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                  {["Basics", "Summary", "Experience", "Skills", "Design"].map((s) => (
+                    <a key={s} href={`#section-${s.toLowerCase()}`} className="px-3 py-1 bg-muted rounded-full text-xs font-medium hover:bg-primary/20">{s}</a>
+                  ))}
+                </nav>
 
-              <div id="builder-form" className="grid lg:grid-cols-2 gap-8">
-                <div className="space-y-8">
-                  <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
-                    <div className="flex items-center gap-2 mb-6 border-b pb-4"><CheckCircle2 className="h-5 w-5 text-primary" /><h2 className="font-display text-xl font-bold">1. Basics</h2></div>
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <Input value={basics.name} onChange={e => setBasics({ ...basics, name: e.target.value })} placeholder="Full Name" />
-                      <Input value={basics.title} onChange={e => setBasics({ ...basics, title: e.target.value })} placeholder="Title" />
-                      <Input value={basics.email} onChange={e => setBasics({ ...basics, email: e.target.value })} placeholder="Email" />
-                      <Input value={basics.phone} onChange={e => setBasics({ ...basics, phone: e.target.value })} placeholder="Phone" />
-                    </div>
+                <div id="section-basics" className="bg-card border rounded-2xl p-6">
+                  <h3 className="font-bold mb-4">Basics</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input value={basics.name} onChange={e => setBasics({ ...basics, name: e.target.value })} placeholder="Full Name" />
+                    <Input value={basics.title} onChange={e => setBasics({ ...basics, title: e.target.value })} placeholder="Title" />
+                    <Input value={basics.email} onChange={e => setBasics({ ...basics, email: e.target.value })} placeholder="Email" />
+                    <Input value={basics.phone} onChange={e => setBasics({ ...basics, phone: e.target.value })} placeholder="Phone" />
                   </div>
-                  <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
-                    <div className="flex items-center gap-2 mb-6 border-b pb-4"><Sparkles className="h-5 w-5 text-primary" /><h2 className="font-display text-xl font-bold">2. Summary</h2></div>
-                    <Textarea value={summary} onChange={e => setSummary(e.target.value)} placeholder="Summary..." className="min-h-[120px]" spellCheck={spellCheckEnabled} />
-                  </div>
-                  <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
-                    <div className="flex items-center justify-between mb-6 border-b pb-4"><h2 className="font-display text-xl font-bold">3. Experience</h2><Button variant="outline" size="sm" onClick={addExp}><Plus className="h-4 w-4 mr-1" /> Add</Button></div>
-                    <div className="space-y-6">
-                      {experience.map((exp, i) => (
-                        <div key={i} className="p-4 rounded-xl border relative group">
-                          <Input value={exp.company} onChange={e => { const n = [...experience]; n[i].company = e.target.value; setExperience(n); }} placeholder="Company" className="mb-2" />
-                          <Input value={exp.role} onChange={e => { const n = [...experience]; n[i].role = e.target.value; setExperience(n); }} placeholder="Role" className="mb-2" />
-                          <Textarea value={exp.description} onChange={e => { const n = [...experience]; n[i].description = e.target.value; setExperience(n); }} placeholder="Bullets..." spellCheck={spellCheckEnabled} />
-                          <Button variant="ghost" size="icon" className="absolute -top-2 -right-2 text-destructive" onClick={() => setExperience(experience.filter((_, j) => i !== j))}><Trash2 className="h-4 w-4" /></Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-card">
-                    <div className="flex items-center gap-2 mb-6 border-b pb-4"><Link2 className="h-5 w-5 text-primary" /><h2 className="font-display text-xl font-bold">4. Generate</h2></div>
-                    <div className="space-y-4">
-                      <Textarea value={skills} onChange={e => setSkills(e.target.value)} placeholder="Skills (one per line)" />
-                      <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
-                        <Label className="text-primary mb-2 block">Target Job (AI Polish)</Label>
-                        <Textarea value={targetJd} onChange={e => setTargetJd(e.target.value)} placeholder="Job Description..." className="bg-background" />
+                </div>
+
+                <div id="section-summary" className="bg-card border rounded-2xl p-6">
+                   <div className="flex items-center justify-between mb-4">
+                     <h3 className="font-bold">Summary</h3>
+                     <Button variant="outline" size="sm" className="h-8 text-xs">Formatting</Button>
+                   </div>
+                   <Textarea value={summary} onChange={e => setSummary(e.target.value)} className="min-h-[100px]" />
+                </div>
+
+                <div id="section-experience" className="bg-card border rounded-2xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                     <h3 className="font-bold">Experience</h3>
+                     <Button variant="outline" size="sm" onClick={addExp}><Plus className="h-4 w-4" /></Button>
+                   </div>
+                   {experience.map((exp, i) => (
+                      <div key={i} className="p-3 bg-muted/50 rounded-lg mb-3 relative">
+                        <Input value={exp.company} onChange={e => { const n = [...experience]; n[i].company = e.target.value; setExperience(n); }} placeholder="Company" className="mb-1 h-8" />
+                        <Textarea value={exp.description} onChange={e => { const n = [...experience]; n[i].description = e.target.value; setExperience(n); }} className="min-h-[60px]" />
                       </div>
-                      <Button onClick={generate} disabled={loading} className="w-full h-12 text-lg font-bold bg-gradient-primary shadow-glow">
-                        {loading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Sparkles className="h-5 w-5 mr-2" />}
-                        Generate
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-8">
-                  <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} />
+                   ))}
                 </div>
               </div>
 
+              {/* RIGHT COLUMN: STICKY PREVIEW */}
+              <div className="lg:sticky lg:top-[64px] h-[calc(100vh-64px)] overflow-hidden">
+                <div className="h-full flex flex-col bg-muted/30 rounded-2xl border p-4">
+                   <div className="flex-1 overflow-y-auto">
+                     {resume ? (
+                        <ResumePreview template={template} data={resume} onChange={setResume} />
+                      ) : (
+                        <div className="h-full flex items-center justify-center text-muted-foreground">Preview pending...</div>
+                      )}
+                   </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
