@@ -158,18 +158,24 @@ export default function ResumeBuilder() {
     setCertifications((resume.certifications || []).join("\n"));
   }, [resume]);
 
-  const syncSettingsToResume = () => {
-    if (!resume) return;
+  const syncSettingsToResume = useCallback(() => {
     setResume(prev => {
-      if (!prev) return null;
+      if (!prev) {
+        // Build initial resume if none exists to hold settings
+        return buildResumeDataVerbatim({
+          ...basics, linkedin: "", github: "", portfolio: "",
+          summary, experience, education, projects, skills, certifications,
+          settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
+        });
+      }
       return {
         ...prev,
         settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
       };
     });
-  };
+  }, [basics, summary, experience, education, projects, skills, certifications, globalFontSize, globalFontFamily, sectionStyles]);
 
-  useEffect(() => { syncSettingsToResume(); }, [globalFontSize, globalFontFamily, sectionStyles]);
+  useEffect(() => { syncSettingsToResume(); }, [syncSettingsToResume]);
 
   /* ---- Undo / Redo over the whole editing state ---- */
   const snapshot = useMemo(() => ({
