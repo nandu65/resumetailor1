@@ -900,7 +900,6 @@ export default function ResumeBuilder() {
                    </div>
                 </div>
               </div>
-              </div>
 
               {/* RIGHT COLUMN: STICKY PREVIEW */}
               <div className="hidden lg:block lg:sticky lg:top-[158px] h-[calc(100vh-180px)] animate-in fade-in zoom-in-95 duration-500 delay-200">
