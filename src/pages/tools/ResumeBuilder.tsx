@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown, Link2, Wand, CheckCircle2, ArrowLeft, Type, TypeIcon, SpellCheck, Undo2, Redo2, Settings2, Palette, ChevronRight, Share2, Printer, Eye, Target } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown, Link2, Wand, CheckCircle2, ArrowLeft, Type, TypeIcon, SpellCheck, Undo2, Redo2, Settings2, Palette, ChevronRight, Share2, Printer, Eye, Target, Bold, Italic, List, ListOrdered, Link as LinkIcon, Underline } from "lucide-react";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { SectionStyleControls, SectionStyles } from "@/components/SectionStyleControls";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -904,6 +904,78 @@ export default function ResumeBuilder() {
               {/* RIGHT COLUMN: STICKY PREVIEW */}
               <div className="hidden lg:block lg:sticky lg:top-[158px] h-[calc(100vh-180px)] animate-in fade-in zoom-in-95 duration-500 delay-200">
                 <div className="h-full flex flex-col bg-muted/20 rounded-[2.5rem] border-4 border-muted/50 p-2 shadow-card overflow-hidden">
+                   {/* Rich Text Toolbar */}
+                   <div className="flex items-center gap-1 p-2 mb-2 bg-background/80 backdrop-blur-sm rounded-2xl border border-border/50 mx-2 mt-2">
+                     <Button 
+                       variant="ghost" 
+                       size="sm" 
+                       className="h-8 w-8 p-0" 
+                       onClick={() => document.execCommand('bold', false)}
+                       title="Bold"
+                     >
+                       <Bold className="h-4 w-4" />
+                     </Button>
+                     <Button 
+                       variant="ghost" 
+                       size="sm" 
+                       className="h-8 w-8 p-0" 
+                       onClick={() => document.execCommand('italic', false)}
+                       title="Italic"
+                     >
+                       <Italic className="h-4 w-4" />
+                     </Button>
+                     <Button 
+                       variant="ghost" 
+                       size="sm" 
+                       className="h-8 w-8 p-0" 
+                       onClick={() => document.execCommand('underline', false)}
+                       title="Underline"
+                     >
+                       <Underline className="h-4 w-4" />
+                     </Button>
+                     <Separator orientation="vertical" className="h-4 mx-1" />
+                     <Button 
+                       variant="ghost" 
+                       size="sm" 
+                       className="h-8 w-8 p-0" 
+                       onClick={() => document.execCommand('insertUnorderedList', false)}
+                       title="Bullet List"
+                     >
+                       <List className="h-4 w-4" />
+                     </Button>
+                     <Button 
+                       variant="ghost" 
+                       size="sm" 
+                       className="h-8 w-8 p-0" 
+                       onClick={() => document.execCommand('insertOrderedList', false)}
+                       title="Numbered List"
+                     >
+                       <ListOrdered className="h-4 w-4" />
+                     </Button>
+                     <Separator orientation="vertical" className="h-4 mx-1" />
+                     <Button 
+                       variant="ghost" 
+                       size="sm" 
+                       className="h-8 w-8 p-0" 
+                       onClick={() => {
+                         const url = prompt("Enter the URL");
+                         if (url) document.execCommand('createLink', false, url);
+                       }}
+                       title="Insert Link"
+                     >
+                       <LinkIcon className="h-4 w-4" />
+                     </Button>
+                     <Button 
+                       variant="ghost" 
+                       size="sm" 
+                       className="h-8 w-8 p-0 ml-auto" 
+                       onClick={() => document.execCommand('removeFormat', false)}
+                       title="Clear Formatting"
+                     >
+                       <Type className="h-4 w-4" />
+                     </Button>
+                   </div>
+
                    <div className="flex-1 overflow-y-auto rounded-[2rem] bg-background scrollbar-hide">
                      {resume ? (
                         <div className="p-8 origin-top scale-[0.9] transform-gpu transition-transform">
