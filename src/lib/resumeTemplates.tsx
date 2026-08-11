@@ -86,8 +86,13 @@ const Editable = React.memo(function Editable({
 }) {
   const ref = useRef<HTMLElement>(null);
   useEffect(() => {
-    if (ref.current && ref.current.innerText !== value) {
-      ref.current.innerText = value;
+    if (ref.current) {
+      const isHtml = value?.includes("<") && value?.includes(">");
+      if (isHtml) {
+        if (ref.current.innerHTML !== value) ref.current.innerHTML = value;
+      } else {
+        if (ref.current.innerText !== value) ref.current.innerText = value;
+      }
     }
   }, [value]);
   const editable = !!onChange;
@@ -107,7 +112,7 @@ const Editable = React.memo(function Editable({
         editable
           ? (e: any) => {
               const txt = multiline
-                ? (e.currentTarget.innerText as string).replace(/\r/g, "")
+                ? (e.currentTarget.innerHTML as string)
                 : (e.currentTarget.innerText as string).replace(/\s+/g, " ").trim();
               onChange!(txt);
             }
