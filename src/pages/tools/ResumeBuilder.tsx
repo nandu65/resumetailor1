@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown, Link2, Wand, CheckCircle2, ArrowLeft, Type, TypeIcon, SpellCheck, Undo2, Redo2 } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown, Link2, Wand, CheckCircle2, ArrowLeft, Type, TypeIcon, SpellCheck, Undo2, Redo2, Settings2, Palette, ChevronRight, Share2, Printer, Eye } from "lucide-react";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { SectionStyleControls, SectionStyles } from "@/components/SectionStyleControls";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
 
 import { extractTextFromFile } from "@/lib/extractText";
 import { Button } from "@/components/ui/button";
@@ -21,6 +25,7 @@ import {
 import { BuilderIntroLoader } from "@/components/BuilderIntroLoader";
 import { TemplatePreferencesWizard, DEFAULT_PREFS, ResumePrefs } from "@/components/TemplatePreferencesWizard";
 import { PreferenceFilterBar, scoreTemplate } from "@/components/PreferenceFilterBar";
+
 
 type Exp = { company: string; role: string; location: string; start: string; end: string; description: string };
 type Edu = { school: string; degree: string; location: string; start: string; end: string; details: string };
