@@ -309,7 +309,7 @@ export default function ResumeBuilder() {
 
         {(starter === "scratch" || starter === "uploaded") && (
           <div className="space-y-6">
-            <div className="sticky top-[64px] z-30 bg-background/95 backdrop-blur-md border-b flex items-center justify-between p-4 -mx-4 sm:mx-0 sm:rounded-xl shadow-sm gap-4">
+            <div className="sticky top-[64px] z-30 bg-background/95 backdrop-blur-md border-b flex items-center justify-between p-4 -mx-4 sm:mx-0 sm:rounded-xl shadow-lg gap-4 ring-1 ring-border">
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" onClick={() => setStarter("choose")} className="text-muted-foreground"><ArrowLeft className="h-5 w-5" /></Button>
                 <div className="hidden sm:block">
