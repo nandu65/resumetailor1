@@ -308,39 +308,113 @@ export default function ResumeBuilder() {
 
         {(starter === "scratch" || starter === "uploaded") && (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-card border-2 border-border rounded-xl p-4 mb-6 shadow-sm gap-4">
-              <div className="flex items-center gap-3">
-                <Button variant="ghost" size="sm" onClick={() => setStarter("choose")} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4 mr-2" /> Back</Button>
-                <div className="h-4 w-px bg-border hidden sm:block" />
-                <span className="text-sm font-medium text-muted-foreground">{starter === "uploaded" ? "Imported" : "Scratch"}</span>
-                <div className="h-4 w-px bg-border hidden sm:block" />
+            <div className="sticky top-[64px] z-30 bg-background/95 backdrop-blur-md border-b flex items-center justify-between p-4 -mx-4 sm:mx-0 sm:rounded-xl shadow-sm gap-4">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" onClick={() => setStarter("choose")} className="text-muted-foreground"><ArrowLeft className="h-5 w-5" /></Button>
+                <div className="hidden sm:block">
+                  <h2 className="text-sm font-bold leading-none">ResumeShot AI</h2>
+                  <p className="text-[10px] text-muted-foreground">Editor</p>
+                </div>
+                <Separator orientation="vertical" className="h-6 mx-2 hidden sm:block" />
                 <div className="flex items-center gap-1">
-                  <Button variant="outline" size="sm" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)">
-                    <Undo2 className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Undo</span>
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={redo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)">
-                    <Redo2 className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Redo</span>
-                  </Button>
+                  <Button variant="outline" size="icon" onClick={undo} disabled={!canUndo} className="h-8 w-8"><Undo2 className="h-4 w-4" /></Button>
+                  <Button variant="outline" size="icon" onClick={redo} disabled={!canRedo} className="h-8 w-8"><Redo2 className="h-4 w-4" /></Button>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-2 px-3 py-1 bg-background rounded-lg border border-border">
-                  <SpellCheck className={`h-4 w-4 ${spellCheckEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
-                  <span className="text-xs font-medium mr-1">Spell Check</span>
-                  <input type="checkbox" checked={spellCheckEnabled} onChange={e => setSpellCheckEnabled(e.target.checked)} className="h-4 w-4 accent-primary" />
+              <div className="flex items-center gap-2">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-9 rounded-full gap-2 border-primary/20 hover:bg-primary/5">
+                      <Palette className="h-4 w-4 text-primary" />
+                      <span className="hidden sm:inline">Design & Layout</span>
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+                    <SheetHeader><SheetTitle>Design & Layout</SheetTitle></SheetHeader>
+                    <div className="py-6 space-y-8 overflow-y-auto max-h-[calc(100vh-100px)] px-1">
+                      <div>
+                        <Label className="text-base font-bold mb-4 block">Templates</Label>
+                        <div className="grid grid-cols-2 gap-4">
+                          {TEMPLATES.map(t => (
+                            <button key={t.id} onClick={() => setTemplate(t.id)} className={`group relative aspect-[3/4] rounded-xl border-2 transition-all p-1 ${template === t.id ? "border-primary shadow-glow" : "border-border hover:border-primary/40"}`}>
+                              <div className="w-full h-full bg-muted rounded-lg flex flex-col items-center justify-center p-2 text-center">
+                                <FileText className={`h-12 w-12 mb-2 ${template === t.id ? "text-primary" : "opacity-20"}`} />
+                                <span className="text-[10px] font-bold block">{t.name}</span>
+                              </div>
+                              {template === t.id && <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-0.5"><CheckCircle2 className="h-3 w-3" /></div>}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <Separator />
+                      <PreferenceFilterBar prefs={prefs} onChange={setPrefs} onOpenWizard={() => setStarter("wizard")} />
+                      <Separator />
+                      <div className="space-y-4">
+                        <Label className="text-base font-bold block">Global Typography</Label>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-xs">Font Family</Label>
+                            <select className="w-full bg-background border border-border rounded-lg px-2 py-2 text-sm outline-none" value={globalFontFamily} onChange={e => setGlobalFontFamily(e.target.value)}>
+                              {fontFamilies.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                            </select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">Base Size ({globalFontSize}px)</Label>
+                            <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setGlobalFontSize(Math.max(8, globalFontSize - 1))}>-</Button>
+                              <span className="flex-1 text-center font-bold">{globalFontSize}</span>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setGlobalFontSize(Math.min(16, globalFontSize + 1))}>+</Button>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border">
+                           <div className="flex items-center gap-2">
+                              <SpellCheck className={`h-4 w-4 ${spellCheckEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
+                              <Label className="text-sm">Spell Check</Label>
+                           </div>
+                           <input type="checkbox" checked={spellCheckEnabled} onChange={e => setSpellCheckEnabled(e.target.checked)} className="h-4 w-4 accent-primary" />
+                        </div>
+                      </div>
+                      <Separator />
+                      <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} />
+                    </div>
+                  </SheetContent>
+                </Sheet>
+                
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button className="h-9 rounded-full bg-gradient-primary shadow-glow gap-2">
+                      <Download className="h-4 w-4" />
+                      <span className="hidden sm:inline">Export</span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-48 p-2" align="end">
+                    <Button variant="ghost" className="w-full justify-start gap-2" onClick={downloadPdf} disabled={!resume}><FileText className="h-4 w-4" /> PDF Document</Button>
+                    <Button variant="ghost" className="w-full justify-start gap-2" onClick={downloadDocx} disabled={!resume}><FileEdit className="h-4 w-4" /> Word (DOCX)</Button>
+                  </PopoverContent>
+                </Popover>
+
+                <div className="lg:hidden">
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant="outline" size="icon" className="h-9 w-9 rounded-full"><Eye className="h-4 w-4" /></Button>
+                        </SheetTrigger>
+                        <SheetContent side="bottom" className="h-[90vh] p-0">
+                            <div className="p-4 border-b flex items-center justify-between">
+                                <h3 className="font-bold">Preview</h3>
+                                <Button variant="ghost" size="sm" onClick={() => window.print()}><Printer className="h-4 w-4" /></Button>
+                            </div>
+                            <ScrollArea className="h-full p-6">
+                                {resume ? (
+                                    <ResumePreview template={template} data={resume} onChange={setResume} />
+                                ) : (
+                                    <div className="text-center py-20 text-muted-foreground italic">Preview pending...</div>
+                                )}
+                            </ScrollArea>
+                        </SheetContent>
+                    </Sheet>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1 bg-background rounded-lg border border-border">
-                  <Type className="h-4 w-4 text-muted-foreground" /><span className="text-xs font-medium">Size</span>
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setGlobalFontSize(Math.max(8, globalFontSize - 1))}>-</Button>
-                    <span className="text-xs font-bold">{globalFontSize}</span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setGlobalFontSize(Math.min(16, globalFontSize + 1))}>+</Button>
-                  </div>
-                </div>
-                <select className="bg-background border border-border rounded-lg px-2 py-1 text-xs outline-none" value={globalFontFamily} onChange={e => setGlobalFontFamily(e.target.value)}>
-                  {fontFamilies.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-                </select>
               </div>
             </div>
 
