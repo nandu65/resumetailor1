@@ -1660,11 +1660,19 @@ export async function downloadResumeDocxFromData(data: ResumeData, template: Tem
       children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 22, color: accent, font })],
     });
 
-  const bullet = (text: string) =>
-    new Paragraph({
+  const bullet = (text: string) => {
+    const parts = parseDocxRichText(text);
+    return new Paragraph({
       numbering: { reference: "bullets", level: 0 },
-      children: [new TextRun({ text, size: 22, font })],
+      children: parts.map(p => new TextRun({
+        text: p.text,
+        bold: p.bold,
+        italics: p.italic,
+        size: 22,
+        font,
+      })),
     });
+  };
 
   const children: Paragraph[] = [];
 
