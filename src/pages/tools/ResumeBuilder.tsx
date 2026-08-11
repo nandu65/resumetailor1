@@ -595,12 +595,130 @@ export default function ResumeBuilder() {
                    </div>
                 </div>
 
+                {/* EDUCATION */}
+                <div id="section-education" className="bg-card border-2 border-border rounded-2xl p-6 shadow-card transition-all hover:border-primary/20">
+                  <div className="flex items-center justify-between mb-6 border-b pb-4">
+                     <div className="flex items-center gap-2">
+                        <ArrowDown className="h-5 w-5 text-primary" />
+                        <h3 className="font-display text-lg font-bold">4. Education</h3>
+                     </div>
+                     <div className="flex gap-2">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/5 text-primary" title="Typography">
+                                <Settings2 className="h-4 w-4" />
+                            </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-80" align="end">
+                                <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="education" hideHeader />
+                            </PopoverContent>
+                        </Popover>
+                        <Button variant="outline" size="sm" onClick={addEdu} className="h-8 rounded-full gap-1 border-primary/20 hover:bg-primary/5 text-primary">
+                            <Plus className="h-3 w-3" />
+                            <span className="text-[10px] font-bold">ADD SCHOOL</span>
+                        </Button>
+                     </div>
+                   </div>
+                   <div className="space-y-6">
+                      {education.map((edu, i) => (
+                        <div key={i} className="group p-5 rounded-2xl border bg-muted/20 relative animate-in fade-in slide-in-from-left-2 duration-300">
+                           <Button variant="ghost" size="icon" className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-background border shadow-sm text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setEducation(education.filter((_, j) => i !== j))}>
+                             <Trash2 className="h-3 w-3" />
+                           </Button>
+                           <div className="grid sm:grid-cols-2 gap-4 mb-4">
+                              <div className="space-y-1">
+                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">School</Label>
+                                <Input value={edu.school} onChange={e => { const n = [...education]; n[i].school = e.target.value; setEducation(n); }} placeholder="University Name" className="h-9 rounded-lg border-border/60 bg-background" />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Degree</Label>
+                                <Input value={edu.degree} onChange={e => { const n = [...education]; n[i].degree = e.target.value; setEducation(n); }} placeholder="B.S. in Computer Science" className="h-9 rounded-lg border-border/60 bg-background" />
+                              </div>
+                           </div>
+                           <div className="grid sm:grid-cols-3 gap-4 mb-4">
+                              <div className="space-y-1">
+                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Location</Label>
+                                <Input value={edu.location} onChange={e => { const n = [...education]; n[i].location = e.target.value; setEducation(n); }} placeholder="City, State" className="h-9 rounded-lg border-border/60 bg-background" />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Start Date</Label>
+                                <Input value={edu.start} onChange={e => { const n = [...education]; n[i].start = e.target.value; setEducation(n); }} placeholder="2018" className="h-9 rounded-lg border-border/60 bg-background" />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">End Date</Label>
+                                <Input value={edu.end} onChange={e => { const n = [...education]; n[i].end = e.target.value; setEducation(n); }} placeholder="2022" className="h-9 rounded-lg border-border/60 bg-background" />
+                              </div>
+                           </div>
+                           <div className="space-y-1">
+                               <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Details / Honors</Label>
+                               <Input value={edu.details} onChange={e => { const n = [...education]; n[i].details = e.target.value; setEducation(n); }} placeholder="GPA: 3.9, Dean's List..." className="h-9 rounded-lg border-border/60 bg-background" />
+                           </div>
+                        </div>
+                      ))}
+                      {education.length === 0 && (
+                        <div className="text-center py-10 border-2 border-dashed rounded-2xl text-muted-foreground italic">No education added.</div>
+                      )}
+                   </div>
+                </div>
+
+                {/* PROJECTS */}
+                <div id="section-projects" className="bg-card border-2 border-border rounded-2xl p-6 shadow-card transition-all hover:border-primary/20">
+                  <div className="flex items-center justify-between mb-6 border-b pb-4">
+                     <div className="flex items-center gap-2">
+                        <Link2 className="h-5 w-5 text-primary" />
+                        <h3 className="font-display text-lg font-bold">5. Projects</h3>
+                     </div>
+                     <div className="flex gap-2">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/5 text-primary" title="Typography">
+                                <Settings2 className="h-4 w-4" />
+                            </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-80" align="end">
+                                <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="projects" hideHeader />
+                            </PopoverContent>
+                        </Popover>
+                        <Button variant="outline" size="sm" onClick={addProj} className="h-8 rounded-full gap-1 border-primary/20 hover:bg-primary/5 text-primary">
+                            <Plus className="h-3 w-3" />
+                            <span className="text-[10px] font-bold">ADD PROJECT</span>
+                        </Button>
+                     </div>
+                   </div>
+                   <div className="space-y-6">
+                      {projects.map((proj, i) => (
+                        <div key={i} className="group p-5 rounded-2xl border bg-muted/20 relative animate-in fade-in slide-in-from-left-2 duration-300">
+                           <Button variant="ghost" size="icon" className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-background border shadow-sm text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setProjects(projects.filter((_, j) => i !== j))}>
+                             <Trash2 className="h-3 w-3" />
+                           </Button>
+                           <div className="grid sm:grid-cols-2 gap-4 mb-4">
+                              <div className="space-y-1">
+                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Project Name</Label>
+                                <Input value={proj.name} onChange={e => { const n = [...projects]; n[i].name = e.target.value; setProjects(n); }} placeholder="Project Alpha" className="h-9 rounded-lg border-border/60 bg-background" />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Technologies</Label>
+                                <Input value={proj.tech} onChange={e => { const n = [...projects]; n[i].tech = e.target.value; setProjects(n); }} placeholder="React, Node.js, AWS" className="h-9 rounded-lg border-border/60 bg-background" />
+                              </div>
+                           </div>
+                           <div className="space-y-1">
+                               <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Project Description</Label>
+                               <Textarea value={proj.description} onChange={e => { const n = [...projects]; n[i].description = e.target.value; setProjects(n); }} placeholder="Describe the impact and technical challenges..." className="min-h-[80px] rounded-lg border-border/60 bg-background resize-none" />
+                           </div>
+                        </div>
+                      ))}
+                      {projects.length === 0 && (
+                        <div className="text-center py-10 border-2 border-dashed rounded-2xl text-muted-foreground italic">No projects added.</div>
+                      )}
+                   </div>
+                </div>
+
                 {/* SKILLS & GENERATE */}
                 <div id="section-skills" className="bg-card border-2 border-border rounded-2xl p-6 shadow-card transition-all hover:border-primary/20">
                   <div className="flex items-center justify-between mb-6 border-b pb-4">
                      <div className="flex items-center gap-2">
                         <Wand className="h-5 w-5 text-primary" />
-                        <h3 className="font-display text-lg font-bold">4. Skills & Optimization</h3>
+                        <h3 className="font-display text-lg font-bold">6. Skills & Optimization</h3>
                      </div>
                      <div className="flex gap-2">
                         <Popover>
@@ -620,6 +738,7 @@ export default function ResumeBuilder() {
                      </div>
                    </div>
                    <div className="space-y-6">
+
                       <div className="space-y-2">
                         <Label className="text-xs font-bold text-muted-foreground ml-1">Core Skills</Label>
                         <Textarea 
