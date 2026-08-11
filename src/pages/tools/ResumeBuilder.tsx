@@ -392,7 +392,15 @@ export default function ResumeBuilder() {
                 <div id="section-experience" className="bg-card border rounded-2xl p-6">
                   <div className="flex items-center justify-between mb-4">
                      <h3 className="font-bold">Experience</h3>
-                     <Button variant="outline" size="sm" onClick={addExp}><Plus className="h-4 w-4" /></Button>
+                     <div className="flex gap-2">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                            <Button variant="outline" size="sm" className="h-8 text-xs">Formatting</Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-80"><SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="experience" hideHeader /></PopoverContent>
+                        </Popover>
+                        <Button variant="outline" size="sm" onClick={addExp} className="h-8"><Plus className="h-4 w-4" /></Button>
+                     </div>
                    </div>
                    {experience.map((exp, i) => (
                       <div key={i} className="p-3 bg-muted/50 rounded-lg mb-3 relative">
