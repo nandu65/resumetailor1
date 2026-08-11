@@ -750,7 +750,29 @@ export default function ResumeBuilder() {
                         <p className="text-[10px] text-muted-foreground ml-1">Tip: Separate skills with commas or new lines.</p>
                       </div>
                       
+                        <div className="flex items-center justify-between">
+                            <Label className="text-xs font-bold text-muted-foreground ml-1">Certifications</Label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" title="Typography">
+                                        <Settings2 className="h-3 w-3" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-80" align="end">
+                                    <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="certifications" hideHeader />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                        <Textarea 
+                          value={certifications} 
+                          onChange={e => setCertifications(e.target.value)} 
+                          placeholder="AWS Certified Developer, PMP..." 
+                          className="min-h-[60px] rounded-xl border-border/60" 
+                        />
+                      </div>
+                      
                       <Separator />
+
                       
                       <div className="p-5 rounded-2xl bg-primary/[0.03] border border-primary/10 space-y-4">
                         <div className="flex items-center gap-2">
