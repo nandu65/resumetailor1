@@ -642,7 +642,7 @@ export default function ResumeBuilder() {
               </div>
 
               {/* RIGHT COLUMN: STICKY PREVIEW */}
-              <div className="hidden lg:block lg:sticky lg:top-[130px] h-[calc(100vh-150px)] animate-in fade-in zoom-in-95 duration-500 delay-200">
+              <div className="hidden lg:block lg:sticky lg:top-[158px] h-[calc(100vh-180px)] animate-in fade-in zoom-in-95 duration-500 delay-200">
                 <div className="h-full flex flex-col bg-muted/20 rounded-[2.5rem] border-4 border-muted/50 p-2 shadow-card overflow-hidden">
                    <div className="flex-1 overflow-y-auto rounded-[2rem] bg-background scrollbar-hide">
                      {resume ? (
