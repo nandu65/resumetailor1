@@ -379,7 +379,12 @@ export default function ResumeBuilder() {
                 <div id="section-summary" className="bg-card border rounded-2xl p-6">
                    <div className="flex items-center justify-between mb-4">
                      <h3 className="font-bold">Summary</h3>
-                     <Button variant="outline" size="sm" className="h-8 text-xs">Formatting</Button>
+                     <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" size="sm" className="h-8 text-xs">Formatting</Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80"><SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="summary" hideHeader /></PopoverContent>
+                     </Popover>
                    </div>
                    <Textarea value={summary} onChange={e => setSummary(e.target.value)} className="min-h-[100px]" />
                 </div>
