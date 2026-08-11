@@ -88,7 +88,10 @@ export default function ResumeBuilder() {
       const text = await extractTextFromFile(file);
       if (!text.trim()) throw new Error("Couldn't read text from that file");
       const { data, error } = await supabase.functions.invoke("parse-resume", { body: { text } });
-      if (error || (data as any)?.error) throw new Error((data as any)?.error || error?.message || "Parse failed");
+      if (error || (data as any)?.error) {
+        console.error("Parse resume error:", error || (data as any)?.error);
+        throw new Error((data as any)?.error || error?.message || "Parse failed");
+      }
       const p = (data as any).parsed || {};
       setBasics({
         name: p.name || "", title: p.title || "", email: p.email || "", phone: p.phone || "",

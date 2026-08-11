@@ -32,7 +32,7 @@ serve(async (req) => {
     }
 
     const startedAt = Date.now();
-    const model = "google/gemini-2.5-flash";
+    const model = "gpt-4o"; // Using a safer standard model name for the AI gateway
     const sysMsg = `You extract structured resume data from raw resume text. Return STRICT JSON only.
 Rules:
 - Preserve the user's own wording for bullets and summary — do NOT rewrite or invent content.
