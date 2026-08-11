@@ -265,7 +265,9 @@ export default function ResumeBuilder() {
       {showIntro && <BuilderIntroLoader onDone={() => { setShowIntro(false); setStarter("choose"); }} />}
       <TemplatePreferencesWizard
         open={starter === "wizard"}
-        onOpenChange={(v) => !v && setStarter("choose")}
+        onOpenChange={(v) => {
+          if (!v) setStarter("choose");
+        }}
         initial={prefs}
         onDone={(p) => {
           setPrefs(p); setPrefsSet(true); setStarter("scratch");
