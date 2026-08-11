@@ -419,81 +419,234 @@ export default function ResumeBuilder() {
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-[450px_1fr] gap-8">
+            <div className="grid lg:grid-cols-[1fr_55%] gap-8 items-start">
               {/* LEFT COLUMN: EDITOR */}
               <div className="space-y-6">
-                {/* TOOLBAR */}
-                <div className="sticky top-[64px] z-20 bg-background/95 backdrop-blur p-2 border-b flex items-center justify-between">
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" onClick={undo} disabled={!canUndo}><Undo2 className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="sm" onClick={redo} disabled={!canRedo}><Redo2 className="h-4 w-4" /></Button>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={downloadPdf} disabled={!resume}>PDF</Button>
-                    <Button variant="outline" size="sm" onClick={downloadDocx} disabled={!resume}>DOCX</Button>
-                  </div>
-                </div>
-                
                 {/* NAVIGATION */}
-                <nav className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                  {["Basics", "Summary", "Experience", "Skills", "Design"].map((s) => (
-                    <a key={s} href={`#section-${s.toLowerCase()}`} className="px-3 py-1 bg-muted rounded-full text-xs font-medium hover:bg-primary/20">{s}</a>
+                <nav className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide sticky top-[130px] z-20 bg-background/80 backdrop-blur py-2">
+                  {[
+                    { id: "basics", label: "Basics", icon: CheckCircle2 },
+                    { id: "summary", label: "Summary", icon: Sparkles },
+                    { id: "experience", label: "Experience", icon: FileText },
+                    { id: "education", label: "Education", icon: ArrowDown },
+                    { id: "skills", label: "Skills", icon: Wand },
+                    { id: "projects", label: "Projects", icon: Link2 },
+                    { id: "certs", label: "Certs", icon: CheckCircle2 },
+                  ].map((s) => (
+                    <button 
+                      key={s.id} 
+                      onClick={() => document.getElementById(`section-${s.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full text-[11px] font-bold hover:bg-primary hover:text-primary-foreground transition-all shrink-0 shadow-sm"
+                    >
+                      <s.icon className="h-3 w-3" />
+                      {s.label}
+                    </button>
                   ))}
                 </nav>
 
-                <div id="section-basics" className="bg-card border rounded-2xl p-6">
-                  <h3 className="font-bold mb-4">Basics</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input value={basics.name} onChange={e => setBasics({ ...basics, name: e.target.value })} placeholder="Full Name" />
-                    <Input value={basics.title} onChange={e => setBasics({ ...basics, title: e.target.value })} placeholder="Title" />
-                    <Input value={basics.email} onChange={e => setBasics({ ...basics, email: e.target.value })} placeholder="Email" />
-                    <Input value={basics.phone} onChange={e => setBasics({ ...basics, phone: e.target.value })} placeholder="Phone" />
+                {/* BASICS */}
+                <div id="section-basics" className="bg-card border-2 border-border rounded-2xl p-6 shadow-card transition-all hover:border-primary/20">
+                  <div className="flex items-center gap-2 mb-6 border-b pb-4">
+                    <CheckCircle2 className="h-5 w-5 text-primary" />
+                    <h3 className="font-display text-lg font-bold">1. Personal Information</h3>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">Full Name</Label>
+                      <Input value={basics.name} onChange={e => setBasics({ ...basics, name: e.target.value })} placeholder="John Doe" className="rounded-xl border-border/60" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">Job Title</Label>
+                      <Input value={basics.title} onChange={e => setBasics({ ...basics, title: e.target.value })} placeholder="Software Engineer" className="rounded-xl border-border/60" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">Email</Label>
+                      <Input value={basics.email} onChange={e => setBasics({ ...basics, email: e.target.value })} placeholder="john@example.com" className="rounded-xl border-border/60" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">Phone</Label>
+                      <Input value={basics.phone} onChange={e => setBasics({ ...basics, phone: e.target.value })} placeholder="+1 (555) 000-0000" className="rounded-xl border-border/60" />
+                    </div>
                   </div>
                 </div>
 
-                <div id="section-summary" className="bg-card border rounded-2xl p-6">
-                   <div className="flex items-center justify-between mb-4">
-                     <h3 className="font-bold">Summary</h3>
-                     <Popover>
-                        <PopoverTrigger asChild>
-                          <Button variant="outline" size="sm" className="h-8 text-xs">Formatting</Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-80"><SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="summary" hideHeader /></PopoverContent>
-                     </Popover>
-                   </div>
-                   <Textarea value={summary} onChange={e => setSummary(e.target.value)} className="min-h-[100px]" />
-                </div>
-
-                <div id="section-experience" className="bg-card border rounded-2xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                     <h3 className="font-bold">Experience</h3>
+                {/* SUMMARY */}
+                <div id="section-summary" className="bg-card border-2 border-border rounded-2xl p-6 shadow-card transition-all hover:border-primary/20">
+                   <div className="flex items-center justify-between mb-6 border-b pb-4">
+                     <div className="flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                        <h3 className="font-display text-lg font-bold">2. Professional Summary</h3>
+                     </div>
                      <div className="flex gap-2">
                         <Popover>
                             <PopoverTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-8 text-xs">Formatting</Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/5 text-primary" title="Typography">
+                                <Settings2 className="h-4 w-4" />
+                            </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-80"><SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="experience" hideHeader /></PopoverContent>
+                            <PopoverContent className="w-80" align="end">
+                                <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="summary" hideHeader />
+                            </PopoverContent>
                         </Popover>
-                        <Button variant="outline" size="sm" onClick={addExp} className="h-8"><Plus className="h-4 w-4" /></Button>
+                        <Button variant="outline" size="sm" className="h-8 rounded-full text-[10px] font-bold gap-1 border-primary/20 hover:bg-primary/5 text-primary">
+                            <Wand2 className="h-3 w-3" />
+                            AI POLISH
+                        </Button>
                      </div>
                    </div>
-                   {experience.map((exp, i) => (
-                      <div key={i} className="p-3 bg-muted/50 rounded-lg mb-3 relative">
-                        <Input value={exp.company} onChange={e => { const n = [...experience]; n[i].company = e.target.value; setExperience(n); }} placeholder="Company" className="mb-1 h-8" />
-                        <Textarea value={exp.description} onChange={e => { const n = [...experience]; n[i].description = e.target.value; setExperience(n); }} className="min-h-[60px]" />
+                   <Textarea 
+                     value={summary} 
+                     onChange={e => setSummary(e.target.value)} 
+                     placeholder="A brief overview of your professional background..." 
+                     className="min-h-[120px] rounded-xl border-border/60 resize-none" 
+                     spellCheck={spellCheckEnabled} 
+                   />
+                </div>
+
+                {/* EXPERIENCE */}
+                <div id="section-experience" className="bg-card border-2 border-border rounded-2xl p-6 shadow-card transition-all hover:border-primary/20">
+                  <div className="flex items-center justify-between mb-6 border-b pb-4">
+                     <div className="flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-primary" />
+                        <h3 className="font-display text-lg font-bold">3. Work Experience</h3>
+                     </div>
+                     <div className="flex gap-2">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/5 text-primary" title="Typography">
+                                <Settings2 className="h-4 w-4" />
+                            </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-80" align="end">
+                                <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="experience" hideHeader />
+                            </PopoverContent>
+                        </Popover>
+                        <Button variant="outline" size="sm" onClick={addExp} className="h-8 rounded-full gap-1 border-primary/20 hover:bg-primary/5 text-primary">
+                            <Plus className="h-3 w-3" />
+                            <span className="text-[10px] font-bold">ADD ROLE</span>
+                        </Button>
+                     </div>
+                   </div>
+                   <div className="space-y-6">
+                      {experience.map((exp, i) => (
+                        <div key={i} className="group p-5 rounded-2xl border bg-muted/20 relative animate-in fade-in slide-in-from-left-2 duration-300">
+                           <Button 
+                             variant="ghost" 
+                             size="icon" 
+                             className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-background border shadow-sm text-destructive opacity-0 group-hover:opacity-100 transition-opacity" 
+                             onClick={() => setExperience(experience.filter((_, j) => i !== j))}
+                           >
+                             <Trash2 className="h-3 w-3" />
+                           </Button>
+                           <div className="grid sm:grid-cols-2 gap-4 mb-4">
+                              <Input value={exp.company} onChange={e => { const n = [...experience]; n[i].company = e.target.value; setExperience(n); }} placeholder="Company" className="h-9 rounded-lg border-border/60" />
+                              <Input value={exp.role} onChange={e => { const n = [...experience]; n[i].role = e.target.value; setExperience(n); }} placeholder="Role" className="h-9 rounded-lg border-border/60" />
+                           </div>
+                           <div className="relative">
+                               <Textarea 
+                                 value={exp.description} 
+                                 onChange={e => { const n = [...experience]; n[i].description = e.target.value; setExperience(n); }} 
+                                 placeholder="Bullet points describing your achievements..." 
+                                 className="min-h-[100px] rounded-lg border-border/60 resize-none pb-10" 
+                                 spellCheck={spellCheckEnabled} 
+                               />
+                               <div className="absolute bottom-2 right-2 flex gap-1">
+                                  <Button variant="ghost" size="sm" className="h-7 text-[9px] font-bold text-primary hover:bg-primary/10">
+                                     <Sparkles className="h-3 w-3 mr-1" />
+                                     IMPROVE
+                                  </Button>
+                               </div>
+                           </div>
+                        </div>
+                      ))}
+                      {experience.length === 0 && (
+                        <div className="text-center py-10 border-2 border-dashed rounded-2xl text-muted-foreground italic">No experience added.</div>
+                      )}
+                   </div>
+                </div>
+
+                {/* SKILLS & GENERATE */}
+                <div id="section-skills" className="bg-card border-2 border-border rounded-2xl p-6 shadow-card transition-all hover:border-primary/20">
+                  <div className="flex items-center justify-between mb-6 border-b pb-4">
+                     <div className="flex items-center gap-2">
+                        <Wand className="h-5 w-5 text-primary" />
+                        <h3 className="font-display text-lg font-bold">4. Skills & Optimization</h3>
+                     </div>
+                     <div className="flex gap-2">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/5 text-primary" title="Typography">
+                                    <Settings2 className="h-4 w-4" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-80" align="end">
+                                <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="skills" hideHeader />
+                            </PopoverContent>
+                        </Popover>
+                        <Button variant="outline" size="sm" className="h-8 rounded-full text-[10px] font-bold gap-1 border-primary/20 hover:bg-primary/5 text-primary">
+                            <Sparkles className="h-3 w-3" />
+                            ATS OPTIMIZE
+                        </Button>
+                     </div>
+                   </div>
+                   <div className="space-y-6">
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold text-muted-foreground ml-1">Core Skills</Label>
+                        <Textarea 
+                          value={skills} 
+                          onChange={e => setSkills(e.target.value)} 
+                          placeholder="JavaScript, React, Project Management, Agile..." 
+                          className="min-h-[80px] rounded-xl border-border/60" 
+                        />
+                        <p className="text-[10px] text-muted-foreground ml-1">Tip: Separate skills with commas or new lines.</p>
                       </div>
-                   ))}
+                      
+                      <Separator />
+                      
+                      <div className="p-5 rounded-2xl bg-primary/[0.03] border border-primary/10 space-y-4">
+                        <div className="flex items-center gap-2">
+                           <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center"><Target className="h-3 w-3 text-primary" /></div>
+                           <Label className="font-bold text-primary text-sm">Target Job Description</Label>
+                        </div>
+                        <Textarea 
+                          value={targetJd} 
+                          onChange={e => setTargetJd(e.target.value)} 
+                          placeholder="Paste the job description you're applying for to optimize your resume bullets and skills..." 
+                          className="min-h-[120px] bg-background rounded-xl border-primary/10 focus:border-primary/30" 
+                        />
+                      </div>
+                      
+                      <Button onClick={generate} disabled={loading} className="w-full h-14 text-lg font-bold bg-gradient-primary shadow-glow rounded-2xl group overflow-hidden relative">
+                        {loading ? (
+                          <div className="flex items-center gap-2">
+                             <Loader2 className="h-5 w-5 animate-spin" />
+                             <span>Syncing AI content...</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                             <Sparkles className="h-5 w-5 transition-transform group-hover:rotate-12" />
+                             <span>GENERATE POLISHED RESUME</span>
+                          </div>
+                        )}
+                      </Button>
+                   </div>
                 </div>
               </div>
 
               {/* RIGHT COLUMN: STICKY PREVIEW */}
-              <div className="lg:sticky lg:top-[64px] h-[calc(100vh-64px)] overflow-hidden">
-                <div className="h-full flex flex-col bg-muted/30 rounded-2xl border p-4">
-                   <div className="flex-1 overflow-y-auto">
+              <div className="hidden lg:block lg:sticky lg:top-[130px] h-[calc(100vh-150px)] animate-in fade-in zoom-in-95 duration-500 delay-200">
+                <div className="h-full flex flex-col bg-muted/20 rounded-[2.5rem] border-4 border-muted/50 p-2 shadow-card overflow-hidden">
+                   <div className="flex-1 overflow-y-auto rounded-[2rem] bg-background scrollbar-hide">
                      {resume ? (
-                        <ResumePreview template={template} data={resume} onChange={setResume} />
+                        <div className="p-8 origin-top scale-[0.9] transform-gpu transition-transform">
+                           <ResumePreview template={template} data={resume} onChange={setResume} />
+                        </div>
                       ) : (
-                        <div className="h-full flex items-center justify-center text-muted-foreground">Preview pending...</div>
+                        <div className="h-full flex flex-col items-center justify-center text-muted-foreground p-12 text-center">
+                           <div className="h-20 w-20 rounded-3xl bg-muted/30 flex items-center justify-center mb-6"><Eye className="h-10 w-10 opacity-20" /></div>
+                           <h4 className="font-bold text-foreground mb-2">Live Preview</h4>
+                           <p className="text-xs max-w-[200px]">Fill in your details and click Generate to see your polished resume here.</p>
+                        </div>
                       )}
                    </div>
                 </div>
