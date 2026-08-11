@@ -304,6 +304,16 @@ export default function ResumeBuilder() {
               </button>
             </div>
             <input ref={fileRef} type="file" accept=".pdf,.docx,.txt" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) onUpload(f); }} />
+            {uploading && (
+              <div className="mt-8 flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-300">
+                <div className="relative">
+                  <div className="h-16 w-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                  <Sparkles className="absolute inset-0 m-auto h-6 w-6 text-primary animate-pulse" />
+                </div>
+                <p className="mt-4 text-sm font-medium text-primary">Analyzing your resume...</p>
+                <p className="text-xs text-muted-foreground mt-1 italic">Extracting details with AI magic</p>
+              </div>
+            )}
           </div>
         )}
 
