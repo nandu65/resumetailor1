@@ -132,7 +132,7 @@ function BulletsEditor({
   useEffect(() => {
     if (!ref.current) return;
     const current = Array.from(ref.current.querySelectorAll("li"))
-      .map((li) => (li.textContent || "").trim())
+      .map((li) => (li.innerHTML || "").trim())
       .join("\n");
     if (current !== text) {
       ref.current.innerHTML = bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join("");
@@ -151,7 +151,7 @@ function BulletsEditor({
         editable
           ? (e) => {
               const items = Array.from(e.currentTarget.querySelectorAll("li"))
-                .map((li) => (li.textContent || "").trim())
+                .map((li) => (li.innerHTML || "").trim())
                 .filter(Boolean);
               onChange!(items);
             }
