@@ -749,7 +749,8 @@ export default function ResumeBuilder() {
                         />
                         <p className="text-[10px] text-muted-foreground ml-1">Tip: Separate skills with commas or new lines.</p>
                       </div>
-                      
+
+                      <div className="space-y-2">
                         <div className="flex items-center justify-between">
                             <Label className="text-xs font-bold text-muted-foreground ml-1">Certifications</Label>
                             <Popover>
@@ -772,6 +773,7 @@ export default function ResumeBuilder() {
                       </div>
                       
                       <Separator />
+
 
                       
                       <div className="p-5 rounded-2xl bg-primary/[0.03] border border-primary/10 space-y-4">
