@@ -158,18 +158,24 @@ export default function ResumeBuilder() {
     setCertifications((resume.certifications || []).join("\n"));
   }, [resume]);
 
-  const syncSettingsToResume = () => {
-    if (!resume) return;
+  const syncSettingsToResume = useCallback(() => {
     setResume(prev => {
-      if (!prev) return null;
+      if (!prev) {
+        // Build initial resume if none exists to hold settings
+        return buildResumeDataVerbatim({
+          ...basics, linkedin: "", github: "", portfolio: "",
+          summary, experience, education, projects, skills, certifications,
+          settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
+        });
+      }
       return {
         ...prev,
         settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
       };
     });
-  };
+  }, [basics, summary, experience, education, projects, skills, certifications, globalFontSize, globalFontFamily, sectionStyles]);
 
-  useEffect(() => { syncSettingsToResume(); }, [globalFontSize, globalFontFamily, sectionStyles]);
+  useEffect(() => { syncSettingsToResume(); }, [syncSettingsToResume]);
 
   /* ---- Undo / Redo over the whole editing state ---- */
   const snapshot = useMemo(() => ({
@@ -241,23 +247,20 @@ export default function ResumeBuilder() {
   };
 
   const downloadPdf = () => {
-    if (!resume) return;
-    if (!isResumeSync()) {
-      toast.error("Form data has changed. Please click 'Generate' again to update the preview before downloading.", {
-        action: { label: "Sync Now", onClick: () => generate() }
-      });
-      return;
-    }
-    downloadResumePdfFromData(resume, template);
+    const currentResume = buildResumeDataVerbatim({ 
+      ...basics, summary, experience, education, projects, skills, certifications,
+      settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
+    });
+    // Use current settings and latest form data for the download
+    downloadResumePdfFromData(resume ? { ...resume, settings: currentResume.settings } : currentResume, template);
   };
   
   const downloadDocx = () => {
-    if (!resume) return;
-    if (!isResumeSync()) {
-      toast.error("Form data has changed. Please click 'Generate' again to update the preview before downloading.");
-      return;
-    }
-    downloadResumeDocxFromData(resume, template);
+    const currentResume = buildResumeDataVerbatim({ 
+      ...basics, summary, experience, education, projects, skills, certifications,
+      settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
+    });
+    downloadResumeDocxFromData(resume ? { ...resume, settings: currentResume.settings } : currentResume, template);
   };
 
   return (
