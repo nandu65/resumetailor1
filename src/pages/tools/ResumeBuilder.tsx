@@ -265,7 +265,9 @@ export default function ResumeBuilder() {
       {showIntro && <BuilderIntroLoader onDone={() => { setShowIntro(false); setStarter("choose"); }} />}
       <TemplatePreferencesWizard
         open={starter === "wizard"}
-        onOpenChange={(v) => !v && setStarter("choose")}
+        onOpenChange={(v) => {
+          if (!v) setStarter("choose");
+        }}
         initial={prefs}
         onDone={(p) => {
           setPrefs(p); setPrefsSet(true); setStarter("scratch");
@@ -292,7 +294,7 @@ export default function ResumeBuilder() {
               <p className="text-muted-foreground mt-2 max-w-lg mx-auto">Choose to build a fresh resume from scratch or import your existing one.</p>
             </div>
             <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
-              <button onClick={() => setStarter("wizard")} className="group relative text-left rounded-2xl border-2 border-border bg-background p-6 transition-all duration-300 hover:border-primary/60 hover:-translate-y-1 hover:shadow-glow">
+              <button type="button" onClick={() => setStarter("wizard")} className="group relative text-left rounded-2xl border-2 border-border bg-background p-6 transition-all duration-300 hover:border-primary/60 hover:-translate-y-1 hover:shadow-glow">
                 <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4 transition-transform group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground"><FilePlus2 className="h-6 w-6" /></div>
                 <h3 className="font-display text-lg font-bold">Build from scratch</h3>
                 <p className="text-sm text-muted-foreground mt-2 text-pretty">Step-by-step guidance for a perfect professional resume.</p>
@@ -304,6 +306,21 @@ export default function ResumeBuilder() {
               </button>
             </div>
             <input ref={fileRef} type="file" accept=".pdf,.docx,.txt" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) onUpload(f); }} />
+            {uploading && (
+              <div className="mt-8 flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-300">
+                <div className="relative">
+                  <div className="h-16 w-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                  <Sparkles className="absolute inset-0 m-auto h-6 w-6 text-primary animate-pulse" />
+                </div>
+                <p className="mt-4 text-sm font-medium text-primary">Analyzing your resume...</p>
+                <p className="text-xs text-muted-foreground mt-1 italic">Extracting details with AI magic</p>
+              </div>
+            )}
+            {!uploading && (
+              <div className="mt-8 text-center text-xs text-muted-foreground/60">
+                Secure SSL encryption • Privacy protected • AI powered
+              </div>
+            )}
           </div>
         )}
 
