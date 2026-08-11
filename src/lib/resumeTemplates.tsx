@@ -1478,7 +1478,7 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
     "teal-left": [15, 118, 110], "photo-grid": [3, 105, 161], "logo-boxed": [3, 105, 161],
   };
   const accent: [number, number, number] = accentMap[template] ?? [40, 40, 40];
-  const font = template === "classic" || template === "executive" || template === "centered-serif" ? "times" : "helvetica";
+  const font = data.settings?.fontFamily || (template === "classic" || template === "executive" || template === "centered-serif" ? "times" : "helvetica");
   let y = margin;
 
   const ensure = (h = 14) => { if (y + h > pageH - margin) { doc.addPage(); y = margin; } };
@@ -1490,6 +1490,21 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
     (SECTION_MATCHERS.find(m => m.re.test(t.trim()))?.key ?? null);
   const secSize = () => (curSec ? secStyles?.[curSec]?.fontSize : undefined) ?? (data.settings?.fontSize || 10);
   const secBold = () => (curSec ? secStyles?.[curSec]?.bold : undefined);
+  const secItalic = () => (curSec ? secStyles?.[curSec]?.italic : undefined);
+
+  const parseRichText = (text: string) => {
+    if (!text) return [{ text: "", bold: false, italic: false }];
+    const parts: { text: string; bold: boolean; italic: boolean }[] = [];
+    const regex = /<(b|i)>(.*?)<\/\1>|([^<]+)/g;
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      if (match[1] === "b") parts.push({ text: match[2], bold: true, italic: false });
+      else if (match[1] === "i") parts.push({ text: match[2], bold: false, italic: true });
+      else if (match[3]) parts.push({ text: match[3], bold: false, italic: false });
+    }
+    return parts;
+  };
+
   const H2 = (t: string) => {
     curSec = secOf(t);
     ensure(24); y += 6;
@@ -1499,24 +1514,64 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
     doc.line(margin, y, pageW - margin, y); y += 12;
     doc.setTextColor(30, 30, 30);
   };
+
   const line = (t: string, opts: { bold?: boolean; size?: number; italic?: boolean } = {}) => {
-    const bold = opts.bold || secBold() === true;
-    doc.setFont(font, bold ? "bold" : opts.italic ? "italic" : "normal");
-    doc.setFontSize(opts.size ?? secSize());
-    const lines = doc.splitTextToSize(t, pageW - margin * 2);
-    lines.forEach((l: string) => { ensure(13); doc.text(l, margin, y); y += 13; });
-  };
-  const bullet = (t: string) => {
-    const size = secSize();
-    doc.setFont(font, secBold() === true ? "bold" : "normal"); doc.setFontSize(size);
-    const lines = doc.splitTextToSize(t, pageW - margin * 2 - size * 1.4);
-    lines.forEach((l: string, i: number) => {
+    const defaultBold = opts.bold || secBold() === true;
+    const defaultItalic = opts.italic || secItalic() === true;
+    const size = opts.size ?? secSize();
+    
+    // Check if rich text
+    if (t.includes("<b>") || t.includes("<i>")) {
+      const parts = parseRichText(t);
       ensure(13);
-      if (i === 0) doc.text("•", margin + 4, y);
-      doc.text(l, margin + size * 1.4, y); y += 13;
-    });
+      let curX = margin;
+      parts.forEach(p => {
+        const isBold = p.bold || defaultBold;
+        const isItalic = p.italic || defaultItalic;
+        doc.setFont(font, isBold && isItalic ? "bolditalic" : isBold ? "bold" : isItalic ? "italic" : "normal");
+        doc.setFontSize(size);
+        doc.text(p.text, curX, y);
+        curX += doc.getTextWidth(p.text);
+      });
+      y += 13;
+    } else {
+      doc.setFont(font, defaultBold ? "bold" : defaultItalic ? "italic" : "normal");
+      doc.setFontSize(size);
+      const lines = doc.splitTextToSize(t, pageW - margin * 2);
+      lines.forEach((l: string) => { ensure(13); doc.text(l, margin, y); y += 13; });
+    }
   };
 
+  const bullet = (t: string) => {
+    const size = secSize();
+    const defaultBold = secBold() === true;
+    const defaultItalic = secItalic() === true;
+    
+    if (t.includes("<b>") || t.includes("<i>")) {
+      const parts = parseRichText(t);
+      ensure(13);
+      doc.setFont(font, "normal"); doc.setFontSize(size);
+      doc.text("•", margin + 4, y);
+      let curX = margin + size * 1.4;
+      parts.forEach(p => {
+        const isBold = p.bold || defaultBold;
+        const isItalic = p.italic || defaultItalic;
+        doc.setFont(font, isBold && isItalic ? "bolditalic" : isBold ? "bold" : isItalic ? "italic" : "normal");
+        doc.setFontSize(size);
+        doc.text(p.text, curX, y);
+        curX += doc.getTextWidth(p.text);
+      });
+      y += 13;
+    } else {
+      doc.setFont(font, defaultBold ? "bold" : defaultItalic ? "italic" : "normal"); doc.setFontSize(size);
+      const lines = doc.splitTextToSize(t, pageW - margin * 2 - size * 1.4);
+      lines.forEach((l: string, i: number) => {
+        ensure(13);
+        if (i === 0) doc.text("•", margin + 4, y);
+        doc.text(l, margin + size * 1.4, y); y += 13;
+      });
+    }
+  };
 
   H1(data.name || "Your Name");
   if (data.title) meta(data.title);
