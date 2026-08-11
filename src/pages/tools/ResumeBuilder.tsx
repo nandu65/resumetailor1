@@ -793,33 +793,112 @@ export default function ResumeBuilder() {
 
 
                       
-                      <div className="p-5 rounded-2xl bg-primary/[0.03] border border-primary/10 space-y-4">
-                        <div className="flex items-center gap-2">
-                           <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center"><Target className="h-3 w-3 text-primary" /></div>
-                           <Label className="font-bold text-primary text-sm">Target Job Description</Label>
+                      <div className="p-6 rounded-2xl bg-primary/[0.03] border border-primary/10 space-y-6 relative overflow-hidden group/ai">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none group-hover/ai:opacity-20 transition-opacity">
+                          <Sparkles className="h-20 w-20 text-primary" />
                         </div>
-                        <Textarea 
-                          value={targetJd} 
-                          onChange={e => setTargetJd(e.target.value)} 
-                          placeholder="Paste the job description you're applying for to optimize your resume bullets and skills..." 
-                          className="min-h-[120px] bg-background rounded-xl border-primary/10 focus:border-primary/30" 
-                        />
+                        
+                        <div className="space-y-2 relative">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="h-5 w-5 text-primary" />
+                            <h3 className="font-display font-bold text-primary tracking-tight">✨ AI RESUME POLISH</h3>
+                          </div>
+                          <p className="text-xs text-muted-foreground ml-7">
+                            "Let AI transform your resume into stronger, job-ready content."
+                          </p>
+                        </div>
+
+                        <div className="space-y-3 relative">
+                          <div className="flex items-center gap-2">
+                            <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center"><Target className="h-3 w-3 text-primary" /></div>
+                            <Label className="font-bold text-sm">Target Job Description</Label>
+                          </div>
+                          <Textarea 
+                            value={targetJd} 
+                            onChange={e => setTargetJd(e.target.value)} 
+                            placeholder="Paste the job description you're applying for to optimize your resume bullets and skills..." 
+                            className="min-h-[120px] bg-background rounded-xl border-primary/10 focus:border-primary/30 text-sm leading-relaxed" 
+                          />
+                        </div>
+
+                        <div className="bg-background/50 rounded-xl p-4 border border-primary/5 space-y-3">
+                          <div className="flex items-center gap-2 text-primary">
+                            <Sparkles className="h-3.5 w-3.5" />
+                            <span className="text-[11px] font-bold uppercase tracking-wider">✨ AI will:</span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                            {[
+                              "Rewrite weak bullet points",
+                              "Use stronger action verbs",
+                              "Improve professional wording",
+                              "Highlight measurable achievements",
+                              "Match relevant keywords from the job description",
+                              "Improve the professional summary",
+                              "Optimize content for ATS"
+                            ].map((text, idx) => (
+                              <div key={idx} className="flex items-start gap-2 group/item">
+                                <CheckCircle2 className="h-3.5 w-3.5 text-primary/60 mt-0.5 shrink-0 group-hover/item:text-primary transition-colors" />
+                                <span className="text-[11px] text-muted-foreground leading-snug">✓ {text}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <Button 
+                            onClick={generate} 
+                            disabled={loading} 
+                            className="w-full h-14 text-lg font-bold bg-gradient-primary shadow-glow rounded-2xl group overflow-hidden relative"
+                          >
+                            {loading ? (
+                              <div className="flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
+                                <div className="relative">
+                                  <Loader2 className="h-5 w-5 animate-spin" />
+                                  <Sparkles className="absolute -top-1 -right-1 h-2 w-2 text-primary-foreground animate-pulse" />
+                                </div>
+                                <span className="text-base">✨ AI is polishing your resume...</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2 transition-transform group-hover:scale-[1.02]">
+                                <Sparkles className="h-5 w-5 transition-transform group-hover:rotate-12" />
+                                <span>✨ Generate Polished Resume with AI</span>
+                              </div>
+                            )}
+                          </Button>
+
+                          {loading && (
+                            <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-500">
+                              {[
+                                "Analyzing your experience",
+                                "Improving your wording",
+                                "Matching relevant keywords",
+                                "Optimizing for ATS"
+                              ].map((text, idx) => (
+                                <div 
+                                  key={idx} 
+                                  className="flex items-center gap-2 text-[10px] text-primary/80"
+                                  style={{ animationDelay: `${idx * 150}ms` }}
+                                >
+                                  <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
+                                  <span>{text}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {resume && !loading && (
+                            <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-xl border border-primary/10 animate-in zoom-in-95">
+                              <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                              <div>
+                                <p className="text-xs font-bold text-primary">✓ Resume polished successfully</p>
+                                <p className="text-[10px] text-muted-foreground mt-0.5">"Your content has been improved for clarity, impact, and ATS relevance."</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      
-                      <Button onClick={generate} disabled={loading} className="w-full h-14 text-lg font-bold bg-gradient-primary shadow-glow rounded-2xl group overflow-hidden relative">
-                        {loading ? (
-                          <div className="flex items-center gap-2">
-                             <Loader2 className="h-5 w-5 animate-spin" />
-                             <span>Syncing AI content...</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                             <Sparkles className="h-5 w-5 transition-transform group-hover:rotate-12" />
-                             <span>GENERATE POLISHED RESUME</span>
-                          </div>
-                        )}
-                      </Button>
-                   </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
