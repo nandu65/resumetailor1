@@ -1625,11 +1625,33 @@ export async function downloadResumeDocxFromData(data: ResumeData, template: Tem
   };
   const accent = accentMap[template] ?? "111111";
 
-  const P = (text: string, opts: { bold?: boolean; italic?: boolean; size?: number; color?: string; align?: any } = {}) =>
-    new Paragraph({
+  const parseDocxRichText = (text: string) => {
+    if (!text) return [{ text: "", bold: false, italic: false }];
+    const parts: { text: string; bold: boolean; italic: boolean }[] = [];
+    const regex = /<(b|i)>(.*?)<\/\1>|([^<]+)/g;
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      if (match[1] === "b") parts.push({ text: match[2], bold: true, italic: false });
+      else if (match[1] === "i") parts.push({ text: match[2], bold: false, italic: true });
+      else if (match[3]) parts.push({ text: match[3], bold: false, italic: false });
+    }
+    return parts;
+  };
+
+  const P = (text: string, opts: { bold?: boolean; italic?: boolean; size?: number; color?: string; align?: any } = {}) => {
+    const parts = parseDocxRichText(text);
+    return new Paragraph({
       alignment: opts.align,
-      children: [new TextRun({ text, bold: opts.bold, italics: opts.italic, size: opts.size ?? 22, color: opts.color, font })],
+      children: parts.map(p => new TextRun({
+        text: p.text,
+        bold: p.bold || opts.bold,
+        italics: p.italic || opts.italic,
+        size: opts.size ?? 22,
+        color: opts.color,
+        font,
+      })),
     });
+  };
 
   const H = (text: string) =>
     new Paragraph({
