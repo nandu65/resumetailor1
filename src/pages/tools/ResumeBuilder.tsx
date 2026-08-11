@@ -316,6 +316,11 @@ export default function ResumeBuilder() {
                 <p className="text-xs text-muted-foreground mt-1 italic">Extracting details with AI magic</p>
               </div>
             )}
+            {!uploading && (
+              <div className="mt-8 text-center text-xs text-muted-foreground/60">
+                Secure SSL encryption • Privacy protected • AI powered
+              </div>
+            )}
           </div>
         )}
 
