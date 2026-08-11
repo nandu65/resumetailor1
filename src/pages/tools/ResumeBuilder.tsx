@@ -423,7 +423,7 @@ export default function ResumeBuilder() {
               {/* LEFT COLUMN: EDITOR */}
               <div className="space-y-6">
                 {/* NAVIGATION */}
-                <nav className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide sticky top-[130px] z-20 bg-background/80 backdrop-blur py-2">
+                <nav className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide sticky top-[138px] z-20 bg-background/90 backdrop-blur-md py-3 px-1 -mx-1">
                   {[
                     { id: "basics", label: "Basics", icon: CheckCircle2 },
                     { id: "summary", label: "Summary", icon: Sparkles },
@@ -435,14 +435,22 @@ export default function ResumeBuilder() {
                   ].map((s) => (
                     <button 
                       key={s.id} 
-                      onClick={() => document.getElementById(`section-${s.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full text-[11px] font-bold hover:bg-primary hover:text-primary-foreground transition-all shrink-0 shadow-sm"
+                      onClick={() => {
+                        const el = document.getElementById(`section-${s.id}`);
+                        if (el) {
+                          const yOffset = -220; 
+                          const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                          window.scrollTo({top: y, behavior: 'smooth'});
+                        }
+                      }}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-muted/50 border border-transparent rounded-xl text-[11px] font-bold hover:bg-primary hover:text-primary-foreground hover:border-primary/20 transition-all shrink-0 shadow-sm"
                     >
                       <s.icon className="h-3 w-3" />
                       {s.label}
                     </button>
                   ))}
                 </nav>
+
 
                 {/* BASICS */}
                 <div id="section-basics" className="bg-card border-2 border-border rounded-2xl p-6 shadow-card transition-all hover:border-primary/20">
