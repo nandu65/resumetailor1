@@ -32,7 +32,7 @@ serve(async (req) => {
     }
 
     const startedAt = Date.now();
-    const model = "gpt-4o"; // Using a safer standard model name for the AI gateway
+    const model = "google/gemini-2.5-flash";
     const sysMsg = `You extract structured resume data from raw resume text. Return STRICT JSON only.
 Rules:
 - Preserve the user's own wording for bullets and summary — do NOT rewrite or invent content.
@@ -67,7 +67,9 @@ Rules:
     if (!aiResp.ok) {
       if (aiResp.status === 429) return new Response(JSON.stringify({ error: "Rate limit reached, try again shortly." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (aiResp.status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      throw new Error("AI request failed");
+      const detail = await aiResp.text().catch(() => "");
+      console.error("AI gateway error", aiResp.status, detail);
+      throw new Error(`AI request failed (${aiResp.status})`);
     }
 
     const aiData = await aiResp.json();
