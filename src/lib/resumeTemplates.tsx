@@ -27,7 +27,8 @@ export interface ResumeData {
 }
 
 export type ResumeSectionKey =
-  | "headings" | "summary" | "experience" | "education" | "skills" | "projects";
+  | "headings" | "summary" | "experience" | "education" | "skills" | "projects" | "certifications";
+
 
 export interface SectionStyle {
   fontSize?: number;
@@ -44,7 +45,9 @@ export const RESUME_SECTIONS: { key: ResumeSectionKey; label: string }[] = [
   { key: "education", label: "Education" },
   { key: "skills", label: "Skills" },
   { key: "projects", label: "Projects" },
+  { key: "certifications", label: "Certifications" },
 ];
+
 
 
 export type TemplateId =
