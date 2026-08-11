@@ -423,7 +423,7 @@ export default function ResumeBuilder() {
               {/* LEFT COLUMN: EDITOR */}
               <div className="space-y-6">
                 {/* NAVIGATION */}
-                <nav className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide sticky top-[138px] z-20 bg-background/90 backdrop-blur-md py-3 px-1 -mx-1">
+                <nav className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide sticky top-[158px] z-20 bg-background/90 backdrop-blur-md py-3 px-1 -mx-1">
                   {[
                     { id: "basics", label: "Basics", icon: CheckCircle2 },
                     { id: "summary", label: "Summary", icon: Sparkles },
