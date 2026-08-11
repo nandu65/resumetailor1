@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FileText, Check, Loader2 } from "lucide-react";
 
 const FEATURES = [
@@ -10,15 +10,18 @@ const FEATURES = [
 
 export function BuilderIntroLoader({ onDone }: { onDone: () => void }) {
   const [step, setStep] = useState(0);
+  const doneRef = useRef(onDone);
+  doneRef.current = onDone;
 
   useEffect(() => {
     const timers: number[] = [];
     FEATURES.forEach((_, i) => {
       timers.push(window.setTimeout(() => setStep(i + 1), 400 + i * 450));
     });
-    timers.push(window.setTimeout(onDone, 400 + FEATURES.length * 450 + 500));
+    timers.push(window.setTimeout(() => doneRef.current(), 400 + FEATURES.length * 450 + 500));
     return () => timers.forEach(clearTimeout);
-  }, [onDone]);
+    // run once on mount — never restart on parent re-renders
+  }, []);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background animate-fade-in">
