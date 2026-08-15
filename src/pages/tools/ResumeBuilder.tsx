@@ -406,19 +406,19 @@ export default function ResumeBuilder() {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">Full Name</Label>
-                      <Input value={basics.name} onChange={e => setBasics({ ...basics, name: e.target.value })} placeholder="John Doe" className="rounded-xl border-border/60" />
+                      <Input value={resumeData.name} onChange={e => setResumeData({ ...resumeData, name: e.target.value })} placeholder="John Doe" className="rounded-xl border-border/60" />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">Job Title</Label>
-                      <Input value={basics.title} onChange={e => setBasics({ ...basics, title: e.target.value })} placeholder="Software Engineer" className="rounded-xl border-border/60" />
+                      <Input value={resumeData.title} onChange={e => setResumeData({ ...resumeData, title: e.target.value })} placeholder="Software Engineer" className="rounded-xl border-border/60" />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">Email</Label>
-                      <Input value={basics.email} onChange={e => setBasics({ ...basics, email: e.target.value })} placeholder="john@example.com" className="rounded-xl border-border/60" />
+                      <Input value={resumeData.email} onChange={e => setResumeData({ ...resumeData, email: e.target.value })} placeholder="john@example.com" className="rounded-xl border-border/60" />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">Phone</Label>
-                      <Input value={basics.phone} onChange={e => setBasics({ ...basics, phone: e.target.value })} placeholder="+1 (555) 000-0000" className="rounded-xl border-border/60" />
+                      <Input value={resumeData.phone} onChange={e => setResumeData({ ...resumeData, phone: e.target.value })} placeholder="+1 (555) 000-0000" className="rounded-xl border-border/60" />
                     </div>
                   </div>
                 </div>
