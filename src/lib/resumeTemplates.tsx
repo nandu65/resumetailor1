@@ -23,7 +23,9 @@ export interface ResumeData {
     fontSize?: number;
     fontFamily?: string;
     sections?: Partial<Record<ResumeSectionKey, SectionStyle>>;
+    sectionOrder?: string[];
   };
+
   _isPolished?: boolean;
 }
 
