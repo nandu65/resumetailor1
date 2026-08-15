@@ -1502,7 +1502,7 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
   let curSec: ResumeSectionKey | null = null;
   const secOf = (t: string): ResumeSectionKey | null =>
     (SECTION_MATCHERS.find(m => m.re.test(t.trim()))?.key ?? null);
-  const secSize = () => (curSec ? secStyles?.[curSec]?.fontSize : undefined) ?? (data.settings?.fontSize || 10);
+  const secSize = () => (curSec ? secStyles?.[curSec]?.fontSize : undefined) ?? baseSize;
   const secBold = () => (curSec ? secStyles?.[curSec]?.bold : undefined);
   const secItalic = () => (curSec ? secStyles?.[curSec]?.italic : undefined);
 
