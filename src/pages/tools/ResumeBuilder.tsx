@@ -826,7 +826,7 @@ export default function ResumeBuilder() {
                             </div>
                           )}
 
-                           {resumeData && resumeData.name && !loading && (resumeData as any)._isPolished && (
+                           {resumeData && resumeData.name && !loading && resumeData._isPolished && (
                              <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-xl border border-primary/10 animate-in zoom-in-95">
                                <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                                <div>
