@@ -91,16 +91,18 @@ export const TEMPLATES: { id: TemplateId; name: string; desc: string; previewUrl
 
 
 /* ---------- Inline editable primitive ---------- */
-const Editable = React.memo(function Editable({
-  value, onChange, className, as = "span", multiline = false,
+export const Editable = React.memo(function Editable({
+  value, onChange, className, as = "span", multiline = false, style
 }: {
   value: string;
   onChange?: (v: string) => void;
   className?: string;
   as?: any;
   multiline?: boolean;
+  style?: React.CSSProperties;
 }) {
   const ref = useRef<HTMLElement>(null);
+  
   useEffect(() => {
     if (ref.current) {
       const isHtml = value?.includes("<") && value?.includes(">");
@@ -111,8 +113,10 @@ const Editable = React.memo(function Editable({
       }
     }
   }, [value]);
+
   const editable = !!onChange;
   const Tag: any = as;
+
   return (
     <Tag
       ref={ref}
@@ -124,19 +128,21 @@ const Editable = React.memo(function Editable({
           ? " outline-none focus:bg-primary/5 focus:ring-1 focus:ring-primary/40 rounded px-0.5"
           : "")
       }
+      style={style}
       onBlur={
         editable
           ? (e: any) => {
               const txt = multiline
                 ? (e.currentTarget.innerHTML as string)
                 : (e.currentTarget.innerText as string).replace(/\s+/g, " ").trim();
-              onChange!(txt);
+              if (txt !== value) onChange!(txt);
             }
           : undefined
       }
     />
   );
 });
+
 
 /** Bullets editor: one <li> per bullet, editable, splits on Enter via onBlur parse. */
 function BulletsEditor({
