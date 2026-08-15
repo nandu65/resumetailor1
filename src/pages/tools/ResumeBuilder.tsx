@@ -614,7 +614,7 @@ export default function ResumeBuilder() {
                             </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-80" align="end">
-                                <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="projects" hideHeader />
+                                <SectionStyleControls value={resumeData.settings?.sections || {}} onChange={sections => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, sections } }))} baseSize={resumeData.settings?.fontSize || 11} sectionKey="projects" hideHeader />
                             </PopoverContent>
                         </Popover>
                         <Button variant="outline" size="sm" onClick={addProj} className="h-8 rounded-full gap-1 border-primary/20 hover:bg-primary/5 text-primary">
@@ -624,28 +624,28 @@ export default function ResumeBuilder() {
                      </div>
                    </div>
                    <div className="space-y-6">
-                      {projects.map((proj, i) => (
+                      {resumeData.projects.map((proj, i) => (
                         <div key={i} className="group p-5 rounded-2xl border bg-muted/20 relative animate-in fade-in slide-in-from-left-2 duration-300">
-                           <Button variant="ghost" size="icon" className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-background border shadow-sm text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setProjects(projects.filter((_, j) => i !== j))}>
+                           <Button variant="ghost" size="icon" className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-background border shadow-sm text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setResumeData(prev => ({ ...prev, projects: prev.projects.filter((_, j) => i !== j) }))}>
                              <Trash2 className="h-3 w-3" />
                            </Button>
                            <div className="grid sm:grid-cols-2 gap-4 mb-4">
                               <div className="space-y-1">
                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Project Name</Label>
-                                <Input value={proj.name} onChange={e => { const n = [...projects]; n[i].name = e.target.value; setProjects(n); }} placeholder="Project Alpha" className="h-9 rounded-lg border-border/60 bg-background" />
+                                <Input value={proj.name} onChange={e => { const n = [...resumeData.projects]; n[i].name = e.target.value; setResumeData({ ...resumeData, projects: n }); }} placeholder="Project Alpha" className="h-9 rounded-lg border-border/60 bg-background" />
                               </div>
                               <div className="space-y-1">
                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Technologies</Label>
-                                <Input value={proj.tech} onChange={e => { const n = [...projects]; n[i].tech = e.target.value; setProjects(n); }} placeholder="React, Node.js, AWS" className="h-9 rounded-lg border-border/60 bg-background" />
+                                <Input value={proj.tech} onChange={e => { const n = [...resumeData.projects]; n[i].tech = e.target.value; setResumeData({ ...resumeData, projects: n }); }} placeholder="React, Node.js, AWS" className="h-9 rounded-lg border-border/60 bg-background" />
                               </div>
                            </div>
                            <div className="space-y-1">
                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Project Description</Label>
-                               <Textarea value={proj.description} onChange={e => { const n = [...projects]; n[i].description = e.target.value; setProjects(n); }} placeholder="Describe the impact and technical challenges..." className="min-h-[80px] rounded-lg border-border/60 bg-background resize-none" />
+                               <Textarea value={proj.bullets.join('\n')} onChange={e => { const n = [...resumeData.projects]; n[i].bullets = e.target.value.split('\n'); setResumeData({ ...resumeData, projects: n }); }} placeholder="Describe the impact and technical challenges..." className="min-h-[80px] rounded-lg border-border/60 bg-background resize-none" />
                            </div>
                         </div>
                       ))}
-                      {projects.length === 0 && (
+                      {resumeData.projects.length === 0 && (
                         <div className="text-center py-10 border-2 border-dashed rounded-2xl text-muted-foreground italic">No projects added.</div>
                       )}
                    </div>
