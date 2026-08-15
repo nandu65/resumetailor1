@@ -26,6 +26,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import {
   TEMPLATES, TemplateId, ResumeData, ResumePreview,
   downloadResumePdfFromData, downloadResumeDocxFromData, buildResumeDataVerbatim,
+  normalizeResumeSkills,
 } from "@/lib/resumeTemplates";
 import { BuilderIntroLoader } from "@/components/BuilderIntroLoader";
 import { TemplatePreferencesWizard, DEFAULT_PREFS, ResumePrefs } from "@/components/TemplatePreferencesWizard";
@@ -107,7 +108,7 @@ export default function ResumeBuilder() {
 
   const [resumeData, setResumeData] = useState<ResumeData>(() => {
     const saved = localStorage.getItem("rs-current-resume");
-    return saved ? JSON.parse(saved) : EMPTY_RESUME;
+    return normalizeResumeSkills(saved ? JSON.parse(saved) : EMPTY_RESUME);
   });
   const [targetJd, setTargetJd] = useState("");
   const [template, setTemplate] = useState<TemplateId>(() => {
@@ -331,10 +332,10 @@ export default function ResumeBuilder() {
         certifications: p.certifications || [],
       };
 
-      setResumeData({
+      setResumeData(normalizeResumeSkills({
         ...newResume,
         _isPolished: false
-      });
+      }));
       setStarter("uploaded");
       toast.success("Resume imported — review the fields below, then generate.");
     } catch (e) {
@@ -392,12 +393,12 @@ export default function ResumeBuilder() {
         return;
       }
       const generated = (data as any).resume;
-      setResumeData({
+      setResumeData(normalizeResumeSkills({
         ...resumeData,
         ...generated,
         _isPolished: true,
         settings: resumeData.settings // Preserve user settings
-      });
+      }));
       setShowEditHint(true);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
