@@ -198,7 +198,7 @@ export default function ResumeBuilder() {
         }}
         initial={prefs}
         onDone={(p) => {
-          setPrefs(p); setPrefsSet(true); setStarter("scratch");
+          setPrefs(p); setStarter("scratch");
           const ranked = [...TEMPLATES].sort((a, b) => scoreTemplate(b.id, p) - scoreTemplate(a.id, p));
           if (ranked[0]) setTemplate(ranked[0].id);
         }}
