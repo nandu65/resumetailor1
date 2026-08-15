@@ -109,7 +109,8 @@ export default function ResumeBuilder() {
   });
   const [targetJd, setTargetJd] = useState("");
   const [template, setTemplate] = useState<TemplateId>(() => {
-    return (localStorage.getItem("rs-current-template") as TemplateId) || "modern";
+    const saved = localStorage.getItem("rs-current-template");
+    return (saved as TemplateId) || "modern";
   });
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<"ai" | "verbatim">("ai");
@@ -427,7 +428,14 @@ export default function ResumeBuilder() {
                           {TEMPLATES.map(t => (
                             <button 
                               key={t.id} 
-                              onClick={() => setTemplate(t.id)} 
+                              onClick={() => {
+                                const newId = t.id;
+                                setTemplate(newId);
+                                // Sync current state to the new template's logic if needed
+                                // The canonical state resumeData already has everything, 
+                                // and sectionOrder is preserved in resumeData.settings.
+                              }} 
+
                               className={`group relative rounded-xl border-2 transition-all overflow-hidden flex flex-col ${template === t.id ? "border-primary shadow-glow bg-primary/5" : "border-border hover:border-primary/40 bg-background"}`}
                             >
                               <div className="aspect-[1/1.4] bg-muted relative overflow-hidden flex items-center justify-center group-hover:bg-muted/80 transition-colors">
