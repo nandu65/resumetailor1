@@ -6,6 +6,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
+import { FormattingToolbar } from "@/components/FormattingToolbar";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+
 
 import { extractTextFromFile } from "@/lib/extractText";
 import { Button } from "@/components/ui/button";
