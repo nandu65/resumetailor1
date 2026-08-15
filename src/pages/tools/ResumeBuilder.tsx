@@ -386,7 +386,7 @@ export default function ResumeBuilder() {
                       onClick={() => {
                         const el = document.getElementById(`section-${s.id}`);
                         if (el) {
-                          const yOffset = -220; 
+                          const yOffset = -130; 
                           const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
                           window.scrollTo({top: y, behavior: 'smooth'});
                         }
