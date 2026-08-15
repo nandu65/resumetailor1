@@ -24,6 +24,7 @@ export interface ResumeData {
     fontFamily?: string;
     sections?: Partial<Record<ResumeSectionKey, SectionStyle>>;
   };
+  _isPolished?: boolean;
 }
 
 export type ResumeSectionKey =
