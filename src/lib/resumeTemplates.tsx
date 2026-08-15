@@ -493,7 +493,7 @@ function CompactPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
                 return (
                   <div key={i} className="mb-1">
                     <Editable as="div" value={p.name} onChange={update && (v => upd({ name: v }))} className="font-semibold" />
-                    <BulletsEditor bullets={(p.bullets || []).slice(0, 2)} onChange={update && (v => upd({ bullets: v }))} className="list-disc pl-3.5" />
+                    <BulletsEditor bullets={p.bullets || []} onChange={update && (v => upd({ bullets: v }))} className="list-disc pl-3.5" />
                   </div>
                 );
               })}
