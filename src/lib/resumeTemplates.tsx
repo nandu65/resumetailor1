@@ -1455,7 +1455,7 @@ export function ResumePreview({
   useEffect(() => { tagSections(rootRef.current); });
 
   return (
-    <div ref={rootRef} data-rs-root={scopeId}>
+    <div ref={rootRef} data-rs-root={scopeId} data-rs-preview-active>
       <style dangerouslySetInnerHTML={{ __html: sectionCss(`[data-rs-root="${scopeId}"]`, data.settings?.sections) }} />
       <PagedSheet>{inner}</PagedSheet>
     </div>
