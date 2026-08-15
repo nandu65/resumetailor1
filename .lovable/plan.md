@@ -5,34 +5,30 @@ This plan establishes a quick end-to-end check to verify that resume templates r
 ## User Review Required
 
 > [!NOTE]
-> I am adding a hidden automated check that runs in the background using Playwright to ensure the builder remains stable as you make changes.
+> I am adding an automated check that runs in the background to ensure the builder remains stable as you make changes.
 
 ## Technical Details
 
 ### 1. Unified State & Persistence
-- Verify the  canonical state is correctly stored in  or  (if implemented) or correctly hydrated from the .
-- Ensure  correctly handles the transition from  ->  ->  ->  to prevent rendering dead-ends.
+- Ensure `ResumeBuilder.tsx` correctly handles the transition from intro -> choice -> wizard -> editor to prevent rendering dead-ends.
+- Verify hydration logic so that a refresh doesn't drop the user back to the starting screen if they have progress.
 
 ### 2. Automated Regression Test
-- Create a Playwright-based test script in .
+- Create a Playwright-based test script in `src/test/e2e/resumeBuilder.test.ts`.
 - This script will:
     - Navigate to the builder.
     - Complete the onboarding wizard.
-    - Verify that the resume preview () is visible.
+    - Verify that the resume preview (`[data-rs-root]`) is visible.
     - Refresh the page and verify the preview persists.
     - Open the "Design & Layout" panel and switch templates, verifying visual updates.
 
-### 3. CI/CD Integration
-- Configure  to run these tests locally or in a CI environment.
-- Add a script to  to easily run E2E checks: `bun run test:e2e`.
-
-### 4. Implementation Steps
-- [x] Fix  transition logic (done: corrected  callback).
-- [ ] Install  dependency.
-- [ ] Implement the E2E test file.
-- [ ] Run and verify the tests pass.
+### 3. Implementation Steps
+- Correct `ResumeBuilder.tsx` transition logic.
+- Install `@playwright/test` dependency.
+- Implement the E2E test file and configuration.
+- Run and verify the tests pass.
 
 ## Success Criteria
 - The automated check passes consistently.
-- No "Resume preview NOT found" errors during manual or automated testing.
-- Templates render instantly after the wizard finishes.
+- No "Resume preview NOT found" errors during testing.
+- Templates render correctly immediately after the wizard finishes.
