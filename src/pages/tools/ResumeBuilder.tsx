@@ -168,6 +168,7 @@ export default function ResumeBuilder() {
       setResumeData({
         ...resumeData,
         ...generated,
+        _isPolished: true,
         settings: resumeData.settings // Preserve user settings
       });
       setShowEditHint(true);
