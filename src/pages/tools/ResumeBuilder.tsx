@@ -40,19 +40,37 @@ export default function ResumeBuilder() {
     navigate("/auth", { state: { from: "/tools/resume-builder" } });
   };
 
-  const [resumeData, setResumeData] = useState<ResumeData>(EMPTY_RESUME);
+  const [resumeData, setResumeData] = useState<ResumeData>(() => {
+    const saved = localStorage.getItem("rs-current-resume");
+    return saved ? JSON.parse(saved) : EMPTY_RESUME;
+  });
   const [targetJd, setTargetJd] = useState("");
-  const [template, setTemplate] = useState<TemplateId>("modern");
+  const [template, setTemplate] = useState<TemplateId>(() => {
+    return (localStorage.getItem("rs-current-template") as TemplateId) || "modern";
+  });
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<"ai" | "verbatim">("ai");
-  const [starter, setStarter] = useState<"choose" | "scratch" | "uploaded" | "wizard">("choose");
+  const [starter, setStarter] = useState<"choose" | "scratch" | "uploaded" | "wizard">(() => {
+    const saved = localStorage.getItem("rs-builder-starter");
+    return (saved as any) || "choose";
+  });
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const [showEditHint, setShowEditHint] = useState(false);
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(() => !localStorage.getItem("rs-intro-seen"));
   const [prefs, setPrefs] = useState<ResumePrefs>(DEFAULT_PREFS);
   const [spellCheckEnabled, setSpellCheckEnabled] = useState(true);
   const restoring = useRef(false);
+
+  // Persistence
+  useEffect(() => {
+    if (starter !== "choose" && starter !== "wizard") {
+      localStorage.setItem("rs-builder-starter", starter);
+      localStorage.setItem("rs-current-resume", JSON.stringify(resumeData));
+      localStorage.setItem("rs-current-template", template);
+    }
+  }, [starter, resumeData, template]);
+
 
   const fontFamilies = [
     { label: "Modern Sans", value: "Inter, sans-serif" },
@@ -193,7 +211,7 @@ export default function ResumeBuilder() {
 
   return (
     <div className="min-h-screen bg-background">
-      {showIntro && <BuilderIntroLoader onDone={() => { setShowIntro(false); if (starter === "choose") setStarter("choose"); }} />}
+      {showIntro && <BuilderIntroLoader onDone={() => { setShowIntro(false); localStorage.setItem("rs-intro-seen", "true"); }} />}
       <TemplatePreferencesWizard
         open={starter === "wizard"}
         onOpenChange={(v) => {
@@ -943,7 +961,7 @@ export default function ResumeBuilder() {
                    </div>
 
                    <div className="flex-1 overflow-y-auto rounded-[2rem] bg-background scrollbar-hide">
-                      {resumeData && resumeData.name ? (
+                       {resumeData ? (
                          <div className="p-8 origin-top scale-[0.9] transform-gpu transition-transform">
                             <ResumePreview template={template} data={resumeData} onChange={setResumeData} />
                          </div>

@@ -1880,3 +1880,4 @@ export function buildResumeDataVerbatim(input: RawProfileInput): ResumeData {
     settings: input.settings,
   };
 }
+
