@@ -1675,22 +1675,29 @@ export async function downloadResumeDocxFromData(data: ResumeData, template: Tem
     });
   };
 
-  const H = (text: string) =>
-    new Paragraph({
+  const H = (text: string) => {
+    const headSize = secStyles?.headings?.fontSize ? secStyles.headings.fontSize * 2 : (baseSize + 2);
+    return new Paragraph({
       spacing: { before: 200, after: 80 },
       border: { bottom: { color: accent, size: 8, style: BorderStyle.SINGLE, space: 2 } },
-      children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 22, color: accent, font })],
+      children: [new TextRun({ text: text.toUpperCase(), bold: true, size: headSize, color: accent, font })],
     });
+  };
 
-  const bullet = (text: string) => {
+  const bullet = (text: string, sectionKey?: ResumeSectionKey) => {
     const parts = parseDocxRichText(text);
+    const secStyle = sectionKey ? secStyles?.[sectionKey] : undefined;
+    const defaultBold = secStyle?.bold === true;
+    const defaultItalic = secStyle?.italic === true;
+    const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
+
     return new Paragraph({
       numbering: { reference: "bullets", level: 0 },
       children: parts.map(p => new TextRun({
         text: p.text,
-        bold: p.bold,
-        italics: p.italic,
-        size: 22,
+        bold: p.bold || defaultBold,
+        italics: p.italic || defaultItalic,
+        size: fontSize,
         font,
       })),
     });
