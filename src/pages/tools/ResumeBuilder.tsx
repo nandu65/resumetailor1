@@ -311,12 +311,13 @@ export default function ResumeBuilder() {
                             >
                               <div className="aspect-[1/1.4] bg-muted relative overflow-hidden flex items-center justify-center group-hover:bg-muted/80 transition-colors">
                                 <img 
-                                  src={`https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=560&fit=crop&q=80&text=${t.name}`} 
+                                  src={t.previewUrl || `https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=560&fit=crop&q=80&text=${t.name}`} 
                                   alt={t.name}
                                   className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105 opacity-60 group-hover:opacity-100"
                                   onError={(e) => {
                                     e.currentTarget.style.display = 'none';
-                                    e.currentTarget.parentElement?.querySelector('.fallback')?.classList.remove('hidden');
+                                    const fallback = e.currentTarget.parentElement?.querySelector('.fallback');
+                                    if (fallback) fallback.classList.remove('hidden');
                                   }}
                                 />
                                 <div className="fallback hidden absolute inset-0 flex flex-col items-center justify-center p-4">
