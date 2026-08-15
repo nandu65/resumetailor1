@@ -286,10 +286,13 @@ export default function ResumeBuilder() {
                         <Label className="text-base font-bold mb-4 block">Templates</Label>
                         <div className="grid grid-cols-2 gap-4">
                           {TEMPLATES.map(t => (
-                            <button key={t.id} onClick={() => setTemplate(t.id)} className={`group relative aspect-[3/4] rounded-xl border-2 transition-all p-1 ${template === t.id ? "border-primary shadow-glow" : "border-border hover:border-primary/40"}`}>
-                              <div className="w-full h-full bg-muted rounded-lg flex flex-col items-center justify-center p-2 text-center">
-                                <FileText className={`h-12 w-12 mb-2 ${template === t.id ? "text-primary" : "opacity-20"}`} />
-                                <span className="text-[10px] font-bold block">{t.name}</span>
+                            <button key={t.id} onClick={() => setTemplate(t.id)} className={`group relative rounded-xl border-2 transition-all p-3 ${template === t.id ? "border-primary shadow-glow bg-primary/5" : "border-border hover:border-primary/40 bg-background"}`}>
+                              <div className="flex flex-col items-center justify-center text-center">
+                                <div className={`h-12 w-12 rounded-lg mb-3 flex items-center justify-center ${template === t.id ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground opacity-50"}`}>
+                                  <FileText className="h-6 w-6" />
+                                </div>
+                                <span className="text-xs font-bold block mb-1">{t.name}</span>
+                                <span className="text-[10px] text-muted-foreground leading-tight hidden sm:block">{t.desc}</span>
                               </div>
                               {template === t.id && <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-0.5"><CheckCircle2 className="h-3 w-3" /></div>}
                             </button>
