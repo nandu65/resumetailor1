@@ -1775,7 +1775,7 @@ export function downloadResumePdfFromData(rawData: ResumeData, template: Templat
     } else {
       doc.setFont(font, defaultBold ? "bold" : defaultItalic ? "italic" : "normal");
       doc.setFontSize(size);
-      const lines = doc.splitTextToSize(t, pageW - margin * 2);
+      const lines = doc.splitTextToSize(/[<&]/.test(t) ? richToPlain(t) : t, pageW - margin * 2);
       lines.forEach((l: string) => { ensure(size * 1.3); doc.text(l, margin, y); y += (size * 1.3); });
     }
   };
@@ -1804,7 +1804,7 @@ export function downloadResumePdfFromData(rawData: ResumeData, template: Templat
       y += (size * 1.3);
     } else {
       doc.setFont(font, defaultBold ? "bold" : defaultItalic ? "italic" : "normal"); doc.setFontSize(size);
-      const lines = doc.splitTextToSize(t, pageW - margin * 2 - size * 1.4);
+      const lines = doc.splitTextToSize(/[<&]/.test(t) ? richToPlain(t) : t, pageW - margin * 2 - size * 1.4);
       lines.forEach((l: string, i: number) => {
         ensure(size * 1.3);
         if (i === 0) doc.text("•", margin + 4, y);
