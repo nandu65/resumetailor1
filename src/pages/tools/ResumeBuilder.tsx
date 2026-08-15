@@ -475,45 +475,45 @@ export default function ResumeBuilder() {
                      </div>
                    </div>
                    <div className="space-y-6">
-                      {experience.map((exp, i) => (
+                      {resumeData.experience.map((exp, i) => (
                         <div key={i} className="group p-5 rounded-2xl border bg-muted/20 relative animate-in fade-in slide-in-from-left-2 duration-300">
                            <Button 
                              variant="ghost" 
                              size="icon" 
                              className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-background border shadow-sm text-destructive opacity-0 group-hover:opacity-100 transition-opacity" 
-                             onClick={() => setExperience(experience.filter((_, j) => i !== j))}
+                             onClick={() => setResumeData(prev => ({ ...prev, experience: prev.experience.filter((_, j) => i !== j) }))}
                            >
                              <Trash2 className="h-3 w-3" />
                            </Button>
                            <div className="grid sm:grid-cols-2 gap-4 mb-4">
                               <div className="space-y-1">
                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Company</Label>
-                                <Input value={exp.company} onChange={e => { const n = [...experience]; n[i].company = e.target.value; setExperience(n); }} placeholder="Company" className="h-9 rounded-lg border-border/60 bg-background" />
+                                <Input value={exp.company} onChange={e => { const n = [...resumeData.experience]; n[i].company = e.target.value; setResumeData({ ...resumeData, experience: n }); }} placeholder="Company" className="h-9 rounded-lg border-border/60 bg-background" />
                               </div>
                               <div className="space-y-1">
                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Role</Label>
-                                <Input value={exp.role} onChange={e => { const n = [...experience]; n[i].role = e.target.value; setExperience(n); }} placeholder="Role" className="h-9 rounded-lg border-border/60 bg-background" />
+                                <Input value={exp.role} onChange={e => { const n = [...resumeData.experience]; n[i].role = e.target.value; setResumeData({ ...resumeData, experience: n }); }} placeholder="Role" className="h-9 rounded-lg border-border/60 bg-background" />
                               </div>
                            </div>
                            <div className="grid sm:grid-cols-3 gap-4 mb-4">
                               <div className="space-y-1">
                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Location</Label>
-                                <Input value={exp.location} onChange={e => { const n = [...experience]; n[i].location = e.target.value; setExperience(n); }} placeholder="Remote / City" className="h-9 rounded-lg border-border/60 bg-background" />
+                                <Input value={exp.location} onChange={e => { const n = [...resumeData.experience]; n[i].location = e.target.value; setResumeData({ ...resumeData, experience: n }); }} placeholder="Remote / City" className="h-9 rounded-lg border-border/60 bg-background" />
                               </div>
                               <div className="space-y-1">
                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Start Date</Label>
-                                <Input value={exp.start} onChange={e => { const n = [...experience]; n[i].start = e.target.value; setExperience(n); }} placeholder="Jan 2022" className="h-9 rounded-lg border-border/60 bg-background" />
+                                <Input value={exp.start} onChange={e => { const n = [...resumeData.experience]; n[i].start = e.target.value; setResumeData({ ...resumeData, experience: n }); }} placeholder="Jan 2022" className="h-9 rounded-lg border-border/60 bg-background" />
                               </div>
                               <div className="space-y-1">
                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">End Date</Label>
-                                <Input value={exp.end} onChange={e => { const n = [...experience]; n[i].end = e.target.value; setExperience(n); }} placeholder="Present" className="h-9 rounded-lg border-border/60 bg-background" />
+                                <Input value={exp.end} onChange={e => { const n = [...resumeData.experience]; n[i].end = e.target.value; setResumeData({ ...resumeData, experience: n }); }} placeholder="Present" className="h-9 rounded-lg border-border/60 bg-background" />
                               </div>
                            </div>
                            <div className="relative space-y-1">
                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Description</Label>
                                <Textarea 
-                                 value={exp.description} 
-                                 onChange={e => { const n = [...experience]; n[i].description = e.target.value; setExperience(n); }} 
+                                 value={exp.bullets.join('\n')} 
+                                 onChange={e => { const n = [...resumeData.experience]; n[i].bullets = e.target.value.split('\n'); setResumeData({ ...resumeData, experience: n }); }} 
                                  placeholder="Bullet points describing your achievements..." 
                                  className="min-h-[100px] rounded-lg border-border/60 bg-background resize-none pb-10" 
                                  spellCheck={spellCheckEnabled} 
@@ -525,10 +525,9 @@ export default function ResumeBuilder() {
                                   </Button>
                                </div>
                            </div>
-
                         </div>
                       ))}
-                      {experience.length === 0 && (
+                      {resumeData.experience.length === 0 && (
                         <div className="text-center py-10 border-2 border-dashed rounded-2xl text-muted-foreground italic">No experience added.</div>
                       )}
                    </div>
