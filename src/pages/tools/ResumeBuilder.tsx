@@ -541,61 +541,61 @@ export default function ResumeBuilder() {
                         <h3 className="font-display text-lg font-bold">4. Education</h3>
                      </div>
                      <div className="flex gap-2">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/5 text-primary" title="Typography">
-                                <Settings2 className="h-4 w-4" />
+                         <Popover>
+                             <PopoverTrigger asChild>
+                             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/5 text-primary" title="Typography">
+                                 <Settings2 className="h-4 w-4" />
+                             </Button>
+                             </PopoverTrigger>
+                             <PopoverContent className="w-80" align="end">
+                                 <SectionStyleControls value={resumeData.settings?.sections || {}} onChange={sections => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, sections } }))} baseSize={resumeData.settings?.fontSize || 11} sectionKey="education" hideHeader />
+                             </PopoverContent>
+                         </Popover>
+                         <Button variant="outline" size="sm" onClick={addEdu} className="h-8 rounded-full gap-1 border-primary/20 hover:bg-primary/5 text-primary">
+                             <Plus className="h-3 w-3" />
+                             <span className="text-[10px] font-bold">ADD SCHOOL</span>
+                         </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-6">
+                       {resumeData.education.map((edu, i) => (
+                         <div key={i} className="group p-5 rounded-2xl border bg-muted/20 relative animate-in fade-in slide-in-from-left-2 duration-300">
+                            <Button variant="ghost" size="icon" className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-background border shadow-sm text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setResumeData(prev => ({ ...prev, education: prev.education.filter((_, j) => i !== j) }))}>
+                              <Trash2 className="h-3 w-3" />
                             </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-80" align="end">
-                                <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="education" hideHeader />
-                            </PopoverContent>
-                        </Popover>
-                        <Button variant="outline" size="sm" onClick={addEdu} className="h-8 rounded-full gap-1 border-primary/20 hover:bg-primary/5 text-primary">
-                            <Plus className="h-3 w-3" />
-                            <span className="text-[10px] font-bold">ADD SCHOOL</span>
-                        </Button>
-                     </div>
-                   </div>
-                   <div className="space-y-6">
-                      {education.map((edu, i) => (
-                        <div key={i} className="group p-5 rounded-2xl border bg-muted/20 relative animate-in fade-in slide-in-from-left-2 duration-300">
-                           <Button variant="ghost" size="icon" className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-background border shadow-sm text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setEducation(education.filter((_, j) => i !== j))}>
-                             <Trash2 className="h-3 w-3" />
-                           </Button>
-                           <div className="grid sm:grid-cols-2 gap-4 mb-4">
-                              <div className="space-y-1">
-                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">School</Label>
-                                <Input value={edu.school} onChange={e => { const n = [...education]; n[i].school = e.target.value; setEducation(n); }} placeholder="University Name" className="h-9 rounded-lg border-border/60 bg-background" />
-                              </div>
-                              <div className="space-y-1">
-                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Degree</Label>
-                                <Input value={edu.degree} onChange={e => { const n = [...education]; n[i].degree = e.target.value; setEducation(n); }} placeholder="B.S. in Computer Science" className="h-9 rounded-lg border-border/60 bg-background" />
-                              </div>
-                           </div>
-                           <div className="grid sm:grid-cols-3 gap-4 mb-4">
-                              <div className="space-y-1">
-                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Location</Label>
-                                <Input value={edu.location} onChange={e => { const n = [...education]; n[i].location = e.target.value; setEducation(n); }} placeholder="City, State" className="h-9 rounded-lg border-border/60 bg-background" />
-                              </div>
-                              <div className="space-y-1">
-                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Start Date</Label>
-                                <Input value={edu.start} onChange={e => { const n = [...education]; n[i].start = e.target.value; setEducation(n); }} placeholder="2018" className="h-9 rounded-lg border-border/60 bg-background" />
-                              </div>
-                              <div className="space-y-1">
-                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">End Date</Label>
-                                <Input value={edu.end} onChange={e => { const n = [...education]; n[i].end = e.target.value; setEducation(n); }} placeholder="2022" className="h-9 rounded-lg border-border/60 bg-background" />
-                              </div>
-                           </div>
-                           <div className="space-y-1">
-                               <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Details / Honors</Label>
-                               <Input value={edu.details} onChange={e => { const n = [...education]; n[i].details = e.target.value; setEducation(n); }} placeholder="GPA: 3.9, Dean's List..." className="h-9 rounded-lg border-border/60 bg-background" />
-                           </div>
-                        </div>
-                      ))}
-                      {education.length === 0 && (
-                        <div className="text-center py-10 border-2 border-dashed rounded-2xl text-muted-foreground italic">No education added.</div>
-                      )}
+                            <div className="grid sm:grid-cols-2 gap-4 mb-4">
+                               <div className="space-y-1">
+                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">School</Label>
+                                 <Input value={edu.school} onChange={e => { const n = [...resumeData.education]; n[i].school = e.target.value; setResumeData({ ...resumeData, education: n }); }} placeholder="University Name" className="h-9 rounded-lg border-border/60 bg-background" />
+                               </div>
+                               <div className="space-y-1">
+                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Degree</Label>
+                                 <Input value={edu.degree} onChange={e => { const n = [...resumeData.education]; n[i].degree = e.target.value; setResumeData({ ...resumeData, education: n }); }} placeholder="B.S. in Computer Science" className="h-9 rounded-lg border-border/60 bg-background" />
+                               </div>
+                            </div>
+                            <div className="grid sm:grid-cols-3 gap-4 mb-4">
+                               <div className="space-y-1">
+                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Location</Label>
+                                 <Input value={edu.location} onChange={e => { const n = [...resumeData.education]; n[i].location = e.target.value; setResumeData({ ...resumeData, education: n }); }} placeholder="City, State" className="h-9 rounded-lg border-border/60 bg-background" />
+                               </div>
+                               <div className="space-y-1">
+                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Start Date</Label>
+                                 <Input value={edu.start} onChange={e => { const n = [...resumeData.education]; n[i].start = e.target.value; setResumeData({ ...resumeData, education: n }); }} placeholder="2018" className="h-9 rounded-lg border-border/60 bg-background" />
+                               </div>
+                               <div className="space-y-1">
+                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">End Date</Label>
+                                 <Input value={edu.end} onChange={e => { const n = [...resumeData.education]; n[i].end = e.target.value; setResumeData({ ...resumeData, education: n }); }} placeholder="2022" className="h-9 rounded-lg border-border/60 bg-background" />
+                               </div>
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Details / Honors</Label>
+                                <Input value={edu.details} onChange={e => { const n = [...resumeData.education]; n[i].details = e.target.value; setResumeData({ ...resumeData, education: n }); }} placeholder="GPA: 3.9, Dean's List..." className="h-9 rounded-lg border-border/60 bg-background" />
+                            </div>
+                         </div>
+                       ))}
+                       {resumeData.education.length === 0 && (
+                         <div className="text-center py-10 border-2 border-dashed rounded-2xl text-muted-foreground italic">No education added.</div>
+                       )}
                    </div>
                 </div>
 
