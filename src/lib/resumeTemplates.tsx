@@ -1655,15 +1655,20 @@ export async function downloadResumeDocxFromData(data: ResumeData, template: Tem
     return parts;
   };
 
-  const P = (text: string, opts: { bold?: boolean; italic?: boolean; size?: number; color?: string; align?: any } = {}) => {
+  const P = (text: string, opts: { bold?: boolean; italic?: boolean; size?: number; color?: string; align?: any; sectionKey?: ResumeSectionKey } = {}) => {
     const parts = parseDocxRichText(text);
+    const secStyle = opts.sectionKey ? secStyles?.[opts.sectionKey] : undefined;
+    const defaultBold = opts.bold || secStyle?.bold === true;
+    const defaultItalic = opts.italic || secStyle?.italic === true;
+    const fontSize = opts.size ?? (secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize);
+
     return new Paragraph({
       alignment: opts.align,
       children: parts.map(p => new TextRun({
         text: p.text,
-        bold: p.bold || opts.bold,
-        italics: p.italic || opts.italic,
-        size: opts.size ?? 22,
+        bold: p.bold || defaultBold,
+        italics: p.italic || defaultItalic,
+        size: fontSize,
         color: opts.color,
         font,
       })),
