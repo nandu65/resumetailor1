@@ -1739,18 +1739,7 @@ export function downloadResumePdfFromData(rawData: ResumeData, template: Templat
   const secBold = () => (curSec ? secStyles?.[curSec]?.bold : undefined);
   const secItalic = () => (curSec ? secStyles?.[curSec]?.italic : undefined);
 
-  const parseRichText = (text: string) => {
-    if (!text) return [{ text: "", bold: false, italic: false }];
-    const parts: { text: string; bold: boolean; italic: boolean }[] = [];
-    const regex = /<(b|i)>(.*?)<\/\1>|([^<]+)/g;
-    let match;
-    while ((match = regex.exec(text)) !== null) {
-      if (match[1] === "b") parts.push({ text: match[2], bold: true, italic: false });
-      else if (match[1] === "i") parts.push({ text: match[2], bold: false, italic: true });
-      else if (match[3]) parts.push({ text: match[3], bold: false, italic: false });
-    }
-    return parts;
-  };
+  const parseRichText = (text: string) => parseRichSegments(text);
 
   const H2 = (t: string) => {
     curSec = secOf(t);
@@ -1768,7 +1757,7 @@ export function downloadResumePdfFromData(rawData: ResumeData, template: Templat
     const size = opts.size ?? secSize();
     
     // Check if rich text
-    if (t.includes("<b>") || t.includes("<i>")) {
+    if (/<(b|i|u|strong|em|span|font)\b/i.test(t)) {
       const parts = parseRichText(t);
       ensure(13);
       let curX = margin;
@@ -1776,9 +1765,11 @@ export function downloadResumePdfFromData(rawData: ResumeData, template: Templat
         const isBold = p.bold || defaultBold;
         const isItalic = p.italic || defaultItalic;
         doc.setFont(font, isBold && isItalic ? "bolditalic" : isBold ? "bold" : isItalic ? "italic" : "normal");
-        doc.setFontSize(size);
+        doc.setFontSize(p.fontSize ?? size);
         doc.text(p.text, curX, y);
-        curX += doc.getTextWidth(p.text);
+        const w = doc.getTextWidth(p.text);
+        if (p.underline) { doc.setLineWidth(0.5); doc.line(curX, y + 1.5, curX + w, y + 1.5); }
+        curX += w;
       });
       y += 13;
     } else {
@@ -1794,7 +1785,7 @@ export function downloadResumePdfFromData(rawData: ResumeData, template: Templat
     const defaultBold = secBold() === true;
     const defaultItalic = secItalic() === true;
     
-    if (t.includes("<b>") || t.includes("<i>")) {
+    if (/<(b|i|u|strong|em|span|font)\b/i.test(t)) {
       const parts = parseRichText(t);
       ensure(size * 1.3);
       doc.setFont(font, "normal"); doc.setFontSize(size);
@@ -1804,9 +1795,11 @@ export function downloadResumePdfFromData(rawData: ResumeData, template: Templat
         const isBold = p.bold || defaultBold;
         const isItalic = p.italic || defaultItalic;
         doc.setFont(font, isBold && isItalic ? "bolditalic" : isBold ? "bold" : isItalic ? "italic" : "normal");
-        doc.setFontSize(size);
+        doc.setFontSize(p.fontSize ?? size);
         doc.text(p.text, curX, y);
-        curX += doc.getTextWidth(p.text);
+        const w = doc.getTextWidth(p.text);
+        if (p.underline) { doc.setLineWidth(0.5); doc.line(curX, y + 1.5, curX + w, y + 1.5); }
+        curX += w;
       });
       y += (size * 1.3);
     } else {
@@ -1900,18 +1893,7 @@ export async function downloadResumeDocxFromData(rawData: ResumeData, template: 
   const baseSize = (data.settings?.fontSize || 11) * 2; // docx uses half-points
   const secStyles = data.settings?.sections;
 
-  const parseDocxRichText = (text: string) => {
-    if (!text) return [{ text: "", bold: false, italic: false }];
-    const parts: { text: string; bold: boolean; italic: boolean }[] = [];
-    const regex = /<(b|i)>(.*?)<\/\1>|([^<]+)/g;
-    let match;
-    while ((match = regex.exec(text)) !== null) {
-      if (match[1] === "b") parts.push({ text: match[2], bold: true, italic: false });
-      else if (match[1] === "i") parts.push({ text: match[2], bold: false, italic: true });
-      else if (match[3]) parts.push({ text: match[3], bold: false, italic: false });
-    }
-    return parts;
-  };
+  const parseDocxRichText = (text: string) => parseRichSegments(text);
 
   const P = (text: string, opts: { bold?: boolean; italic?: boolean; size?: number; color?: string; align?: any; sectionKey?: ResumeSectionKey } = {}) => {
     const parts = parseDocxRichText(text);
@@ -1926,9 +1908,10 @@ export async function downloadResumeDocxFromData(rawData: ResumeData, template: 
         text: p.text,
         bold: p.bold || defaultBold,
         italics: p.italic || defaultItalic,
-        size: fontSize,
+        underline: p.underline ? {} : undefined,
+        size: p.fontSize ? Math.round(p.fontSize * 2) : fontSize,
         color: opts.color,
-        font,
+        font: p.fontFamily ? p.fontFamily.split(",")[0].replace(/['"]/g, "").trim() : font,
       })),
     });
   };
@@ -1955,8 +1938,9 @@ export async function downloadResumeDocxFromData(rawData: ResumeData, template: 
         text: p.text,
         bold: p.bold || defaultBold,
         italics: p.italic || defaultItalic,
-        size: fontSize,
-        font,
+        underline: p.underline ? {} : undefined,
+        size: p.fontSize ? Math.round(p.fontSize * 2) : fontSize,
+        font: p.fontFamily ? p.fontFamily.split(",")[0].replace(/['"]/g, "").trim() : font,
       })),
     });
   };
