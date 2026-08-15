@@ -107,7 +107,10 @@ export default function ResumeBuilder() {
         certifications: p.certifications || [],
       };
 
-      setResumeData(newResume);
+      setResumeData({
+        ...newResume,
+        _isPolished: false
+      });
       setStarter("uploaded");
       toast.success("Resume imported — review the fields below, then generate.");
     } catch (e) {
