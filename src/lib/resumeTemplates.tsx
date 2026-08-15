@@ -1880,3 +1880,32 @@ export function buildResumeDataVerbatim(input: RawProfileInput): ResumeData {
     settings: input.settings,
   };
 }
+
+export const ResumePreview = React.memo(({ template, data, onChange }: { 
+  template: TemplateId; 
+  data: ResumeData; 
+  onChange?: (v: ResumeData) => void;
+}) => {
+  const update = onChange ? (patch: Partial<ResumeData>) => onChange({ ...data, ...patch }) : undefined;
+  
+  // Use data-rs-root to help E2E tests identify that the preview is rendered
+  return (
+    <div data-rs-root className="relative">
+      {template === "modern" && <ModernPreview r={data} update={update} />}
+      {template === "classic" && <ClassicPreview r={data} update={update} />}
+      {template === "compact" && <CompactPreview r={data} update={update} />}
+      {template === "executive" && <ExecutivePreview r={data} update={update} />}
+      {template === "creative" && <CreativePreview r={data} update={update} />}
+      {template === "minimal" && <MinimalPreview r={data} update={update} />}
+      {template === "timeline" && <TimelinePreview r={data} update={update} />}
+      {template === "elegant" && <ElegantPreview r={data} update={update} />}
+      {template === "sidebar-dark" && <SidebarDarkPreview r={data} update={update} />}
+      {template === "photo-header" && <PhotoHeaderPreview r={data} update={update} />}
+      {template === "centered-serif" && <CenteredSerifPreview r={data} update={update} />}
+      {template === "banner-photo" && <BannerPhotoPreview r={data} update={update} />}
+      {template === "teal-left" && <TealLeftPreview r={data} update={update} />}
+      {template === "photo-grid" && <PhotoGridPreview r={data} update={update} />}
+      {template === "logo-boxed" && <LogoBoxedPreview r={data} update={update} />}
+    </div>
+  );
+});
