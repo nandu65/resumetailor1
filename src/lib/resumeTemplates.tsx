@@ -355,15 +355,26 @@ function ModernPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
           {r.skills?.length > 0 && (
             <div className="mt-5">
               <div className="uppercase tracking-wider text-[9px] font-bold border-b border-emerald-600 pb-1 mb-2">Skills</div>
-              {r.skills.map((s, i) => {
-                const upd = makeSkillUpdater(update, r, i);
-                return (
-                  <div key={i} className="mb-2">
-                    <Editable as="div" value={s.category} onChange={update && (v => upd({ category: v }))} className="font-semibold text-[10px]" />
-                    <Editable as="div" value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} className="text-[10px] text-emerald-50" />
-                  </div>
-                );
-              })}
+              <div className="flex flex-wrap gap-1.5">
+                {r.skills.flatMap(s => s.items).map((it, k) => (
+                  <span key={k} className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-700/50 text-emerald-50 border border-emerald-600/30 whitespace-nowrap">
+                    {it}
+                  </span>
+                ))}
+              </div>
+              {update && (
+                <div className="mt-4 pt-2 border-t border-emerald-700/30 opacity-20 hover:opacity-100 transition-opacity">
+                  {r.skills.map((s, i) => {
+                    const upd = makeSkillUpdater(update, r, i);
+                    return (
+                      <div key={i} className="mb-2">
+                        <Editable as="div" value={s.category} onChange={update && (v => upd({ category: v }))} className="font-semibold text-[10px]" />
+                        <Editable as="div" value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} className="text-[10px] text-emerald-50" />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
           {r.certifications?.length > 0 && (
@@ -1039,18 +1050,24 @@ function ElegantPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
         </section>
       )}
       {r.skills?.length > 0 && (
-        <section>{H("Core Competencies")}
-          <div className="text-center text-[11px]">
-            {r.skills.flatMap(s => s.items).join("  ·  ")}
+        <section>{H("Skills")}
+          <div className="flex flex-wrap justify-center gap-2 px-4">
+            {r.skills.flatMap(s => s.items).map((it, k) => (
+              <span key={k} className="text-[10px] px-2.5 py-1 rounded-full bg-stone-100 text-stone-800 border border-stone-200">{it}</span>
+            ))}
           </div>
-          {update && r.skills.map((s, i) => {
-            const upd = makeSkillUpdater(update, r, i);
-            return (
-              <div key={i} className="text-[9px] text-stone-400 text-center mt-1">
-                <Editable value={s.category} onChange={v => upd({ category: v })} />: <Editable value={s.items.join(", ")} onChange={v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) })} />
-              </div>
-            );
-          })}
+          {update && (
+            <div className="mt-4 pt-2 border-t border-stone-100 opacity-20 hover:opacity-100 transition-opacity">
+              {r.skills.map((s, i) => {
+                const upd = makeSkillUpdater(update, r, i);
+                return (
+                  <div key={i} className="text-[9px] text-stone-400 text-center mt-1">
+                    <Editable value={s.category} onChange={v => upd({ category: v })} />: <Editable value={s.items.join(", ")} onChange={v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) })} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
       )}
       {r.certifications?.length > 0 && (
@@ -1137,7 +1154,11 @@ function SidebarDarkPreview({ r, update }: { r: ResumeData; update?: UpdateFn })
                 return (
                   <div key={i} className="mb-2">
                     <Editable as="div" value={s.category} onChange={update && (v => upd({ category: v }))} className="font-semibold text-[10px]" />
-                    <Editable as="div" value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} className="text-[10px] text-teal-100" />
+                    <div className="flex flex-wrap gap-1 mt-0.5">
+                      {s.items.map((it, k) => (
+                        <span key={k} className="text-[9px] px-1.5 py-0.5 rounded-full bg-teal-600 text-teal-50 border border-teal-500/30">{it}</span>
+                      ))}
+                    </div>
                   </div>
                 );
               })}
@@ -1283,7 +1304,28 @@ function CenteredSerifPreview({ r, update }: { r: ResumeData; update?: UpdateFn 
           </div>
         );
       })}</>)}
-      {r.skills?.length > 0 && (<><Rule label="Skills" /><div className="text-center text-[10.5px]">{r.skills.flatMap(s => s.items).join(" · ")}</div>{update && r.skills.map((s, i) => { const upd = makeSkillUpdater(update, r, i); return (<div key={i} className="text-[9px] text-neutral-400 text-center mt-0.5"><Editable value={s.category} onChange={v => upd({ category: v })} />: <Editable value={s.items.join(", ")} onChange={v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) })} /></div>); })}</>)}
+      {r.skills?.length > 0 && (
+        <>
+          <Rule label="Skills" />
+          <div className="flex flex-wrap justify-center gap-2 px-6">
+            {r.skills.flatMap(s => s.items).map((it, k) => (
+              <span key={k} className="text-[10px] border border-neutral-300 px-2 py-0.5 rounded-sm bg-neutral-50">{it}</span>
+            ))}
+          </div>
+          {update && (
+            <div className="mt-4 pt-2 border-t border-neutral-100 opacity-20 hover:opacity-100 transition-opacity">
+              {r.skills.map((s, i) => {
+                const upd = makeSkillUpdater(update, r, i);
+                return (
+                  <div key={i} className="text-[9px] text-neutral-400 text-center mt-0.5">
+                    <Editable value={s.category} onChange={v => upd({ category: v })} />: <Editable value={s.items.join(", ")} onChange={v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) })} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
       {r.education?.length > 0 && (<><Rule label="Education" />{r.education.map((e, i) => { const upd = makeEduUpdater(update, r, i); return (
         <div key={i} className="flex justify-between mb-1"><span><Editable value={e.school} onChange={update && (v => upd({ school: v }))} /> — <span className="italic"><Editable value={e.degree} onChange={update && (v => upd({ degree: v }))} /></span></span><span className="text-[10px]"><Editable value={e.start} onChange={update && (v => upd({ start: v }))} /> – <Editable value={e.end} onChange={update && (v => upd({ end: v }))} /></span></div>
       ); })}</>)}
@@ -1530,7 +1572,11 @@ export function ResumePreview({
     template === "logo-boxed" ? <LogoBoxedPreview r={data} update={update} /> :
     <ClassicPreview r={data} update={update} />;
 
-  useEffect(() => { tagSections(rootRef.current); });
+  useEffect(() => {
+    // Add small delay to ensure DOM is ready for tagging
+    const timer = setTimeout(() => tagSections(rootRef.current), 50);
+    return () => clearTimeout(timer);
+  }, [template, data.settings?.sectionOrder, data.experience.length, data.education.length, data.projects.length, data.skills.length]);
 
   return (
     <div ref={rootRef} data-rs-root={scopeId}>
