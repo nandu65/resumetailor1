@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown, Link2, Wand, CheckCircle2, ArrowLeft, Type, TypeIcon, SpellCheck, Undo2, Redo2, Settings2, Palette, ChevronRight, Share2, Printer, Eye, Target, Bold, Italic, List, ListOrdered, Link as LinkIcon, Underline } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown, Link2, Wand, CheckCircle2, ArrowLeft, Type, TypeIcon, SpellCheck, Undo2, Redo2, Settings2, Palette, ChevronRight, Share2, Printer, Eye, Target, Bold, Italic, List, ListOrdered, Link as LinkIcon, Underline, Cloud, CloudOff } from "lucide-react";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
+
+
 import { SectionStyleControls, SectionStyles } from "@/components/SectionStyleControls";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -126,6 +128,9 @@ export default function ResumeBuilder() {
   const [spellCheckEnabled, setSpellCheckEnabled] = useState(true);
   const restoring = useRef(false);
   const [showFormattingToolbar, setShowFormattingToolbar] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
 
   useEffect(() => {
     const handleSelection = () => {
@@ -184,14 +189,93 @@ export default function ResumeBuilder() {
 
 
 
-  // Persistence
+  // Persistence & Autosave
   useEffect(() => {
+    // Immediate LocalStorage save for quick recovery
     if (starter !== "choose" && starter !== "wizard") {
       localStorage.setItem("rs-builder-starter", starter);
       localStorage.setItem("rs-current-resume", JSON.stringify(resumeData));
       localStorage.setItem("rs-current-template", template);
+      localStorage.setItem("rs-last-edited", new Date().toISOString());
     }
-  }, [starter, resumeData, template]);
+
+    // Debounced Cloud Sync
+    if (!user || starter === "choose" || starter === "wizard") return;
+
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    
+    setSaveStatus("saving");
+    saveTimerRef.current = setTimeout(async () => {
+      try {
+        const { error } = await supabase
+          .from("resume_drafts")
+          .upsert({
+            user_id: user.id,
+            resume_data: resumeData as any,
+            template_id: template,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'user_id' });
+
+        if (error) throw error;
+        setSaveStatus("saved");
+        setTimeout(() => setSaveStatus("idle"), 3000);
+      } catch (e) {
+        console.error("Autosave failed:", e);
+        setSaveStatus("error");
+      }
+    }, 2000);
+
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [starter, resumeData, template, user]);
+
+  // Initial Load & Cloud Sync
+  useEffect(() => {
+    if (!user) return;
+
+    const syncCloudDraft = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("resume_drafts")
+          .select("*")
+          .single();
+
+        if (error && error.code !== 'PGRST116') throw error; // PGRST116 is not found
+
+        if (data) {
+          const localLastEdited = localStorage.getItem("rs-last-edited");
+          const cloudLastEdited = data.updated_at;
+
+          // If cloud is newer OR no local data, use cloud
+          if (!localLastEdited || new Date(cloudLastEdited) > new Date(localLastEdited)) {
+            restoring.current = true;
+            setResumeData(data.resume_data as unknown as ResumeData);
+            setTemplate(data.template_id as TemplateId);
+            setStarter("uploaded"); // Assuming if there's a draft, they've started
+            setTimeout(() => { restoring.current = false; }, 0);
+            toast.success("Draft loaded from cloud");
+          } else {
+
+            // Local is newer, trigger a sync to cloud immediately
+            setSaveStatus("saving");
+            await supabase.from("resume_drafts").upsert({
+              user_id: user.id,
+              resume_data: resumeData as any,
+              template_id: template,
+              updated_at: new Date().toISOString()
+            });
+            setSaveStatus("saved");
+          }
+        }
+      } catch (e) {
+        console.error("Draft sync failed:", e);
+      }
+    };
+
+    syncCloudDraft();
+  }, [user?.id]);
+
 
 
   const fontFamilies = [
@@ -412,6 +496,21 @@ export default function ResumeBuilder() {
               </div>
 
               <div className="flex items-center gap-2">
+                {user && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/50 text-[10px] font-bold border border-border/50 text-muted-foreground mr-2">
+                    {saveStatus === "saving" ? (
+                      <Cloud className="h-3 w-3 animate-pulse text-primary" />
+                    ) : saveStatus === "error" ? (
+                      <CloudOff className="h-3 w-3 text-destructive" />
+                    ) : (
+                      <CheckCircle2 className="h-3 w-3 text-green-500" />
+                    )}
+                    <span className="hidden sm:inline">
+                      {saveStatus === "saving" ? "Saving..." : saveStatus === "error" ? "Offline" : "Synced"}
+                    </span>
+                  </div>
+                )}
+
                 <Sheet>
                   <SheetTrigger asChild>
                     <Button variant="outline" size="sm" className="h-9 rounded-full gap-2 border-primary/20 hover:bg-primary/5">
