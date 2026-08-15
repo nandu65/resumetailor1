@@ -285,13 +285,8 @@ export default function ResumeBuilder() {
                       <div>
                         <Label className="text-base font-bold mb-4 block">Templates</Label>
                         <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4">
                           {TEMPLATES.map(t => (
-                            <button 
-                              key={t.id} 
-                              onClick={() => setTemplate(t.id)} 
-                              className={`group relative rounded-xl border-2 transition-all overflow-hidden flex flex-col ${template === t.id ? "border-primary shadow-glow bg-primary/5" : "border-border hover:border-primary/40 bg-background"}`}
-                            >
-                              <div className="aspect-[1/1.4] bg-muted/30 relative overflow-hidden flex items-center justify-center group-hover:bg-muted/50 transition-colors">
                             <button 
                               key={t.id} 
                               onClick={() => setTemplate(t.id)} 
