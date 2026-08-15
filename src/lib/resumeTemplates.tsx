@@ -1598,7 +1598,7 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
       line(`${e.role} — ${e.company}${e.location ? `, ${e.location}` : ""}`, { bold: true });
       if (e.start || e.end) line(`${e.start} – ${e.end}`, { italic: true, size: 9 });
       e.bullets?.forEach(b => bullet(b));
-      y += 4;
+      y += (size * 0.4);
     });
   }
   if (data.projects?.length) {
@@ -1606,7 +1606,7 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
     data.projects.forEach(p => {
       line(`${p.name}${p.tech ? ` — ${p.tech}` : ""}`, { bold: true });
       p.bullets?.forEach(b => bullet(b));
-      y += 4;
+      y += (secSize() * 0.4);
     });
   }
   if (data.education?.length) {
