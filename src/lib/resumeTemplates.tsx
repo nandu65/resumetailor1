@@ -1552,7 +1552,7 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
       doc.setFont(font, defaultBold ? "bold" : defaultItalic ? "italic" : "normal");
       doc.setFontSize(size);
       const lines = doc.splitTextToSize(t, pageW - margin * 2);
-      lines.forEach((l: string) => { ensure(13); doc.text(l, margin, y); y += 13; });
+      lines.forEach((l: string) => { ensure(size * 1.3); doc.text(l, margin, y); y += (size * 1.3); });
     }
   };
 
