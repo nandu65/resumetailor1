@@ -61,31 +61,31 @@ export const TEMPLATES: { id: TemplateId; name: string; desc: string; previewUrl
     id: "modern", 
     name: "Modern Professional", 
     desc: "Clean sidebar layout with emerald accents, ideal for technology and design roles.",
-    previewUrl: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=560&fit=crop&q=80" 
+    previewUrl: "/__l5e/assets-v1/270ae0f4-90a9-4cce-8613-5f0c2759fea3/resume-modern.png" 
   },
   { 
     id: "executive", 
     name: "Executive Serif", 
     desc: "Distinguished typography with amber-toned headers for senior leadership positions.",
-    previewUrl: "https://images.unsplash.com/photo-1506784919141-93728286a59d?w=400&h=560&fit=crop&q=80" 
+    previewUrl: "/__l5e/assets-v1/799a2e4f-96fe-40f9-bdc9-fb2c1276ba9d/resume-executive.png" 
   },
   { 
     id: "creative", 
     name: "Creative Indigo", 
     desc: "Bold gradient header and two-column structure for marketing and creative professionals.",
-    previewUrl: "https://images.unsplash.com/photo-1626197031507-c17099753214?w=400&h=560&fit=crop&q=80" 
+    previewUrl: "/__l5e/assets-v1/3af83925-7929-49ab-ba75-a80ffe563299/resume-creative.png" 
   },
   { 
     id: "minimal", 
     name: "Ultra Minimal", 
     desc: "Sophisticated use of whitespace and light weights for a modern, airy aesthetic.",
-    previewUrl: "https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?w=400&h=560&fit=crop&q=80" 
+    previewUrl: "/__l5e/assets-v1/4a23c33e-0f60-4bca-8abc-f50a3631fdce/resume-minimal.png" 
   },
   { 
     id: "classic", 
     name: "Classic ATS-Optimized", 
     desc: "Single-column format designed for maximum compatibility with tracking systems.",
-    previewUrl: "https://images.unsplash.com/photo-1626197031507-c17099753214?w=400&h=560&fit=crop&q=80" 
+    previewUrl: "/__l5e/assets-v1/bce36fa0-e17a-4422-a3b1-2201bb09f002/resume-classic.png" 
   }
 ];
 
