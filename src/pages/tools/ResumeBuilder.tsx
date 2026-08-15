@@ -211,7 +211,7 @@ export default function ResumeBuilder() {
 
   return (
     <div className="min-h-screen bg-background">
-      {showIntro && <BuilderIntroLoader onDone={() => { setShowIntro(false); localStorage.setItem("rs-intro-seen", "true"); setStarter("choose"); }} />}
+      {showIntro && <BuilderIntroLoader onDone={() => { setShowIntro(false); localStorage.setItem("rs-intro-seen", "true"); }} />}
       <TemplatePreferencesWizard
         open={starter === "wizard"}
         onOpenChange={(v) => {
