@@ -323,7 +323,7 @@ export default function ResumeBuilder() {
                         </div>
                       </div>
                       <Separator />
-                      <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} />
+                      <SectionStyleControls value={resumeData.settings?.sections || {}} onChange={sections => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, sections } }))} baseSize={resumeData.settings?.fontSize || 11} />
                     </div>
                   </SheetContent>
                 </Sheet>
@@ -336,8 +336,8 @@ export default function ResumeBuilder() {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-48 p-2" align="end">
-                    <Button variant="ghost" className="w-full justify-start gap-2" onClick={downloadPdf} disabled={!resume}><FileText className="h-4 w-4" /> PDF Document</Button>
-                    <Button variant="ghost" className="w-full justify-start gap-2" onClick={downloadDocx} disabled={!resume}><FileEdit className="h-4 w-4" /> Word (DOCX)</Button>
+                    <Button variant="ghost" className="w-full justify-start gap-2" onClick={downloadPdf} disabled={!resumeData}><FileText className="h-4 w-4" /> PDF Document</Button>
+                    <Button variant="ghost" className="w-full justify-start gap-2" onClick={downloadDocx} disabled={!resumeData}><FileEdit className="h-4 w-4" /> Word (DOCX)</Button>
                   </PopoverContent>
                 </Popover>
 
