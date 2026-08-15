@@ -26,15 +26,10 @@ import { BuilderIntroLoader } from "@/components/BuilderIntroLoader";
 import { TemplatePreferencesWizard, DEFAULT_PREFS, ResumePrefs } from "@/components/TemplatePreferencesWizard";
 import { PreferenceFilterBar, scoreTemplate } from "@/components/PreferenceFilterBar";
 
-
-
-type Exp = { company: string; role: string; location: string; start: string; end: string; description: string };
-type Edu = { school: string; degree: string; location: string; start: string; end: string; details: string };
-type Proj = { name: string; tech: string; description: string };
-
 const EMPTY_RESUME: ResumeData = {
   name: "", title: "", email: "", phone: "", location: "", links: [],
   summary: "", experience: [], education: [], projects: [], skills: [], certifications: [],
+  settings: { fontSize: 11, fontFamily: "Inter, sans-serif", sections: {} }
 };
 
 export default function ResumeBuilder() {
@@ -44,35 +39,20 @@ export default function ResumeBuilder() {
     toast.info(`Sign in to ${intent}`);
     navigate("/auth", { state: { from: "/tools/resume-builder" } });
   };
-  const [basics, setBasics] = useState({ name: "", title: "", email: "", phone: "", location: "" });
-  const [links, setLinks] = useState<{ label: string; url: string }[]>([
-    { label: "LinkedIn", url: "" },
-  ]);
-  const [summary, setSummary] = useState("");
-  const [experience, setExperience] = useState<Exp[]>([{ company: "", role: "", location: "", start: "", end: "", description: "" }]);
-  const [education, setEducation] = useState<Edu[]>([{ school: "", degree: "", location: "", start: "", end: "", details: "" }]);
-  const [projects, setProjects] = useState<Proj[]>([]);
-  const [skills, setSkills] = useState("");
-  const [certifications, setCertifications] = useState("");
+
+  const [resumeData, setResumeData] = useState<ResumeData>(EMPTY_RESUME);
   const [targetJd, setTargetJd] = useState("");
   const [template, setTemplate] = useState<TemplateId>("modern");
   const [loading, setLoading] = useState(false);
-  const [resume, setResume] = useState<ResumeData | null>(null);
   const [mode, setMode] = useState<"ai" | "verbatim">("ai");
   const [starter, setStarter] = useState<"choose" | "scratch" | "uploaded" | "wizard">("choose");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const previewRef = useRef<HTMLDivElement>(null);
   const [showEditHint, setShowEditHint] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [prefs, setPrefs] = useState<ResumePrefs>(DEFAULT_PREFS);
-  const [prefsSet, setPrefsSet] = useState(false);
-  const [globalFontSize, setGlobalFontSize] = useState(11);
-  const [globalFontFamily, setGlobalFontFamily] = useState("Inter");
   const [spellCheckEnabled, setSpellCheckEnabled] = useState(true);
-  const [sectionStyles, setSectionStyles] = useState<SectionStyles>({});
   const restoring = useRef(false);
-
 
   const fontFamilies = [
     { label: "Modern Sans", value: "Inter, sans-serif" },
@@ -93,30 +73,44 @@ export default function ResumeBuilder() {
         throw new Error((data as any)?.error || error?.message || "Parse failed");
       }
       const p = (data as any).parsed || {};
-      setBasics({
-        name: p.name || "", title: p.title || "", email: p.email || "", phone: p.phone || "",
-        location: p.location || "",
-      });
+      
       const parsedLinks: { label: string; url: string }[] = [];
       if (p.linkedin) parsedLinks.push({ label: "LinkedIn", url: p.linkedin });
       if (p.github) parsedLinks.push({ label: "GitHub", url: p.github });
       if (p.portfolio) parsedLinks.push({ label: "Portfolio", url: p.portfolio });
       if (Array.isArray(p.links)) p.links.forEach((l: any) => l?.url && parsedLinks.push({ label: l.label || "Link", url: l.url }));
-      setLinks(parsedLinks.length ? parsedLinks : [{ label: "LinkedIn", url: "" }]);
-      setSummary(p.summary || "");
-      setExperience((p.experience || []).length ? p.experience.map((e: any) => ({
-        company: e.company || "", role: e.role || "", location: e.location || "",
-        start: e.start || "", end: e.end || "", description: (e.bullets || []).join("\n"),
-      })) : [{ company: "", role: "", location: "", start: "", end: "", description: "" }]);
-      setEducation((p.education || []).length ? p.education.map((e: any) => ({
-        school: e.school || "", degree: e.degree || "", location: e.location || "",
-        start: e.start || "", end: e.end || "", details: e.details || "",
-      })) : [{ school: "", degree: "", location: "", start: "", end: "", details: "" }]);
-      setProjects((p.projects || []).map((x: any) => ({
-        name: x.name || "", tech: x.tech || "", description: (x.bullets || []).join("\n"),
-      })));
-      setSkills((p.skills || []).join("\n"));
-      setCertifications((p.certifications || []).join("\n"));
+
+      const newResume: ResumeData = {
+        ...EMPTY_RESUME,
+        name: p.name || "",
+        title: p.title || "",
+        email: p.email || "",
+        phone: p.phone || "",
+        location: p.location || "",
+        links: parsedLinks.length ? parsedLinks : [{ label: "LinkedIn", url: "" }],
+        summary: p.summary || "",
+        experience: (p.experience || []).map((e: any) => ({
+          company: e.company || "", role: e.role || "", location: e.location || "",
+          start: e.start || "", end: e.end || "", bullets: e.bullets || [],
+        })),
+        education: (p.education || []).map((e: any) => ({
+          school: e.school || "", degree: e.degree || "", location: e.location || "",
+          start: e.start || "", end: e.end || "", details: e.details || "",
+        })),
+        projects: (p.projects || []).map((x: any) => ({
+          name: x.name || "", tech: x.tech || "", bullets: x.bullets || [],
+        })),
+        skills: (p.skills || []).map((s: any) => {
+          if (typeof s === "string") return { category: "Skills", items: [s] };
+          return { category: s.category || "Skills", items: s.items || [] };
+        }),
+        certifications: p.certifications || [],
+      };
+
+      setResumeData({
+        ...newResume,
+        _isPolished: false
+      });
       setStarter("uploaded");
       toast.success("Resume imported — review the fields below, then generate.");
     } catch (e) {
@@ -127,91 +121,37 @@ export default function ResumeBuilder() {
     }
   };
 
-  useEffect(() => {
-    if (!resume || restoring.current) return;
-    setBasics(b => ({
-      ...b,
-      name: resume.name || b.name,
-      title: resume.title || b.title,
-      email: resume.email || b.email,
-      phone: resume.phone || b.phone,
-      location: resume.location || b.location,
-    }));
-    if (resume.links && resume.links.length) {
-      setLinks(resume.links.map(l => ({ label: l.label || "Link", url: l.url || "" })));
-    }
-    setSummary(resume.summary || "");
-    setExperience((resume.experience || []).map(e => ({
-      company: e.company || "", role: e.role || "", location: e.location || "",
-      start: e.start || "", end: e.end || "",
-      description: Array.isArray(e.bullets) ? e.bullets.join("\n") : (e as any).description || "",
-    })));
-    setEducation((resume.education || []).map((e: any) => ({
-      school: e.school || "", degree: e.degree || "", location: e.location || "",
-      start: e.start || "", end: e.end || "", details: e.details || "",
-    })));
-    setProjects((resume.projects || []).map(p => ({
-      name: p.name || "", tech: p.tech || "",
-      description: Array.isArray(p.bullets) ? p.bullets.join("\n") : (p as any).description || "",
-    })));
-    setSkills((resume.skills || []).map(s => {
-      if (typeof s === "string") return s;
-      return s.category ? `${s.category}: ${s.items.join(", ")}` : s.items.join(", ");
-    }).join("\n"));
-    setCertifications((resume.certifications || []).join("\n"));
-  }, [resume]);
-
-  const syncSettingsToResume = useCallback(() => {
-    setResume(prev => {
-      if (!prev) {
-        // Build initial resume if none exists to hold settings
-        return buildResumeDataVerbatim({
-          ...basics, linkedin: "", github: "", portfolio: "",
-          summary, experience, education, projects, skills, certifications,
-          settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
-        });
-      }
-      return {
-        ...prev,
-        settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
-      };
-    });
-  }, [basics, summary, experience, education, projects, skills, certifications, globalFontSize, globalFontFamily, sectionStyles]);
-
-  useEffect(() => { syncSettingsToResume(); }, [syncSettingsToResume]);
-
   /* ---- Undo / Redo over the whole editing state ---- */
   const snapshot = useMemo(() => ({
-    basics, links, summary, experience, education, projects, skills, certifications,
-    template, resume, globalFontSize, globalFontFamily, sectionStyles,
-  }), [basics, links, summary, experience, education, projects, skills, certifications,
-       template, resume, globalFontSize, globalFontFamily, sectionStyles]);
+    resumeData, template, targetJd
+  }), [resumeData, template, targetJd]);
 
   const applySnapshot = useCallback((s: typeof snapshot) => {
     restoring.current = true;
-    setBasics(s.basics); setLinks(s.links); setSummary(s.summary);
-    setExperience(s.experience); setEducation(s.education); setProjects(s.projects);
-    setSkills(s.skills); setCertifications(s.certifications);
-    setTemplate(s.template); setResume(s.resume);
-    setGlobalFontSize(s.globalFontSize); setGlobalFontFamily(s.globalFontFamily);
-    setSectionStyles(s.sectionStyles);
+    setResumeData(s.resumeData);
+    setTemplate(s.template);
+    setTargetJd(s.targetJd);
     setTimeout(() => { restoring.current = false; }, 0);
   }, []);
 
   const { undo, redo, canUndo, canRedo } = useUndoRedo(snapshot, applySnapshot, { delay: 450 });
 
-
-  const addExp = () => setExperience([...experience, { company: "", role: "", location: "", start: "", end: "", description: "" }]);
-  const addEdu = () => setEducation([...education, { school: "", degree: "", location: "", start: "", end: "", details: "" }]);
-  const addProj = () => setProjects([...projects, { name: "", tech: "", description: "" }]);
+  const addExp = () => setResumeData(prev => ({
+    ...prev,
+    experience: [...prev.experience, { company: "", role: "", location: "", start: "", end: "", bullets: [] }]
+  }));
+  const addEdu = () => setResumeData(prev => ({
+    ...prev,
+    education: [...prev.education, { school: "", degree: "", location: "", start: "", end: "", details: "" }]
+  }));
+  const addProj = () => setResumeData(prev => ({
+    ...prev,
+    projects: [...prev.projects, { name: "", tech: "", bullets: [] }]
+  }));
 
   const generate = async () => {
-    if (!basics.name.trim()) return toast.error("Add your name at minimum");
+    if (!resumeData.name.trim()) return toast.error("Add your name at minimum");
     if (mode === "verbatim") {
-      setResume(buildResumeDataVerbatim({ 
-        ...basics, summary, experience, education, projects, skills, certifications,
-        settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
-      }));
       setShowEditHint(true);
       return;
     }
@@ -219,18 +159,21 @@ export default function ResumeBuilder() {
     setLoading(true);
     try {
       const profile = {
-        ...basics,
-        links: links.filter(l => l.url.trim()).map(l => ({ label: l.label.trim() || "Link", url: l.url.trim() })),
-        summary, experience, education, projects,
-        skills: skills.split("\n").map(s => s.trim()).filter(Boolean),
-        certifications: certifications.split("\n").map(s => s.trim()).filter(Boolean),
+        ...resumeData,
+        links: resumeData.links.filter(l => l.url.trim()).map(l => ({ label: l.label.trim() || "Link", url: l.url.trim() })),
       };
       const { data, error } = await supabase.functions.invoke("generate-resume", { body: { profile, targetJd } });
       if (error || (data as any)?.error) {
         toast.error((data as any)?.error || error?.message || "Failed");
         return;
       }
-      setResume({ ...EMPTY_RESUME, ...(data as any).resume, settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles } });
+      const generated = (data as any).resume;
+      setResumeData({
+        ...resumeData,
+        ...generated,
+        _isPolished: true,
+        settings: resumeData.settings // Preserve user settings
+      });
       setShowEditHint(true);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
@@ -239,32 +182,14 @@ export default function ResumeBuilder() {
     }
   };
 
-  const isResumeSync = () => {
-    if (!resume) return false;
-    const currentData = buildResumeDataVerbatim({ 
-      ...basics, summary, experience, education, projects, skills, certifications,
-      settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
-    });
-    const compare = (d: any) => { const { settings, ...rest } = d; return JSON.stringify(rest); };
-    return compare(currentData) === compare(resume);
-  };
-
   const downloadPdf = () => {
-    const currentResume = buildResumeDataVerbatim({ 
-      ...basics, summary, experience, education, projects, skills, certifications,
-      settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
-    });
-    // Use current settings and latest form data for the download
-    downloadResumePdfFromData(resume ? { ...resume, settings: currentResume.settings } : currentResume, template);
+    downloadResumePdfFromData(resumeData, template);
   };
   
   const downloadDocx = () => {
-    const currentResume = buildResumeDataVerbatim({ 
-      ...basics, summary, experience, education, projects, skills, certifications,
-      settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
-    });
-    downloadResumeDocxFromData(resume ? { ...resume, settings: currentResume.settings } : currentResume, template);
+    downloadResumeDocxFromData(resumeData, template);
   };
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -276,7 +201,7 @@ export default function ResumeBuilder() {
         }}
         initial={prefs}
         onDone={(p) => {
-          setPrefs(p); setPrefsSet(true); setStarter("scratch");
+          setPrefs(p); setStarter("scratch");
           const ranked = [...TEMPLATES].sort((a, b) => scoreTemplate(b.id, p) - scoreTemplate(a.id, p));
           if (ranked[0]) setTemplate(ranked[0].id);
         }}
@@ -332,7 +257,7 @@ export default function ResumeBuilder() {
 
         {(starter === "scratch" || starter === "uploaded") && (
           <div className="space-y-6">
-            <div className="sticky top-[80px] z-30 bg-background/95 backdrop-blur-md border-b flex items-center justify-between p-4 -mx-4 sm:mx-0 sm:rounded-xl shadow-lg gap-4 ring-1 ring-border">
+            <div className="sticky top-[70px] z-30 bg-background/95 backdrop-blur-md border-b flex items-center justify-between p-4 -mx-4 sm:mx-0 sm:rounded-xl shadow-lg gap-4 ring-1 ring-border">
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" onClick={() => setStarter("choose")} className="text-muted-foreground"><ArrowLeft className="h-5 w-5" /></Button>
                 <div className="hidden sm:block">
@@ -379,16 +304,16 @@ export default function ResumeBuilder() {
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label className="text-xs">Font Family</Label>
-                            <select className="w-full bg-background border border-border rounded-lg px-2 py-2 text-sm outline-none" value={globalFontFamily} onChange={e => setGlobalFontFamily(e.target.value)}>
+                            <select className="w-full bg-background border border-border rounded-lg px-2 py-2 text-sm outline-none" value={resumeData.settings?.fontFamily} onChange={e => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, fontFamily: e.target.value } }))}>
                               {fontFamilies.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                             </select>
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-xs">Base Size ({globalFontSize}px)</Label>
+                            <Label className="text-xs">Base Size ({resumeData.settings?.fontSize}px)</Label>
                             <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setGlobalFontSize(Math.max(8, globalFontSize - 1))}>-</Button>
-                              <span className="flex-1 text-center font-bold">{globalFontSize}</span>
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setGlobalFontSize(Math.min(16, globalFontSize + 1))}>+</Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, fontSize: Math.max(8, (prev.settings?.fontSize || 11) - 1) } }))}>-</Button>
+                              <span className="flex-1 text-center font-bold">{resumeData.settings?.fontSize}</span>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, fontSize: Math.min(16, (prev.settings?.fontSize || 11) + 1) } }))}>+</Button>
                             </div>
                           </div>
                         </div>
@@ -401,7 +326,7 @@ export default function ResumeBuilder() {
                         </div>
                       </div>
                       <Separator />
-                      <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} />
+                      <SectionStyleControls value={resumeData.settings?.sections || {}} onChange={sections => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, sections } }))} baseSize={resumeData.settings?.fontSize || 11} />
                     </div>
                   </SheetContent>
                 </Sheet>
@@ -414,8 +339,8 @@ export default function ResumeBuilder() {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-48 p-2" align="end">
-                    <Button variant="ghost" className="w-full justify-start gap-2" onClick={downloadPdf} disabled={!resume}><FileText className="h-4 w-4" /> PDF Document</Button>
-                    <Button variant="ghost" className="w-full justify-start gap-2" onClick={downloadDocx} disabled={!resume}><FileEdit className="h-4 w-4" /> Word (DOCX)</Button>
+                    <Button variant="ghost" className="w-full justify-start gap-2" onClick={downloadPdf} disabled={!resumeData || !resumeData.name}><FileText className="h-4 w-4" /> PDF Document</Button>
+                    <Button variant="ghost" className="w-full justify-start gap-2" onClick={downloadDocx} disabled={!resumeData || !resumeData.name}><FileEdit className="h-4 w-4" /> Word (DOCX)</Button>
                   </PopoverContent>
                 </Popover>
 
@@ -430,8 +355,8 @@ export default function ResumeBuilder() {
                                 <Button variant="ghost" size="sm" onClick={() => window.print()}><Printer className="h-4 w-4" /></Button>
                             </div>
                             <ScrollArea className="h-full p-6">
-                                {resume ? (
-                                    <ResumePreview template={template} data={resume} onChange={setResume} />
+                                {resumeData ? (
+                                    <ResumePreview template={template} data={resumeData} onChange={setResumeData} />
                                 ) : (
                                     <div className="text-center py-20 text-muted-foreground italic">Preview pending...</div>
                                 )}
@@ -446,7 +371,7 @@ export default function ResumeBuilder() {
               {/* LEFT COLUMN: EDITOR */}
               <div className="space-y-6">
                 {/* NAVIGATION */}
-                <nav className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide sticky top-[158px] z-20 bg-background/90 backdrop-blur-md py-3 px-1 -mx-1">
+                <nav className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide sticky top-[70px] z-20 bg-background/90 backdrop-blur-md py-3 px-1 -mx-1">
                   {[
                     { id: "basics", label: "Basics", icon: CheckCircle2 },
                     { id: "summary", label: "Summary", icon: Sparkles },
@@ -461,7 +386,7 @@ export default function ResumeBuilder() {
                       onClick={() => {
                         const el = document.getElementById(`section-${s.id}`);
                         if (el) {
-                          const yOffset = -220; 
+                          const yOffset = -130; 
                           const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
                           window.scrollTo({top: y, behavior: 'smooth'});
                         }
@@ -484,19 +409,19 @@ export default function ResumeBuilder() {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">Full Name</Label>
-                      <Input value={basics.name} onChange={e => setBasics({ ...basics, name: e.target.value })} placeholder="John Doe" className="rounded-xl border-border/60" />
+                      <Input value={resumeData.name} onChange={e => setResumeData({ ...resumeData, name: e.target.value })} placeholder="John Doe" className="rounded-xl border-border/60" />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">Job Title</Label>
-                      <Input value={basics.title} onChange={e => setBasics({ ...basics, title: e.target.value })} placeholder="Software Engineer" className="rounded-xl border-border/60" />
+                      <Input value={resumeData.title} onChange={e => setResumeData({ ...resumeData, title: e.target.value })} placeholder="Software Engineer" className="rounded-xl border-border/60" />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">Email</Label>
-                      <Input value={basics.email} onChange={e => setBasics({ ...basics, email: e.target.value })} placeholder="john@example.com" className="rounded-xl border-border/60" />
+                      <Input value={resumeData.email} onChange={e => setResumeData({ ...resumeData, email: e.target.value })} placeholder="john@example.com" className="rounded-xl border-border/60" />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">Phone</Label>
-                      <Input value={basics.phone} onChange={e => setBasics({ ...basics, phone: e.target.value })} placeholder="+1 (555) 000-0000" className="rounded-xl border-border/60" />
+                      <Input value={resumeData.phone} onChange={e => setResumeData({ ...resumeData, phone: e.target.value })} placeholder="+1 (555) 000-0000" className="rounded-xl border-border/60" />
                     </div>
                   </div>
                 </div>
@@ -516,7 +441,7 @@ export default function ResumeBuilder() {
                             </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-80" align="end">
-                                <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="summary" hideHeader />
+                                <SectionStyleControls value={resumeData.settings?.sections || {}} onChange={sections => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, sections } }))} baseSize={resumeData.settings?.fontSize || 11} sectionKey="summary" hideHeader />
                             </PopoverContent>
                         </Popover>
                         <Button variant="outline" size="sm" className="h-8 rounded-full text-[10px] font-bold gap-1 border-primary/20 hover:bg-primary/5 text-primary">
@@ -526,8 +451,8 @@ export default function ResumeBuilder() {
                      </div>
                    </div>
                    <Textarea 
-                     value={summary} 
-                     onChange={e => setSummary(e.target.value)} 
+                     value={resumeData.summary} 
+                     onChange={e => setResumeData({ ...resumeData, summary: e.target.value })} 
                      placeholder="A brief overview of your professional background..." 
                      className="min-h-[120px] rounded-xl border-border/60 resize-none" 
                      spellCheck={spellCheckEnabled} 
@@ -549,7 +474,7 @@ export default function ResumeBuilder() {
                             </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-80" align="end">
-                                <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="experience" hideHeader />
+                                <SectionStyleControls value={resumeData.settings?.sections || {}} onChange={sections => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, sections } }))} baseSize={resumeData.settings?.fontSize || 11} sectionKey="experience" hideHeader />
                             </PopoverContent>
                         </Popover>
                         <Button variant="outline" size="sm" onClick={addExp} className="h-8 rounded-full gap-1 border-primary/20 hover:bg-primary/5 text-primary">
@@ -559,45 +484,45 @@ export default function ResumeBuilder() {
                      </div>
                    </div>
                    <div className="space-y-6">
-                      {experience.map((exp, i) => (
+                      {resumeData.experience.map((exp, i) => (
                         <div key={i} className="group p-5 rounded-2xl border bg-muted/20 relative animate-in fade-in slide-in-from-left-2 duration-300">
                            <Button 
                              variant="ghost" 
                              size="icon" 
                              className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-background border shadow-sm text-destructive opacity-0 group-hover:opacity-100 transition-opacity" 
-                             onClick={() => setExperience(experience.filter((_, j) => i !== j))}
+                             onClick={() => setResumeData(prev => ({ ...prev, experience: prev.experience.filter((_, j) => i !== j) }))}
                            >
                              <Trash2 className="h-3 w-3" />
                            </Button>
                            <div className="grid sm:grid-cols-2 gap-4 mb-4">
                               <div className="space-y-1">
                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Company</Label>
-                                <Input value={exp.company} onChange={e => { const n = [...experience]; n[i].company = e.target.value; setExperience(n); }} placeholder="Company" className="h-9 rounded-lg border-border/60 bg-background" />
+                                <Input value={exp.company} onChange={e => { const n = [...resumeData.experience]; n[i].company = e.target.value; setResumeData({ ...resumeData, experience: n }); }} placeholder="Company" className="h-9 rounded-lg border-border/60 bg-background" />
                               </div>
                               <div className="space-y-1">
                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Role</Label>
-                                <Input value={exp.role} onChange={e => { const n = [...experience]; n[i].role = e.target.value; setExperience(n); }} placeholder="Role" className="h-9 rounded-lg border-border/60 bg-background" />
+                                <Input value={exp.role} onChange={e => { const n = [...resumeData.experience]; n[i].role = e.target.value; setResumeData({ ...resumeData, experience: n }); }} placeholder="Role" className="h-9 rounded-lg border-border/60 bg-background" />
                               </div>
                            </div>
                            <div className="grid sm:grid-cols-3 gap-4 mb-4">
                               <div className="space-y-1">
                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Location</Label>
-                                <Input value={exp.location} onChange={e => { const n = [...experience]; n[i].location = e.target.value; setExperience(n); }} placeholder="Remote / City" className="h-9 rounded-lg border-border/60 bg-background" />
+                                <Input value={exp.location} onChange={e => { const n = [...resumeData.experience]; n[i].location = e.target.value; setResumeData({ ...resumeData, experience: n }); }} placeholder="Remote / City" className="h-9 rounded-lg border-border/60 bg-background" />
                               </div>
                               <div className="space-y-1">
                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Start Date</Label>
-                                <Input value={exp.start} onChange={e => { const n = [...experience]; n[i].start = e.target.value; setExperience(n); }} placeholder="Jan 2022" className="h-9 rounded-lg border-border/60 bg-background" />
+                                <Input value={exp.start} onChange={e => { const n = [...resumeData.experience]; n[i].start = e.target.value; setResumeData({ ...resumeData, experience: n }); }} placeholder="Jan 2022" className="h-9 rounded-lg border-border/60 bg-background" />
                               </div>
                               <div className="space-y-1">
                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">End Date</Label>
-                                <Input value={exp.end} onChange={e => { const n = [...experience]; n[i].end = e.target.value; setExperience(n); }} placeholder="Present" className="h-9 rounded-lg border-border/60 bg-background" />
+                                <Input value={exp.end} onChange={e => { const n = [...resumeData.experience]; n[i].end = e.target.value; setResumeData({ ...resumeData, experience: n }); }} placeholder="Present" className="h-9 rounded-lg border-border/60 bg-background" />
                               </div>
                            </div>
                            <div className="relative space-y-1">
                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Description</Label>
                                <Textarea 
-                                 value={exp.description} 
-                                 onChange={e => { const n = [...experience]; n[i].description = e.target.value; setExperience(n); }} 
+                                 value={exp.bullets.join('\n')} 
+                                 onChange={e => { const n = [...resumeData.experience]; n[i].bullets = e.target.value.split('\n'); setResumeData({ ...resumeData, experience: n }); }} 
                                  placeholder="Bullet points describing your achievements..." 
                                  className="min-h-[100px] rounded-lg border-border/60 bg-background resize-none pb-10" 
                                  spellCheck={spellCheckEnabled} 
@@ -609,10 +534,9 @@ export default function ResumeBuilder() {
                                   </Button>
                                </div>
                            </div>
-
                         </div>
                       ))}
-                      {experience.length === 0 && (
+                      {resumeData.experience.length === 0 && (
                         <div className="text-center py-10 border-2 border-dashed rounded-2xl text-muted-foreground italic">No experience added.</div>
                       )}
                    </div>
@@ -626,61 +550,61 @@ export default function ResumeBuilder() {
                         <h3 className="font-display text-lg font-bold">4. Education</h3>
                      </div>
                      <div className="flex gap-2">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/5 text-primary" title="Typography">
-                                <Settings2 className="h-4 w-4" />
+                         <Popover>
+                             <PopoverTrigger asChild>
+                             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/5 text-primary" title="Typography">
+                                 <Settings2 className="h-4 w-4" />
+                             </Button>
+                             </PopoverTrigger>
+                             <PopoverContent className="w-80" align="end">
+                                 <SectionStyleControls value={resumeData.settings?.sections || {}} onChange={sections => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, sections } }))} baseSize={resumeData.settings?.fontSize || 11} sectionKey="education" hideHeader />
+                             </PopoverContent>
+                         </Popover>
+                         <Button variant="outline" size="sm" onClick={addEdu} className="h-8 rounded-full gap-1 border-primary/20 hover:bg-primary/5 text-primary">
+                             <Plus className="h-3 w-3" />
+                             <span className="text-[10px] font-bold">ADD SCHOOL</span>
+                         </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-6">
+                       {resumeData.education.map((edu, i) => (
+                         <div key={i} className="group p-5 rounded-2xl border bg-muted/20 relative animate-in fade-in slide-in-from-left-2 duration-300">
+                            <Button variant="ghost" size="icon" className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-background border shadow-sm text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setResumeData(prev => ({ ...prev, education: prev.education.filter((_, j) => i !== j) }))}>
+                              <Trash2 className="h-3 w-3" />
                             </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-80" align="end">
-                                <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="education" hideHeader />
-                            </PopoverContent>
-                        </Popover>
-                        <Button variant="outline" size="sm" onClick={addEdu} className="h-8 rounded-full gap-1 border-primary/20 hover:bg-primary/5 text-primary">
-                            <Plus className="h-3 w-3" />
-                            <span className="text-[10px] font-bold">ADD SCHOOL</span>
-                        </Button>
-                     </div>
-                   </div>
-                   <div className="space-y-6">
-                      {education.map((edu, i) => (
-                        <div key={i} className="group p-5 rounded-2xl border bg-muted/20 relative animate-in fade-in slide-in-from-left-2 duration-300">
-                           <Button variant="ghost" size="icon" className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-background border shadow-sm text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setEducation(education.filter((_, j) => i !== j))}>
-                             <Trash2 className="h-3 w-3" />
-                           </Button>
-                           <div className="grid sm:grid-cols-2 gap-4 mb-4">
-                              <div className="space-y-1">
-                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">School</Label>
-                                <Input value={edu.school} onChange={e => { const n = [...education]; n[i].school = e.target.value; setEducation(n); }} placeholder="University Name" className="h-9 rounded-lg border-border/60 bg-background" />
-                              </div>
-                              <div className="space-y-1">
-                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Degree</Label>
-                                <Input value={edu.degree} onChange={e => { const n = [...education]; n[i].degree = e.target.value; setEducation(n); }} placeholder="B.S. in Computer Science" className="h-9 rounded-lg border-border/60 bg-background" />
-                              </div>
-                           </div>
-                           <div className="grid sm:grid-cols-3 gap-4 mb-4">
-                              <div className="space-y-1">
-                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Location</Label>
-                                <Input value={edu.location} onChange={e => { const n = [...education]; n[i].location = e.target.value; setEducation(n); }} placeholder="City, State" className="h-9 rounded-lg border-border/60 bg-background" />
-                              </div>
-                              <div className="space-y-1">
-                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Start Date</Label>
-                                <Input value={edu.start} onChange={e => { const n = [...education]; n[i].start = e.target.value; setEducation(n); }} placeholder="2018" className="h-9 rounded-lg border-border/60 bg-background" />
-                              </div>
-                              <div className="space-y-1">
-                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">End Date</Label>
-                                <Input value={edu.end} onChange={e => { const n = [...education]; n[i].end = e.target.value; setEducation(n); }} placeholder="2022" className="h-9 rounded-lg border-border/60 bg-background" />
-                              </div>
-                           </div>
-                           <div className="space-y-1">
-                               <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Details / Honors</Label>
-                               <Input value={edu.details} onChange={e => { const n = [...education]; n[i].details = e.target.value; setEducation(n); }} placeholder="GPA: 3.9, Dean's List..." className="h-9 rounded-lg border-border/60 bg-background" />
-                           </div>
-                        </div>
-                      ))}
-                      {education.length === 0 && (
-                        <div className="text-center py-10 border-2 border-dashed rounded-2xl text-muted-foreground italic">No education added.</div>
-                      )}
+                            <div className="grid sm:grid-cols-2 gap-4 mb-4">
+                               <div className="space-y-1">
+                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">School</Label>
+                                 <Input value={edu.school} onChange={e => { const n = [...resumeData.education]; n[i].school = e.target.value; setResumeData({ ...resumeData, education: n }); }} placeholder="University Name" className="h-9 rounded-lg border-border/60 bg-background" />
+                               </div>
+                               <div className="space-y-1">
+                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Degree</Label>
+                                 <Input value={edu.degree} onChange={e => { const n = [...resumeData.education]; n[i].degree = e.target.value; setResumeData({ ...resumeData, education: n }); }} placeholder="B.S. in Computer Science" className="h-9 rounded-lg border-border/60 bg-background" />
+                               </div>
+                            </div>
+                            <div className="grid sm:grid-cols-3 gap-4 mb-4">
+                               <div className="space-y-1">
+                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Location</Label>
+                                 <Input value={edu.location} onChange={e => { const n = [...resumeData.education]; n[i].location = e.target.value; setResumeData({ ...resumeData, education: n }); }} placeholder="City, State" className="h-9 rounded-lg border-border/60 bg-background" />
+                               </div>
+                               <div className="space-y-1">
+                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Start Date</Label>
+                                 <Input value={edu.start} onChange={e => { const n = [...resumeData.education]; n[i].start = e.target.value; setResumeData({ ...resumeData, education: n }); }} placeholder="2018" className="h-9 rounded-lg border-border/60 bg-background" />
+                               </div>
+                               <div className="space-y-1">
+                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">End Date</Label>
+                                 <Input value={edu.end} onChange={e => { const n = [...resumeData.education]; n[i].end = e.target.value; setResumeData({ ...resumeData, education: n }); }} placeholder="2022" className="h-9 rounded-lg border-border/60 bg-background" />
+                               </div>
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Details / Honors</Label>
+                                <Input value={edu.details} onChange={e => { const n = [...resumeData.education]; n[i].details = e.target.value; setResumeData({ ...resumeData, education: n }); }} placeholder="GPA: 3.9, Dean's List..." className="h-9 rounded-lg border-border/60 bg-background" />
+                            </div>
+                         </div>
+                       ))}
+                       {resumeData.education.length === 0 && (
+                         <div className="text-center py-10 border-2 border-dashed rounded-2xl text-muted-foreground italic">No education added.</div>
+                       )}
                    </div>
                 </div>
 
@@ -699,7 +623,7 @@ export default function ResumeBuilder() {
                             </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-80" align="end">
-                                <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="projects" hideHeader />
+                                <SectionStyleControls value={resumeData.settings?.sections || {}} onChange={sections => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, sections } }))} baseSize={resumeData.settings?.fontSize || 11} sectionKey="projects" hideHeader />
                             </PopoverContent>
                         </Popover>
                         <Button variant="outline" size="sm" onClick={addProj} className="h-8 rounded-full gap-1 border-primary/20 hover:bg-primary/5 text-primary">
@@ -709,28 +633,28 @@ export default function ResumeBuilder() {
                      </div>
                    </div>
                    <div className="space-y-6">
-                      {projects.map((proj, i) => (
+                      {resumeData.projects.map((proj, i) => (
                         <div key={i} className="group p-5 rounded-2xl border bg-muted/20 relative animate-in fade-in slide-in-from-left-2 duration-300">
-                           <Button variant="ghost" size="icon" className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-background border shadow-sm text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setProjects(projects.filter((_, j) => i !== j))}>
+                           <Button variant="ghost" size="icon" className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-background border shadow-sm text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setResumeData(prev => ({ ...prev, projects: prev.projects.filter((_, j) => i !== j) }))}>
                              <Trash2 className="h-3 w-3" />
                            </Button>
                            <div className="grid sm:grid-cols-2 gap-4 mb-4">
                               <div className="space-y-1">
                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Project Name</Label>
-                                <Input value={proj.name} onChange={e => { const n = [...projects]; n[i].name = e.target.value; setProjects(n); }} placeholder="Project Alpha" className="h-9 rounded-lg border-border/60 bg-background" />
+                                <Input value={proj.name} onChange={e => { const n = [...resumeData.projects]; n[i].name = e.target.value; setResumeData({ ...resumeData, projects: n }); }} placeholder="Project Alpha" className="h-9 rounded-lg border-border/60 bg-background" />
                               </div>
                               <div className="space-y-1">
                                 <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Technologies</Label>
-                                <Input value={proj.tech} onChange={e => { const n = [...projects]; n[i].tech = e.target.value; setProjects(n); }} placeholder="React, Node.js, AWS" className="h-9 rounded-lg border-border/60 bg-background" />
+                                <Input value={proj.tech} onChange={e => { const n = [...resumeData.projects]; n[i].tech = e.target.value; setResumeData({ ...resumeData, projects: n }); }} placeholder="React, Node.js, AWS" className="h-9 rounded-lg border-border/60 bg-background" />
                               </div>
                            </div>
                            <div className="space-y-1">
                                <Label className="text-[9px] uppercase font-bold text-muted-foreground ml-1">Project Description</Label>
-                               <Textarea value={proj.description} onChange={e => { const n = [...projects]; n[i].description = e.target.value; setProjects(n); }} placeholder="Describe the impact and technical challenges..." className="min-h-[80px] rounded-lg border-border/60 bg-background resize-none" />
+                               <Textarea value={proj.bullets.join('\n')} onChange={e => { const n = [...resumeData.projects]; n[i].bullets = e.target.value.split('\n'); setResumeData({ ...resumeData, projects: n }); }} placeholder="Describe the impact and technical challenges..." className="min-h-[80px] rounded-lg border-border/60 bg-background resize-none" />
                            </div>
                         </div>
                       ))}
-                      {projects.length === 0 && (
+                      {resumeData.projects.length === 0 && (
                         <div className="text-center py-10 border-2 border-dashed rounded-2xl text-muted-foreground italic">No projects added.</div>
                       )}
                    </div>
@@ -751,7 +675,7 @@ export default function ResumeBuilder() {
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-80" align="end">
-                                <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="skills" hideHeader />
+                                <SectionStyleControls value={resumeData.settings?.sections || {}} onChange={sections => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, sections } }))} baseSize={resumeData.settings?.fontSize || 11} sectionKey="skills" hideHeader />
                             </PopoverContent>
                         </Popover>
                         <Button variant="outline" size="sm" className="h-8 rounded-full text-[10px] font-bold gap-1 border-primary/20 hover:bg-primary/5 text-primary">
@@ -765,12 +689,22 @@ export default function ResumeBuilder() {
                       <div className="space-y-2">
                         <Label className="text-xs font-bold text-muted-foreground ml-1">Core Skills</Label>
                         <Textarea 
-                          value={skills} 
-                          onChange={e => setSkills(e.target.value)} 
-                          placeholder="JavaScript, React, Project Management, Agile..." 
+                          value={resumeData.skills.map(s => s.items.join(', ')).join('\n')} 
+                          onChange={e => {
+                            const lines = e.target.value.split('\n').filter(Boolean);
+                            const newSkills = lines.map(line => {
+                                const parts = line.split(':');
+                                if (parts.length > 1) {
+                                    return { category: parts[0].trim(), items: parts[1].split(',').map(i => i.trim()) };
+                                }
+                                return { category: "Skills", items: line.split(',').map(i => i.trim()) };
+                            });
+                            setResumeData({ ...resumeData, skills: newSkills });
+                          }} 
+                          placeholder="Design: Figma, UX Research&#10;Development: React, Node.js" 
                           className="min-h-[80px] rounded-xl border-border/60" 
                         />
-                        <p className="text-[10px] text-muted-foreground ml-1">Tip: Separate skills with commas or new lines.</p>
+                        <p className="text-[10px] text-muted-foreground ml-1">Tip: Use "Category: skill1, skill2" for grouping.</p>
                       </div>
 
                       <div className="space-y-2">
@@ -783,13 +717,13 @@ export default function ResumeBuilder() {
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-80" align="end">
-                                    <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="certifications" hideHeader />
+                                    <SectionStyleControls value={resumeData.settings?.sections || {}} onChange={sections => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, sections } }))} baseSize={resumeData.settings?.fontSize || 11} sectionKey="certifications" hideHeader />
                                 </PopoverContent>
                             </Popover>
                         </div>
                         <Textarea 
-                          value={certifications} 
-                          onChange={e => setCertifications(e.target.value)} 
+                          value={resumeData.certifications.join('\n')} 
+                          onChange={e => setResumeData({ ...resumeData, certifications: e.target.value.split('\n').filter(Boolean) })} 
                           placeholder="AWS Certified Developer, PMP..." 
                           className="min-h-[60px] rounded-xl border-border/60" 
                         />
@@ -892,24 +826,24 @@ export default function ResumeBuilder() {
                             </div>
                           )}
 
-                          {resume && !loading && (
-                            <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-xl border border-primary/10 animate-in zoom-in-95">
-                              <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                              <div>
-                                <p className="text-xs font-bold text-primary">✓ Resume polished successfully</p>
-                                <p className="text-[10px] text-muted-foreground mt-0.5">"Your content has been improved for clarity, impact, and ATS relevance."</p>
+                           {resumeData && resumeData.name && !loading && resumeData._isPolished && (
+                              <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-xl border border-primary/10 animate-in zoom-in-95">
+                                <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                                <div>
+                                  <p className="text-xs font-bold text-primary">✓ Resume polished successfully</p>
+                                  <p className="text-[10px] text-muted-foreground mt-0.5">"Your content has been improved for clarity, impact, and ATS relevance."</p>
+                                </div>
                               </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                   </div>
-                </div>
-              </div>
-
-              {/* RIGHT COLUMN: STICKY PREVIEW */}
-              <div className="hidden lg:block lg:sticky lg:top-[158px] h-[calc(100vh-180px)] animate-in fade-in zoom-in-95 duration-500 delay-200">
-                <div className="h-full flex flex-col bg-muted/20 rounded-[2.5rem] border-4 border-muted/50 p-2 shadow-card overflow-hidden">
+                            )}
+                         </div>
+                       </div>
+                    </div>
+                 </div>
+               </div>
+ 
+               {/* RIGHT COLUMN: STICKY PREVIEW */}
+               <div className="hidden lg:block lg:sticky lg:top-[70px] h-[calc(100vh-100px)] animate-in fade-in zoom-in-95 duration-500 delay-200">
+                 <div className="h-full flex flex-col bg-muted/20 rounded-[2.5rem] border-4 border-muted/50 p-2 shadow-card overflow-hidden">
                    {/* Rich Text Toolbar */}
                    <div className="flex items-center gap-1 p-2 mb-2 bg-background/80 backdrop-blur-sm rounded-2xl border border-border/50 mx-2 mt-2">
                      <Button 
@@ -983,10 +917,10 @@ export default function ResumeBuilder() {
                    </div>
 
                    <div className="flex-1 overflow-y-auto rounded-[2rem] bg-background scrollbar-hide">
-                     {resume ? (
-                        <div className="p-8 origin-top scale-[0.9] transform-gpu transition-transform">
-                           <ResumePreview template={template} data={resume} onChange={setResume} />
-                        </div>
+                      {resumeData && resumeData.name ? (
+                         <div className="p-8 origin-top scale-[0.9] transform-gpu transition-transform">
+                            <ResumePreview template={template} data={resumeData} onChange={setResumeData} />
+                         </div>
                       ) : (
                         <div className="h-full flex flex-col items-center justify-center text-muted-foreground p-12 text-center">
                            <div className="h-20 w-20 rounded-3xl bg-muted/30 flex items-center justify-center mb-6"><Eye className="h-10 w-10 opacity-20" /></div>

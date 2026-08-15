@@ -24,6 +24,7 @@ export interface ResumeData {
     fontFamily?: string;
     sections?: Partial<Record<ResumeSectionKey, SectionStyle>>;
   };
+  _isPolished?: boolean;
 }
 
 export type ResumeSectionKey =
@@ -493,7 +494,7 @@ function CompactPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
                 return (
                   <div key={i} className="mb-1">
                     <Editable as="div" value={p.name} onChange={update && (v => upd({ name: v }))} className="font-semibold" />
-                    <BulletsEditor bullets={(p.bullets || []).slice(0, 2)} onChange={update && (v => upd({ bullets: v }))} className="list-disc pl-3.5" />
+                    <BulletsEditor bullets={p.bullets || []} onChange={update && (v => upd({ bullets: v }))} className="list-disc pl-3.5" />
                   </div>
                 );
               })}
@@ -1478,17 +1479,31 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
     "teal-left": [15, 118, 110], "photo-grid": [3, 105, 161], "logo-boxed": [3, 105, 161],
   };
   const accent: [number, number, number] = accentMap[template] ?? [40, 40, 40];
-  const font = data.settings?.fontFamily || (template === "classic" || template === "executive" || template === "centered-serif" ? "times" : "helvetica");
+  const font = data.settings?.fontFamily || (template === "classic" || template === "executive" || template === "centered-serif" || template === "elegant" ? "times" : "helvetica");
+  const baseSize = data.settings?.fontSize || 10;
   let y = margin;
 
   const ensure = (h = 14) => { if (y + h > pageH - margin) { doc.addPage(); y = margin; } };
-  const H1 = (t: string) => { doc.setFont(font, "bold"); doc.setFontSize(22); doc.setTextColor(...accent); doc.text(t, margin, y); y += 20; };
-  const meta = (t: string) => { doc.setFont(font, "normal"); doc.setFontSize(9); doc.setTextColor(100); doc.text(t, margin, y); y += 14; };
+  const H1 = (t: string) => { 
+    const size = secStyles?.headings?.fontSize || 22;
+    doc.setFont(font, "bold"); 
+    doc.setFontSize(size); 
+    doc.setTextColor(...accent); 
+    doc.text(t, margin, y); 
+    y += (size * 0.9); 
+  };
+  const meta = (t: string) => { 
+    doc.setFont(font, "normal"); 
+    doc.setFontSize(baseSize * 0.9); 
+    doc.setTextColor(100); 
+    doc.text(t, margin, y); 
+    y += (baseSize * 1.4); 
+  };
   const secStyles = data.settings?.sections;
   let curSec: ResumeSectionKey | null = null;
   const secOf = (t: string): ResumeSectionKey | null =>
     (SECTION_MATCHERS.find(m => m.re.test(t.trim()))?.key ?? null);
-  const secSize = () => (curSec ? secStyles?.[curSec]?.fontSize : undefined) ?? (data.settings?.fontSize || 10);
+  const secSize = () => (curSec ? secStyles?.[curSec]?.fontSize : undefined) ?? baseSize;
   const secBold = () => (curSec ? secStyles?.[curSec]?.bold : undefined);
   const secItalic = () => (curSec ? secStyles?.[curSec]?.italic : undefined);
 
@@ -1508,8 +1523,8 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
   const H2 = (t: string) => {
     curSec = secOf(t);
     ensure(24); y += 6;
-    doc.setFont(font, "bold"); doc.setFontSize(secStyles?.headings?.fontSize ?? 11); doc.setTextColor(...accent);
-    doc.text(t.toUpperCase(), margin, y); y += 4;
+    doc.setFont(font, "bold"); doc.setFontSize(secStyles?.headings?.fontSize ?? (baseSize + 1)); doc.setTextColor(...accent);
+    doc.text(t.toUpperCase(), margin, y); y += (baseSize * 0.4);
     doc.setDrawColor(...accent); doc.setLineWidth(0.8);
     doc.line(margin, y, pageW - margin, y); y += 12;
     doc.setTextColor(30, 30, 30);
@@ -1538,7 +1553,7 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
       doc.setFont(font, defaultBold ? "bold" : defaultItalic ? "italic" : "normal");
       doc.setFontSize(size);
       const lines = doc.splitTextToSize(t, pageW - margin * 2);
-      lines.forEach((l: string) => { ensure(13); doc.text(l, margin, y); y += 13; });
+      lines.forEach((l: string) => { ensure(size * 1.3); doc.text(l, margin, y); y += (size * 1.3); });
     }
   };
 
@@ -1549,7 +1564,7 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
     
     if (t.includes("<b>") || t.includes("<i>")) {
       const parts = parseRichText(t);
-      ensure(13);
+      ensure(size * 1.3);
       doc.setFont(font, "normal"); doc.setFontSize(size);
       doc.text("•", margin + 4, y);
       let curX = margin + size * 1.4;
@@ -1561,14 +1576,14 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
         doc.text(p.text, curX, y);
         curX += doc.getTextWidth(p.text);
       });
-      y += 13;
+      y += (size * 1.3);
     } else {
       doc.setFont(font, defaultBold ? "bold" : defaultItalic ? "italic" : "normal"); doc.setFontSize(size);
       const lines = doc.splitTextToSize(t, pageW - margin * 2 - size * 1.4);
       lines.forEach((l: string, i: number) => {
-        ensure(13);
+        ensure(size * 1.3);
         if (i === 0) doc.text("•", margin + 4, y);
-        doc.text(l, margin + size * 1.4, y); y += 13;
+        doc.text(l, margin + size * 1.4, y); y += (size * 1.3);
       });
     }
   };
@@ -1584,7 +1599,7 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
       line(`${e.role} — ${e.company}${e.location ? `, ${e.location}` : ""}`, { bold: true });
       if (e.start || e.end) line(`${e.start} – ${e.end}`, { italic: true, size: 9 });
       e.bullets?.forEach(b => bullet(b));
-      y += 4;
+      y += (secSize() * 0.4);
     });
   }
   if (data.projects?.length) {
@@ -1592,7 +1607,7 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
     data.projects.forEach(p => {
       line(`${p.name}${p.tech ? ` — ${p.tech}` : ""}`, { bold: true });
       p.bullets?.forEach(b => bullet(b));
-      y += 4;
+      y += (secSize() * 0.4);
     });
   }
   if (data.education?.length) {
@@ -1601,7 +1616,7 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
       line(`${e.degree} — ${e.school}${e.location ? `, ${e.location}` : ""}`, { bold: true });
       if (e.start || e.end) line(`${e.start} – ${e.end}`, { italic: true, size: 9 });
       if (e.details) line(e.details);
-      y += 4;
+      y += (secSize() * 0.4);
     });
   }
   if (data.skills?.length) { H2("Skills"); data.skills.forEach(s => line(`${s.category}: ${s.items.join(", ")}`)); }
@@ -1625,6 +1640,9 @@ export async function downloadResumeDocxFromData(data: ResumeData, template: Tem
   };
   const accent = accentMap[template] ?? "111111";
 
+  const baseSize = (data.settings?.fontSize || 11) * 2; // docx uses half-points
+  const secStyles = data.settings?.sections;
+
   const parseDocxRichText = (text: string) => {
     if (!text) return [{ text: "", bold: false, italic: false }];
     const parts: { text: string; bold: boolean; italic: boolean }[] = [];
@@ -1638,37 +1656,49 @@ export async function downloadResumeDocxFromData(data: ResumeData, template: Tem
     return parts;
   };
 
-  const P = (text: string, opts: { bold?: boolean; italic?: boolean; size?: number; color?: string; align?: any } = {}) => {
+  const P = (text: string, opts: { bold?: boolean; italic?: boolean; size?: number; color?: string; align?: any; sectionKey?: ResumeSectionKey } = {}) => {
     const parts = parseDocxRichText(text);
+    const secStyle = opts.sectionKey ? secStyles?.[opts.sectionKey] : undefined;
+    const defaultBold = opts.bold || secStyle?.bold === true;
+    const defaultItalic = opts.italic || secStyle?.italic === true;
+    const fontSize = opts.size ?? (secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize);
+
     return new Paragraph({
       alignment: opts.align,
       children: parts.map(p => new TextRun({
         text: p.text,
-        bold: p.bold || opts.bold,
-        italics: p.italic || opts.italic,
-        size: opts.size ?? 22,
+        bold: p.bold || defaultBold,
+        italics: p.italic || defaultItalic,
+        size: fontSize,
         color: opts.color,
         font,
       })),
     });
   };
 
-  const H = (text: string) =>
-    new Paragraph({
+  const H = (text: string) => {
+    const headSize = secStyles?.headings?.fontSize ? secStyles.headings.fontSize * 2 : (baseSize + 2);
+    return new Paragraph({
       spacing: { before: 200, after: 80 },
       border: { bottom: { color: accent, size: 8, style: BorderStyle.SINGLE, space: 2 } },
-      children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 22, color: accent, font })],
+      children: [new TextRun({ text: text.toUpperCase(), bold: true, size: headSize, color: accent, font })],
     });
+  };
 
-  const bullet = (text: string) => {
+  const bullet = (text: string, sectionKey?: ResumeSectionKey) => {
     const parts = parseDocxRichText(text);
+    const secStyle = sectionKey ? secStyles?.[sectionKey] : undefined;
+    const defaultBold = secStyle?.bold === true;
+    const defaultItalic = secStyle?.italic === true;
+    const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
+
     return new Paragraph({
       numbering: { reference: "bullets", level: 0 },
       children: parts.map(p => new TextRun({
         text: p.text,
-        bold: p.bold,
-        italics: p.italic,
-        size: 22,
+        bold: p.bold || defaultBold,
+        italics: p.italic || defaultItalic,
+        size: fontSize,
         font,
       })),
     });
@@ -1676,67 +1706,75 @@ export async function downloadResumeDocxFromData(data: ResumeData, template: Tem
 
   const children: Paragraph[] = [];
 
-  children.push(P(data.name || "Your Name", { bold: true, size: 44, align: AlignmentType.CENTER, color: accent }));
-  if (data.title) children.push(P(data.title, { size: 24, align: AlignmentType.CENTER }));
+  children.push(P(data.name || "Your Name", { bold: true, size: (secStyles?.headings?.fontSize || 22) * 2, align: AlignmentType.CENTER, color: accent }));
+  if (data.title) children.push(P(data.title, { size: baseSize + 2, align: AlignmentType.CENTER }));
   const contact = [data.email, data.phone, data.location, ...(data.links?.map(l => `${l.label}: ${l.url}`) ?? [])].filter(Boolean).join("  •  ");
-  if (contact) children.push(P(contact, { size: 20, align: AlignmentType.CENTER, color: "555555" }));
+  if (contact) children.push(P(contact, { size: baseSize - 2, align: AlignmentType.CENTER, color: "555555" }));
 
-  if (data.summary) { children.push(H("Summary")); children.push(P(data.summary)); }
+  if (data.summary) { children.push(H("Summary")); children.push(P(data.summary, { sectionKey: "summary" })); }
 
   if (data.experience?.length) {
     children.push(H("Experience"));
+    const secStyle = secStyles?.experience;
+    const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
     data.experience.forEach(e => {
       children.push(new Paragraph({
         children: [
-          new TextRun({ text: `${e.role}`, bold: true, size: 22, font }),
-          new TextRun({ text: ` — ${e.company}${e.location ? `, ${e.location}` : ""}`, size: 22, font }),
-          new TextRun({ text: `   ${e.start} – ${e.end}`, italics: true, size: 20, color: "666666", font }),
+          new TextRun({ text: `${e.role}`, bold: true, size: fontSize, font }),
+          new TextRun({ text: ` — ${e.company}${e.location ? `, ${e.location}` : ""}`, size: fontSize, font }),
+          new TextRun({ text: `   ${e.start} – ${e.end}`, italics: true, size: fontSize - 2, color: "666666", font }),
         ],
       }));
-      e.bullets?.forEach(b => children.push(bullet(b)));
+      e.bullets?.forEach(b => children.push(bullet(b, "experience")));
     });
   }
 
   if (data.projects?.length) {
     children.push(H("Projects"));
+    const secStyle = secStyles?.projects;
+    const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
     data.projects.forEach(p => {
       children.push(new Paragraph({
         children: [
-          new TextRun({ text: p.name, bold: true, size: 22, font }),
-          p.tech ? new TextRun({ text: ` — ${p.tech}`, italics: true, size: 20, color: "666666", font }) : new TextRun(""),
+          new TextRun({ text: p.name, bold: true, size: fontSize, font }),
+          p.tech ? new TextRun({ text: ` — ${p.tech}`, italics: true, size: fontSize - 2, color: "666666", font }) : new TextRun(""),
         ],
       }));
-      p.bullets?.forEach(b => children.push(bullet(b)));
+      p.bullets?.forEach(b => children.push(bullet(b, "projects")));
     });
   }
 
   if (data.education?.length) {
     children.push(H("Education"));
+    const secStyle = secStyles?.education;
+    const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
     data.education.forEach(e => {
       children.push(new Paragraph({
         children: [
-          new TextRun({ text: e.degree, bold: true, size: 22, font }),
-          new TextRun({ text: ` — ${e.school}${e.location ? `, ${e.location}` : ""}`, size: 22, font }),
-          new TextRun({ text: `   ${e.start} – ${e.end}`, italics: true, size: 20, color: "666666", font }),
+          new TextRun({ text: e.degree, bold: true, size: fontSize, font }),
+          new TextRun({ text: ` — ${e.school}${e.location ? `, ${e.location}` : ""}`, size: fontSize, font }),
+          new TextRun({ text: `   ${e.start} – ${e.end}`, italics: true, size: fontSize - 2, color: "666666", font }),
         ],
       }));
-      if (e.details) children.push(P(e.details, { size: 20 }));
+      if (e.details) children.push(P(e.details, { size: fontSize - 2, sectionKey: "education" }));
     });
   }
 
   if (data.skills?.length) {
     children.push(H("Skills"));
+    const secStyle = secStyles?.skills;
+    const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
     data.skills.forEach(s => children.push(new Paragraph({
       children: [
-        new TextRun({ text: `${s.category}: `, bold: true, size: 22, font }),
-        new TextRun({ text: s.items.join(", "), size: 22, font }),
+        new TextRun({ text: `${s.category}: `, bold: true, size: fontSize, font }),
+        new TextRun({ text: s.items.join(", "), size: fontSize, font }),
       ],
     })));
   }
 
   if (data.certifications?.length) {
     children.push(H("Certifications"));
-    data.certifications.forEach(c => children.push(bullet(c)));
+    data.certifications.forEach(c => children.push(bullet(c, "certifications")));
   }
 
   const doc = new Document({
