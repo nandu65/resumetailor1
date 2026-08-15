@@ -1639,6 +1639,9 @@ export async function downloadResumeDocxFromData(data: ResumeData, template: Tem
   };
   const accent = accentMap[template] ?? "111111";
 
+  const baseSize = (data.settings?.fontSize || 11) * 2; // docx uses half-points
+  const secStyles = data.settings?.sections;
+
   const parseDocxRichText = (text: string) => {
     if (!text) return [{ text: "", bold: false, italic: false }];
     const parts: { text: string; bold: boolean; italic: boolean }[] = [];
