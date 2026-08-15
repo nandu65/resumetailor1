@@ -103,14 +103,20 @@ describe('Autosave Feature', () => {
 
     expect(result.current.saveStatus).toBe('saving');
 
-    // Wait for the debounce timer AND the promise resolution
+    // Wait for the debounce timer
     await act(async () => {
       vi.advanceTimersByTime(200);
-      // Wait for any pending promises (the upsert)
+    });
+
+    // Wait for the promise resolution outside of the fake timer loop if needed
+    // or just let the microtasks flush
+    await act(async () => {
+      await vi.runAllTicks();
       await new Promise(resolve => setTimeout(resolve, 0));
     });
 
     expect(result.current.saveStatus).toBe('saved');
   });
 });
+
 
