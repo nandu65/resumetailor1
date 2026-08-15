@@ -1483,8 +1483,21 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
   let y = margin;
 
   const ensure = (h = 14) => { if (y + h > pageH - margin) { doc.addPage(); y = margin; } };
-  const H1 = (t: string) => { doc.setFont(font, "bold"); doc.setFontSize(22); doc.setTextColor(...accent); doc.text(t, margin, y); y += 20; };
-  const meta = (t: string) => { doc.setFont(font, "normal"); doc.setFontSize(9); doc.setTextColor(100); doc.text(t, margin, y); y += 14; };
+  const H1 = (t: string) => { 
+    const size = secStyles?.headings?.fontSize || 22;
+    doc.setFont(font, "bold"); 
+    doc.setFontSize(size); 
+    doc.setTextColor(...accent); 
+    doc.text(t, margin, y); 
+    y += (size * 0.9); 
+  };
+  const meta = (t: string) => { 
+    doc.setFont(font, "normal"); 
+    doc.setFontSize(baseSize * 0.9); 
+    doc.setTextColor(100); 
+    doc.text(t, margin, y); 
+    y += (baseSize * 1.4); 
+  };
   const secStyles = data.settings?.sections;
   let curSec: ResumeSectionKey | null = null;
   const secOf = (t: string): ResumeSectionKey | null =>
