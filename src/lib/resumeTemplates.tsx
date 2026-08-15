@@ -5,6 +5,8 @@ import {
   BorderStyle, LevelFormat, PageBreak,
 } from "docx";
 import { saveAs } from "file-saver";
+import { Droppable, Draggable } from "react-beautiful-dnd";
+
 
 export interface ResumeData {
   name: string;
