@@ -1563,7 +1563,7 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
     
     if (t.includes("<b>") || t.includes("<i>")) {
       const parts = parseRichText(t);
-      ensure(13);
+      ensure(size * 1.3);
       doc.setFont(font, "normal"); doc.setFontSize(size);
       doc.text("•", margin + 4, y);
       let curX = margin + size * 1.4;
@@ -1575,14 +1575,14 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
         doc.text(p.text, curX, y);
         curX += doc.getTextWidth(p.text);
       });
-      y += 13;
+      y += (size * 1.3);
     } else {
       doc.setFont(font, defaultBold ? "bold" : defaultItalic ? "italic" : "normal"); doc.setFontSize(size);
       const lines = doc.splitTextToSize(t, pageW - margin * 2 - size * 1.4);
       lines.forEach((l: string, i: number) => {
-        ensure(13);
+        ensure(size * 1.3);
         if (i === 0) doc.text("•", margin + 4, y);
-        doc.text(l, margin + size * 1.4, y); y += 13;
+        doc.text(l, margin + size * 1.4, y); y += (size * 1.3);
       });
     }
   };
