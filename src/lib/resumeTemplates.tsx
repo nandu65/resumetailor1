@@ -1480,7 +1480,11 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
   };
   const accent: [number, number, number] = accentMap[template] ?? [40, 40, 40];
   const font = data.settings?.fontFamily || (template === "classic" || template === "executive" || template === "centered-serif" || template === "elegant" ? "times" : "helvetica");
-  const baseSize = data.settings?.fontSize || 10;
+  const baseSize = data.settings?.fontSize || (template === "compact" ? 9 : 10);
+  
+  // Apply template-specific layout adjustments to PDF
+  const isTwoColumn = template === "modern" || template === "creative" || template === "sidebar-dark" || template === "banner-photo" || template === "teal-left";
+  const headerCenter = template === "classic" || template === "centered-serif" || template === "photo-grid";
   let y = margin;
 
   const ensure = (h = 14) => { if (y + h > pageH - margin) { doc.addPage(); y = margin; } };

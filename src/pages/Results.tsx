@@ -11,7 +11,14 @@ import { DiffView } from "@/components/DiffView";
 import { KeywordHighlight } from "@/components/KeywordHighlight";
 import { ShareScoreDialog } from "@/components/ShareScoreDialog";
 import { supabase } from "@/integrations/supabase/client";
-import { downloadResumePdf, downloadResumeDocx, downloadResumeTxt, downloadResumeMarkdown, downloadCoverLetterPdf } from "@/lib/pdfExport";
+import { 
+  downloadResumePdf, 
+  downloadResumeDocx, 
+  downloadResumeTxt, 
+  downloadResumeMarkdown, 
+  downloadCoverLetterPdf 
+} from "@/lib/pdfExport";
+import { downloadResumePdfFromData, downloadResumeDocxFromData, TemplateId } from "@/lib/resumeTemplates";
 import { toast } from "sonner";
 
 interface KeywordDensity { keyword: string; jd_count: number; resume_count: number; importance: "high" | "medium" | "low"; }
@@ -176,6 +183,22 @@ export default function Results() {
     </div>
   );
 
+  const buildResumeDataFromOptimization = (o: Optimization): any => {
+    // Maps flat optimization record back to structured ResumeData for template engine
+    return {
+      name: o.title?.split("'s")[0] || "Resume",
+      title: o.role || "",
+      summary: o.professional_summary || "",
+      experience: (o.improved_bullets || []).map(b => ({
+        company: o.company || "Company",
+        role: o.role || "Role",
+        bullets: [b.improved]
+      })),
+      skills: [{ category: "Skills", items: [...(o.skills_to_add || []), ...(o.missing_keywords || [])] }],
+      settings: { fontSize: 11, fontFamily: "Inter, sans-serif" }
+    };
+  };
+
   const deltaCopy = (() => {
     if (delta == null) return null;
     if (delta >= 5) return { tone: "up" as const, text: `+${delta} improvement vs your last version`, sub: "Your tailoring made a measurable difference." };
@@ -239,8 +262,14 @@ export default function Results() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={() => downloadResumePdf(opt)}><FileText className="h-4 w-4 mr-2" /> PDF (formatted)</DropdownMenuItem>
-                  {proOnly && <DropdownMenuItem onClick={() => downloadResumeDocx(opt)}><FileText className="h-4 w-4 mr-2" /> DOCX (Word)</DropdownMenuItem>}
+                  <DropdownMenuItem onClick={() => {
+                    const data = buildResumeDataFromOptimization(opt);
+                    downloadResumePdfFromData(data, (opt.rewrite_level as any) || "modern");
+                  }}><FileText className="h-4 w-4 mr-2" /> PDF (Template Match)</DropdownMenuItem>
+                  {proOnly && <DropdownMenuItem onClick={() => {
+                    const data = buildResumeDataFromOptimization(opt);
+                    downloadResumeDocxFromData(data, (opt.rewrite_level as any) || "modern");
+                  }}><FileText className="h-4 w-4 mr-2" /> Word (Template Match)</DropdownMenuItem>}
                   {proOnly && <DropdownMenuItem onClick={() => downloadResumeTxt(opt)}><FileText className="h-4 w-4 mr-2" /> Plain text (ATS-safe)</DropdownMenuItem>}
                   {proOnly && <DropdownMenuItem onClick={() => downloadResumeMarkdown(opt)}><Code2 className="h-4 w-4 mr-2" /> Markdown</DropdownMenuItem>}
                   {!proOnly && (
