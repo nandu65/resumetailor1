@@ -145,19 +145,42 @@ export default function ResumeBuilder() {
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
       
-      // We'll update the global font size for now, or per-section if we can identify it
-      // For simplicity, let's adjust the global one or just use execCommand for quick visual feedback
-      // Actually, per user request: "Immediately it shd show the formatting options like bold, italic, font size +/-"
-      
-      if (value === 'increase') {
-        document.execCommand('fontSize', false, '4'); // Simplified
-      } else {
-        document.execCommand('fontSize', false, '2'); // Simplified
+      const node = selection.anchorNode?.parentElement;
+      if (node) {
+        const currentSize = window.getComputedStyle(node).fontSize;
+        const numericSize = parseFloat(currentSize);
+        const newSize = value === 'increase' ? numericSize + 1 : numericSize - 1;
+        document.execCommand('fontSize', false, '7'); // Dummy to trigger font tag
+        const fontElements = document.getElementsByTagName("font");
+        for (let i = 0; i < fontElements.length; i++) {
+            if (fontElements[i].size === "7") {
+                fontElements[i].removeAttribute("size");
+                fontElements[i].style.fontSize = newSize + "px";
+            }
+        }
       }
     } else {
       document.execCommand(command, false, value);
     }
   };
+
+  const onDragEnd = (result: any) => {
+    if (!result.destination) return;
+    
+    const sections = resumeData.settings?.sectionOrder || ["summary", "experience", "projects", "education", "skills", "certifications"];
+    const items = Array.from(sections);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setResumeData(prev => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        sectionOrder: items
+      }
+    }));
+  };
+
 
 
   // Persistence
