@@ -286,15 +286,38 @@ export default function ResumeBuilder() {
                         <Label className="text-base font-bold mb-4 block">Templates</Label>
                         <div className="grid grid-cols-2 gap-4">
                           {TEMPLATES.map(t => (
-                            <button key={t.id} onClick={() => setTemplate(t.id)} className={`group relative rounded-xl border-2 transition-all p-3 ${template === t.id ? "border-primary shadow-glow bg-primary/5" : "border-border hover:border-primary/40 bg-background"}`}>
-                              <div className="flex flex-col items-center justify-center text-center">
-                                <div className={`h-12 w-12 rounded-lg mb-3 flex items-center justify-center ${template === t.id ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground opacity-50"}`}>
-                                  <FileText className="h-6 w-6" />
+                            <button 
+                              key={t.id} 
+                              onClick={() => setTemplate(t.id)} 
+                              className={`group relative rounded-xl border-2 transition-all overflow-hidden flex flex-col ${template === t.id ? "border-primary shadow-glow bg-primary/5" : "border-border hover:border-primary/40 bg-background"}`}
+                            >
+                              <div className="aspect-[1/1.4] bg-muted relative overflow-hidden flex items-center justify-center group-hover:bg-muted/80 transition-colors">
+                                <img 
+                                  src={`https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=560&fit=crop&q=80&text=${t.name}`} 
+                                  alt={t.name}
+                                  className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105 opacity-60 group-hover:opacity-100"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    e.currentTarget.parentElement?.querySelector('.fallback')?.classList.remove('hidden');
+                                  }}
+                                />
+                                <div className="fallback hidden absolute inset-0 flex flex-col items-center justify-center p-4">
+                                  <FileText className="h-10 w-10 text-muted-foreground mb-2 opacity-20" />
+                                  <span className="text-[10px] font-bold text-center leading-tight uppercase tracking-widest opacity-40">Preview</span>
                                 </div>
-                                <span className="text-xs font-bold block mb-1">{t.name}</span>
-                                <span className="text-[10px] text-muted-foreground leading-tight hidden sm:block">{t.desc}</span>
+                                {template === t.id && (
+                                  <div className="absolute inset-0 bg-primary/5 border-2 border-primary z-10" />
+                                )}
                               </div>
-                              {template === t.id && <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-0.5"><CheckCircle2 className="h-3 w-3" /></div>}
+                              <div className="p-2.5 bg-background border-t">
+                                <span className="text-[11px] font-bold block truncate">{t.name}</span>
+                                <span className="text-[9px] text-muted-foreground leading-tight mt-0.5 line-clamp-1">{t.desc}</span>
+                              </div>
+                              {template === t.id && (
+                                <div className="absolute top-2 right-2 z-20 bg-primary text-primary-foreground rounded-full p-0.5 shadow-lg animate-in zoom-in">
+                                  <CheckCircle2 className="h-3 w-3" />
+                                </div>
+                              )}
                             </button>
                           ))}
                         </div>
