@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown, Link2, Wand, CheckCircle2, ArrowLeft, Type, TypeIcon, SpellCheck, Undo2, Redo2, Settings2, Palette, ChevronRight, Share2, Printer, Eye, Target, Bold, Italic, List, ListOrdered, Link as LinkIcon, Underline, Cloud, CloudOff, CloudCheck } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown, Link2, Wand, CheckCircle2, ArrowLeft, Type, TypeIcon, SpellCheck, Undo2, Redo2, Settings2, Palette, ChevronRight, Share2, Printer, Eye, Target, Bold, Italic, List, ListOrdered, Link as LinkIcon, Underline, Cloud, CloudOff } from "lucide-react";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
+
 
 import { SectionStyleControls, SectionStyles } from "@/components/SectionStyleControls";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -249,12 +250,13 @@ export default function ResumeBuilder() {
           // If cloud is newer OR no local data, use cloud
           if (!localLastEdited || new Date(cloudLastEdited) > new Date(localLastEdited)) {
             restoring.current = true;
-            setResumeData(data.resume_data as ResumeData);
+            setResumeData(data.resume_data as unknown as ResumeData);
             setTemplate(data.template_id as TemplateId);
             setStarter("uploaded"); // Assuming if there's a draft, they've started
             setTimeout(() => { restoring.current = false; }, 0);
             toast.success("Draft loaded from cloud");
           } else {
+
             // Local is newer, trigger a sync to cloud immediately
             setSaveStatus("saving");
             await supabase.from("resume_drafts").upsert({
