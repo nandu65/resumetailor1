@@ -827,23 +827,23 @@ export default function ResumeBuilder() {
                           )}
 
                            {resumeData && resumeData.name && !loading && resumeData._isPolished && (
-                             <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-xl border border-primary/10 animate-in zoom-in-95">
-                               <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                               <div>
-                                 <p className="text-xs font-bold text-primary">✓ Resume polished successfully</p>
-                                 <p className="text-[10px] text-muted-foreground mt-0.5">"Your content has been improved for clarity, impact, and ATS relevance."</p>
-                               </div>
-                             </div>
-                           )}
-                        </div>
-                      </div>
-                   </div>
-                </div>
-              </div>
-
-              {/* RIGHT COLUMN: STICKY PREVIEW */}
-              <div className="hidden lg:block lg:sticky lg:top-[158px] h-[calc(100vh-180px)] animate-in fade-in zoom-in-95 duration-500 delay-200">
-                <div className="h-full flex flex-col bg-muted/20 rounded-[2.5rem] border-4 border-muted/50 p-2 shadow-card overflow-hidden">
+                              <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-xl border border-primary/10 animate-in zoom-in-95">
+                                <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                                <div>
+                                  <p className="text-xs font-bold text-primary">✓ Resume polished successfully</p>
+                                  <p className="text-[10px] text-muted-foreground mt-0.5">"Your content has been improved for clarity, impact, and ATS relevance."</p>
+                                </div>
+                              </div>
+                            )}
+                         </div>
+                       </div>
+                    </div>
+                 </div>
+               </div>
+ 
+               {/* RIGHT COLUMN: STICKY PREVIEW */}
+               <div className="hidden lg:block lg:sticky lg:top-[70px] h-[calc(100vh-100px)] animate-in fade-in zoom-in-95 duration-500 delay-200">
+                 <div className="h-full flex flex-col bg-muted/20 rounded-[2.5rem] border-4 border-muted/50 p-2 shadow-card overflow-hidden">
                    {/* Rich Text Toolbar */}
                    <div className="flex items-center gap-1 p-2 mb-2 bg-background/80 backdrop-blur-sm rounded-2xl border border-border/50 mx-2 mt-2">
                      <Button 
