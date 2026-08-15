@@ -817,15 +817,15 @@ export default function ResumeBuilder() {
                             </div>
                           )}
 
-                          {resume && !loading && (
-                            <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-xl border border-primary/10 animate-in zoom-in-95">
-                              <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                              <div>
-                                <p className="text-xs font-bold text-primary">✓ Resume polished successfully</p>
-                                <p className="text-[10px] text-muted-foreground mt-0.5">"Your content has been improved for clarity, impact, and ATS relevance."</p>
-                              </div>
-                            </div>
-                          )}
+                           {resumeData && resumeData.name && !loading && (
+                             <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-xl border border-primary/10 animate-in zoom-in-95">
+                               <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                               <div>
+                                 <p className="text-xs font-bold text-primary">✓ Resume polished successfully</p>
+                                 <p className="text-[10px] text-muted-foreground mt-0.5">"Your content has been improved for clarity, impact, and ATS relevance."</p>
+                               </div>
+                             </div>
+                           )}
                         </div>
                       </div>
                    </div>
