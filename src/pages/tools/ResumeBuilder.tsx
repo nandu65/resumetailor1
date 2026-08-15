@@ -124,6 +124,41 @@ export default function ResumeBuilder() {
   const [prefs, setPrefs] = useState<ResumePrefs>(DEFAULT_PREFS);
   const [spellCheckEnabled, setSpellCheckEnabled] = useState(true);
   const restoring = useRef(false);
+  const [showFormattingToolbar, setShowFormattingToolbar] = useState(false);
+
+  useEffect(() => {
+    const handleSelection = () => {
+      const selection = window.getSelection();
+      if (selection && !selection.isCollapsed && selection.toString().trim().length > 0) {
+        setShowFormattingToolbar(true);
+      } else {
+        setShowFormattingToolbar(false);
+      }
+    };
+
+    document.addEventListener("selectionchange", handleSelection);
+    return () => document.removeEventListener("selectionchange", handleSelection);
+  }, []);
+
+  const handleFormat = (command: string, value?: string) => {
+    if (command === 'fontSize') {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+      
+      // We'll update the global font size for now, or per-section if we can identify it
+      // For simplicity, let's adjust the global one or just use execCommand for quick visual feedback
+      // Actually, per user request: "Immediately it shd show the formatting options like bold, italic, font size +/-"
+      
+      if (value === 'increase') {
+        document.execCommand('fontSize', false, '4'); // Simplified
+      } else {
+        document.execCommand('fontSize', false, '2'); // Simplified
+      }
+    } else {
+      document.execCommand(command, false, value);
+    }
+  };
+
 
   // Persistence
   useEffect(() => {
