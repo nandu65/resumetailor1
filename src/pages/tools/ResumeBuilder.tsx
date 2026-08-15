@@ -352,8 +352,8 @@ export default function ResumeBuilder() {
                                 <Button variant="ghost" size="sm" onClick={() => window.print()}><Printer className="h-4 w-4" /></Button>
                             </div>
                             <ScrollArea className="h-full p-6">
-                                {resume ? (
-                                    <ResumePreview template={template} data={resume} onChange={setResume} />
+                                {resumeData ? (
+                                    <ResumePreview template={template} data={resumeData} onChange={setResumeData} />
                                 ) : (
                                     <div className="text-center py-20 text-muted-foreground italic">Preview pending...</div>
                                 )}
