@@ -861,22 +861,22 @@ export default function ResumeBuilder() {
                    <div className="space-y-6">
 
                       <div className="space-y-2">
-                        <Label className="text-xs font-bold text-muted-foreground ml-1">Core Skills</Label>
+                        <Label className="text-xs font-bold text-muted-foreground ml-1">Skills (One category per line, e.g., Languages: Java, Python)</Label>
                         <Textarea 
-                          value={resumeData.skills.map(s => s.items.join(', ')).join('\n')} 
+                          value={resumeData.skills.map(s => `${s.category}: ${s.items.join(', ')}`).join('\n')} 
                           onChange={e => {
                             const lines = e.target.value.split('\n').filter(Boolean);
                             const newSkills = lines.map(line => {
                                 const parts = line.split(':');
                                 if (parts.length > 1) {
-                                    return { category: parts[0].trim(), items: parts[1].split(',').map(i => i.trim()) };
+                                    return { category: parts[0].trim(), items: parts[1].split(',').map(i => i.trim()).filter(Boolean) };
                                 }
-                                return { category: "Skills", items: line.split(',').map(i => i.trim()) };
+                                return { category: "Other", items: line.split(',').map(i => i.trim()).filter(Boolean) };
                             });
                             setResumeData({ ...resumeData, skills: newSkills });
                           }} 
-                          placeholder="Design: Figma, UX Research&#10;Development: React, Node.js" 
-                          className="min-h-[80px] rounded-xl border-border/60" 
+                          placeholder="Languages: TypeScript, JavaScript&#10;Frameworks: React, Node.js" 
+                          className="min-h-[120px] rounded-xl border-border/60" 
                         />
                         <p className="text-[10px] text-muted-foreground ml-1">Tip: Use "Category: skill1, skill2" for grouping.</p>
                       </div>
