@@ -943,6 +943,30 @@ export type Database = {
         }
         Relationships: []
       }
+      resume_drafts: {
+        Row: {
+          id: string
+          resume_data: Json
+          template_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          resume_data: Json
+          template_id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          resume_data?: Json
+          template_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       resume_score_shares: {
         Row: {
           ats_score: number | null
