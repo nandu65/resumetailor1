@@ -986,7 +986,14 @@ export default function ResumeBuilder() {
  
                {/* RIGHT COLUMN: STICKY PREVIEW */}
                <div className="hidden lg:block lg:sticky lg:top-[70px] h-[calc(100vh-100px)] animate-in fade-in zoom-in-95 duration-500 delay-200">
+                 {showFormattingToolbar && (
+                   <FormattingToolbar 
+                     onFormat={handleFormat} 
+                     onClose={() => setShowFormattingToolbar(false)} 
+                   />
+                 )}
                  <div className="h-full flex flex-col bg-muted/20 rounded-[2.5rem] border-4 border-muted/50 p-2 shadow-card overflow-hidden">
+
                    {/* Rich Text Toolbar */}
                    <div className="flex items-center gap-1 p-2 mb-2 bg-background/80 backdrop-blur-sm rounded-2xl border border-border/50 mx-2 mt-2">
                      <Button 
