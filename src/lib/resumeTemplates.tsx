@@ -1478,7 +1478,8 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
     "teal-left": [15, 118, 110], "photo-grid": [3, 105, 161], "logo-boxed": [3, 105, 161],
   };
   const accent: [number, number, number] = accentMap[template] ?? [40, 40, 40];
-  const font = data.settings?.fontFamily || (template === "classic" || template === "executive" || template === "centered-serif" ? "times" : "helvetica");
+  const font = data.settings?.fontFamily || (template === "classic" || template === "executive" || template === "centered-serif" || template === "elegant" ? "times" : "helvetica");
+  const baseSize = data.settings?.fontSize || 10;
   let y = margin;
 
   const ensure = (h = 14) => { if (y + h > pageH - margin) { doc.addPage(); y = margin; } };
