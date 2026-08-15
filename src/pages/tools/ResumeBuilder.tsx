@@ -301,16 +301,16 @@ export default function ResumeBuilder() {
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label className="text-xs">Font Family</Label>
-                            <select className="w-full bg-background border border-border rounded-lg px-2 py-2 text-sm outline-none" value={globalFontFamily} onChange={e => setGlobalFontFamily(e.target.value)}>
+                            <select className="w-full bg-background border border-border rounded-lg px-2 py-2 text-sm outline-none" value={resumeData.settings?.fontFamily} onChange={e => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, fontFamily: e.target.value } }))}>
                               {fontFamilies.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                             </select>
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-xs">Base Size ({globalFontSize}px)</Label>
+                            <Label className="text-xs">Base Size ({resumeData.settings?.fontSize}px)</Label>
                             <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setGlobalFontSize(Math.max(8, globalFontSize - 1))}>-</Button>
-                              <span className="flex-1 text-center font-bold">{globalFontSize}</span>
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setGlobalFontSize(Math.min(16, globalFontSize + 1))}>+</Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, fontSize: Math.max(8, (prev.settings?.fontSize || 11) - 1) } }))}>-</Button>
+                              <span className="flex-1 text-center font-bold">{resumeData.settings?.fontSize}</span>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, fontSize: Math.min(16, (prev.settings?.fontSize || 11) + 1) } }))}>+</Button>
                             </div>
                           </div>
                         </div>
