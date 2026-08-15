@@ -293,11 +293,10 @@ export default function ResumeBuilder() {
                             >
                               <div className="aspect-[1/1.4] bg-muted relative overflow-hidden flex items-center justify-center group-hover:bg-muted/80 transition-colors">
                                 <img 
-                                  src={`/templates/${t.id}.png`} 
+                                  src={`https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=560&fit=crop&q=80&text=${t.name}`} 
                                   alt={t.name}
-                                  className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                                  className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105 opacity-60 group-hover:opacity-100"
                                   onError={(e) => {
-                                    // Fallback if image doesn't exist yet
                                     e.currentTarget.style.display = 'none';
                                     e.currentTarget.parentElement?.querySelector('.fallback')?.classList.remove('hidden');
                                   }}
