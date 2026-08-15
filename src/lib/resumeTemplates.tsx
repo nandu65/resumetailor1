@@ -151,21 +151,23 @@ export const Editable = React.memo(function Editable({
 
 
 /** Bullets editor: one <li> per bullet, editable, splits on Enter via onBlur parse. */
-function BulletsEditor({
+export function BulletsEditor({
   bullets, onChange, className,
 }: { bullets: string[]; onChange?: (v: string[]) => void; className?: string }) {
   const editable = !!onChange;
   const ref = useRef<HTMLUListElement>(null);
   const text = bullets.join("\n");
+  
   useEffect(() => {
     if (!ref.current) return;
     const current = Array.from(ref.current.querySelectorAll("li"))
       .map((li) => (li.innerHTML || "").trim())
       .join("\n");
     if (current !== text) {
-      ref.current.innerHTML = bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join("");
+      ref.current.innerHTML = bullets.map((b) => `<li>${b}</li>`).join("");
     }
   }, [text, bullets]);
+
   return (
     <ul
       ref={ref}
@@ -173,7 +175,7 @@ function BulletsEditor({
       suppressContentEditableWarning
       className={
         (className || "") +
-        (editable ? " outline-none focus:bg-primary/5 focus:ring-1 focus:ring-primary/40 rounded" : "")
+        (editable ? " outline-none focus:bg-primary/5 focus:ring-1 focus:ring-primary/40 rounded px-1 min-h-[1em]" : "")
       }
       onBlur={
         editable
@@ -185,6 +187,7 @@ function BulletsEditor({
             }
           : undefined
       }
+
     />
   );
 }
