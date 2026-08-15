@@ -680,12 +680,22 @@ export default function ResumeBuilder() {
                       <div className="space-y-2">
                         <Label className="text-xs font-bold text-muted-foreground ml-1">Core Skills</Label>
                         <Textarea 
-                          value={skills} 
-                          onChange={e => setSkills(e.target.value)} 
-                          placeholder="JavaScript, React, Project Management, Agile..." 
+                          value={resumeData.skills.map(s => s.items.join(', ')).join('\n')} 
+                          onChange={e => {
+                            const lines = e.target.value.split('\n').filter(Boolean);
+                            const newSkills = lines.map(line => {
+                                const parts = line.split(':');
+                                if (parts.length > 1) {
+                                    return { category: parts[0].trim(), items: parts[1].split(',').map(i => i.trim()) };
+                                }
+                                return { category: "Skills", items: line.split(',').map(i => i.trim()) };
+                            });
+                            setResumeData({ ...resumeData, skills: newSkills });
+                          }} 
+                          placeholder="Design: Figma, UX Research&#10;Development: React, Node.js" 
                           className="min-h-[80px] rounded-xl border-border/60" 
                         />
-                        <p className="text-[10px] text-muted-foreground ml-1">Tip: Separate skills with commas or new lines.</p>
+                        <p className="text-[10px] text-muted-foreground ml-1">Tip: Use "Category: skill1, skill2" for grouping.</p>
                       </div>
 
                       <div className="space-y-2">
