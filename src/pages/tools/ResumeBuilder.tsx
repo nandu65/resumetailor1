@@ -961,7 +961,7 @@ export default function ResumeBuilder() {
                    </div>
 
                    <div className="flex-1 overflow-y-auto rounded-[2rem] bg-background scrollbar-hide">
-                       {(resumeData.name || starter !== "choose") ? (
+                       {(resumeData.name || (starter !== "choose" && starter !== "wizard")) ? (
                          <div className="p-8 origin-top scale-[0.9] transform-gpu transition-transform">
                             <ResumePreview template={template} data={resumeData} onChange={setResumeData} />
                          </div>
