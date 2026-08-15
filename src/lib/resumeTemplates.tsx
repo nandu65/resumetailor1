@@ -1730,35 +1730,59 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
   if (data.title) meta(data.title);
   meta([data.email, data.phone, data.location, ...(data.links?.map(l => `${l.label}: ${l.url}`) ?? [])].filter(Boolean).join("  |  "));
 
-  if (data.summary) { H2("Summary"); line(data.summary); }
-  if (data.experience?.length) {
-    H2("Experience");
-    data.experience.forEach(e => {
-      line(`${e.role} — ${e.company}${e.location ? `, ${e.location}` : ""}`, { bold: true });
-      if (e.start || e.end) line(`${e.start} – ${e.end}`, { italic: true, size: 9 });
-      e.bullets?.forEach(b => bullet(b));
-      y += (secSize() * 0.4);
-    });
-  }
-  if (data.projects?.length) {
-    H2("Projects");
-    data.projects.forEach(p => {
-      line(`${p.name}${p.tech ? ` — ${p.tech}` : ""}`, { bold: true });
-      p.bullets?.forEach(b => bullet(b));
-      y += (secSize() * 0.4);
-    });
-  }
-  if (data.education?.length) {
-    H2("Education");
-    data.education.forEach(e => {
-      line(`${e.degree} — ${e.school}${e.location ? `, ${e.location}` : ""}`, { bold: true });
-      if (e.start || e.end) line(`${e.start} – ${e.end}`, { italic: true, size: 9 });
-      if (e.details) line(e.details);
-      y += (secSize() * 0.4);
-    });
-  }
-  if (data.skills?.length) { H2("Skills"); data.skills.forEach(s => line(`${s.category}: ${s.items.join(", ")}`)); }
-  if (data.certifications?.length) { H2("Certifications"); data.certifications.forEach(c => bullet(c)); }
+  const order = data.settings?.sectionOrder || ["summary", "experience", "projects", "education", "skills", "certifications"];
+  
+  order.forEach(key => {
+    switch (key) {
+      case "summary":
+        if (data.summary) { H2("Summary"); line(data.summary); }
+        break;
+      case "experience":
+        if (data.experience?.length) {
+          H2("Experience");
+          data.experience.forEach(e => {
+            line(`${e.role} — ${e.company}${e.location ? `, ${e.location}` : ""}`, { bold: true });
+            if (e.start || e.end) line(`${e.start} – ${e.end}`, { italic: true, size: 9 });
+            e.bullets?.forEach(b => bullet(b));
+            y += (secSize() * 0.4);
+          });
+        }
+        break;
+      case "projects":
+        if (data.projects?.length) {
+          H2("Projects");
+          data.projects.forEach(p => {
+            line(`${p.name}${p.tech ? ` — ${p.tech}` : ""}`, { bold: true });
+            p.bullets?.forEach(b => bullet(b));
+            y += (secSize() * 0.4);
+          });
+        }
+        break;
+      case "education":
+        if (data.education?.length) {
+          H2("Education");
+          data.education.forEach(e => {
+            line(`${e.degree} — ${e.school}${e.location ? `, ${e.location}` : ""}`, { bold: true });
+            if (e.start || e.end) line(`${e.start} – ${e.end}`, { italic: true, size: 9 });
+            if (e.details) line(e.details);
+            y += (secSize() * 0.4);
+          });
+        }
+        break;
+      case "skills":
+        if (data.skills?.length) { 
+          H2("Skills"); 
+          data.skills.forEach(s => line(`${s.category}: ${s.items.join(", ")}`)); 
+        }
+        break;
+      case "certifications":
+        if (data.certifications?.length) { 
+          H2("Certifications"); 
+          data.certifications.forEach(c => bullet(c)); 
+        }
+        break;
+    }
+  });
 
   const safe = safeName(data.name);
   doc.save(`${safe}-${template}.pdf`);
@@ -1849,71 +1873,84 @@ export async function downloadResumeDocxFromData(data: ResumeData, template: Tem
   const contact = [data.email, data.phone, data.location, ...(data.links?.map(l => `${l.label}: ${l.url}`) ?? [])].filter(Boolean).join("  •  ");
   if (contact) children.push(P(contact, { size: baseSize - 2, align: AlignmentType.CENTER, color: "555555" }));
 
-  if (data.summary) { children.push(H("Summary")); children.push(P(data.summary, { sectionKey: "summary" })); }
+  const order = data.settings?.sectionOrder || ["summary", "experience", "projects", "education", "skills", "certifications"];
 
-  if (data.experience?.length) {
-    children.push(H("Experience"));
-    const secStyle = secStyles?.experience;
-    const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
-    data.experience.forEach(e => {
-      children.push(new Paragraph({
-        children: [
-          new TextRun({ text: `${e.role}`, bold: true, size: fontSize, font }),
-          new TextRun({ text: ` — ${e.company}${e.location ? `, ${e.location}` : ""}`, size: fontSize, font }),
-          new TextRun({ text: `   ${e.start} – ${e.end}`, italics: true, size: fontSize - 2, color: "666666", font }),
-        ],
-      }));
-      e.bullets?.forEach(b => children.push(bullet(b, "experience")));
-    });
-  }
-
-  if (data.projects?.length) {
-    children.push(H("Projects"));
-    const secStyle = secStyles?.projects;
-    const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
-    data.projects.forEach(p => {
-      children.push(new Paragraph({
-        children: [
-          new TextRun({ text: p.name, bold: true, size: fontSize, font }),
-          p.tech ? new TextRun({ text: ` — ${p.tech}`, italics: true, size: fontSize - 2, color: "666666", font }) : new TextRun(""),
-        ],
-      }));
-      p.bullets?.forEach(b => children.push(bullet(b, "projects")));
-    });
-  }
-
-  if (data.education?.length) {
-    children.push(H("Education"));
-    const secStyle = secStyles?.education;
-    const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
-    data.education.forEach(e => {
-      children.push(new Paragraph({
-        children: [
-          new TextRun({ text: e.degree, bold: true, size: fontSize, font }),
-          new TextRun({ text: ` — ${e.school}${e.location ? `, ${e.location}` : ""}`, size: fontSize, font }),
-          new TextRun({ text: `   ${e.start} – ${e.end}`, italics: true, size: fontSize - 2, color: "666666", font }),
-        ],
-      }));
-      if (e.details) children.push(P(e.details, { size: fontSize - 2, sectionKey: "education" }));
-    });
-  }
-
-  if (data.skills?.length) {
-    children.push(H("Skills"));
-    const secStyle = secStyles?.skills;
-    const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
-    data.skills.forEach(s => children.push(new Paragraph({
-      children: [
-        new TextRun({ text: `${s.category}: `, bold: true, size: fontSize, font }),
-        new TextRun({ text: s.items.join(", "), size: fontSize, font }),
-      ],
-    })));
-  }
-
-  if (data.certifications?.length) {
-    children.push(H("Certifications"));
-    data.certifications.forEach(c => children.push(bullet(c, "certifications")));
-  }
+  order.forEach(key => {
+    switch (key) {
+      case "summary":
+        if (data.summary) { children.push(H("Summary")); children.push(P(data.summary, { sectionKey: "summary" })); }
+        break;
+      case "experience":
+        if (data.experience?.length) {
+          children.push(H("Experience"));
+          const secStyle = secStyles?.experience;
+          const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
+          data.experience.forEach(e => {
+            children.push(new Paragraph({
+              children: [
+                new TextRun({ text: `${e.role}`, bold: true, size: fontSize, font }),
+                new TextRun({ text: ` — ${e.company}${e.location ? `, ${e.location}` : ""}`, size: fontSize, font }),
+                new TextRun({ text: `   ${e.start} – ${e.end}`, italics: true, size: fontSize - 2, color: "666666", font }),
+              ],
+            }));
+            e.bullets?.forEach(b => children.push(bullet(b, "experience")));
+          });
+        }
+        break;
+      case "projects":
+        if (data.projects?.length) {
+          children.push(H("Projects"));
+          const secStyle = secStyles?.projects;
+          const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
+          data.projects.forEach(p => {
+            children.push(new Paragraph({
+              children: [
+                new TextRun({ text: p.name, bold: true, size: fontSize, font }),
+                p.tech ? new TextRun({ text: ` — ${p.tech}`, italics: true, size: fontSize - 2, color: "666666", font }) : new TextRun(""),
+              ],
+            }));
+            p.bullets?.forEach(b => children.push(bullet(b, "projects")));
+          });
+        }
+        break;
+      case "education":
+        if (data.education?.length) {
+          children.push(H("Education"));
+          const secStyle = secStyles?.education;
+          const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
+          data.education.forEach(e => {
+            children.push(new Paragraph({
+              children: [
+                new TextRun({ text: e.degree, bold: true, size: fontSize, font }),
+                new TextRun({ text: ` — ${e.school}${e.location ? `, ${e.location}` : ""}`, size: fontSize, font }),
+                new TextRun({ text: `   ${e.start} – ${e.end}`, italics: true, size: fontSize - 2, color: "666666", font }),
+              ],
+            }));
+            if (e.details) children.push(P(e.details, { size: fontSize - 2, sectionKey: "education" }));
+          });
+        }
+        break;
+      case "skills":
+        if (data.skills?.length) {
+          children.push(H("Skills"));
+          const secStyle = secStyles?.skills;
+          const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
+          data.skills.forEach(s => children.push(new Paragraph({
+            children: [
+              new TextRun({ text: `${s.category}: `, bold: true, size: fontSize, font }),
+              new TextRun({ text: s.items.join(", "), size: fontSize, font }),
+            ],
+          })));
+        }
+        break;
+      case "certifications":
+        if (data.certifications?.length) {
+          children.push(H("Certifications"));
+          data.certifications.forEach(c => children.push(bullet(c, "certifications")));
+        }
+        break;
+    }
+  });
 
   const doc = new Document({
     numbering: {
