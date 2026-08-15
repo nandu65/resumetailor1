@@ -487,12 +487,21 @@ function ClassicPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
       {r.skills?.length > 0 && (
         <section className="mb-2">
           <h3 className="uppercase text-[11px] font-bold tracking-widest border-b border-neutral-400 mb-1">Skills</h3>
-          {r.skills.map((s, i) => {
-            const upd = makeSkillUpdater(update, r, i);
-            return (
-              <div key={i}><span className="font-bold"><Editable value={s.category} onChange={update && (v => upd({ category: v }))} />:</span> <Editable value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} /></div>
-            );
-          })}
+          <div className="flex flex-wrap gap-2 px-1">
+            {r.skills.flatMap(s => s.items).map((it, k) => (
+              <span key={k} className="text-[10px] px-2 py-0.5 rounded border border-neutral-200 bg-neutral-50">{it}</span>
+            ))}
+          </div>
+          {update && (
+            <div className="mt-3 pt-2 border-t border-neutral-100 opacity-20 hover:opacity-100 transition-opacity">
+              {r.skills.map((s, i) => {
+                const upd = makeSkillUpdater(update, r, i);
+                return (
+                  <div key={i}><span className="font-bold"><Editable value={s.category} onChange={update && (v => upd({ category: v }))} />:</span> <Editable value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} /></div>
+                );
+              })}
+            </div>
+          )}
         </section>
       )}
       {r.certifications?.length > 0 && (
