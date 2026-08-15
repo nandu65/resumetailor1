@@ -193,7 +193,7 @@ export default function ResumeBuilder() {
 
   return (
     <div className="min-h-screen bg-background">
-      {showIntro && <BuilderIntroLoader onDone={() => { setShowIntro(false); setStarter("choose"); }} />}
+      {showIntro && <BuilderIntroLoader onDone={() => { setShowIntro(false); if (starter === "choose") setStarter("choose"); }} />}
       <TemplatePreferencesWizard
         open={starter === "wizard"}
         onOpenChange={(v) => {
