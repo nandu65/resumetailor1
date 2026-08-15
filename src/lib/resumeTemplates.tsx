@@ -198,6 +198,11 @@ function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 }
 
+export function buildResumeDataVerbatim(r: ResumeData): ResumeData {
+  return { ...r };
+}
+
+
 /* ---------- Update helpers passed down to previews ---------- */
 type UpdateFn = ((patch: Partial<ResumeData>) => void) | undefined;
 
