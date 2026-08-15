@@ -438,7 +438,7 @@ export default function ResumeBuilder() {
                             </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-80" align="end">
-                                <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="summary" hideHeader />
+                                <SectionStyleControls value={resumeData.settings?.sections || {}} onChange={sections => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, sections } }))} baseSize={resumeData.settings?.fontSize || 11} sectionKey="summary" hideHeader />
                             </PopoverContent>
                         </Popover>
                         <Button variant="outline" size="sm" className="h-8 rounded-full text-[10px] font-bold gap-1 border-primary/20 hover:bg-primary/5 text-primary">
@@ -448,8 +448,8 @@ export default function ResumeBuilder() {
                      </div>
                    </div>
                    <Textarea 
-                     value={summary} 
-                     onChange={e => setSummary(e.target.value)} 
+                     value={resumeData.summary} 
+                     onChange={e => setResumeData({ ...resumeData, summary: e.target.value })} 
                      placeholder="A brief overview of your professional background..." 
                      className="min-h-[120px] rounded-xl border-border/60 resize-none" 
                      spellCheck={spellCheckEnabled} 
