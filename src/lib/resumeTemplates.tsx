@@ -888,7 +888,7 @@ function MinimalPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
           {r.skills.map((s, i) => {
             const upd = makeSkillUpdater(update, r, i);
             return (
-              <div key={i} className="grid grid-cols-[80px_1fr] gap-4 mb-1">
+              <div key={i} className={isGenericSkillCategory(s.category) ? "mb-1" : "grid grid-cols-[80px_1fr] gap-4 mb-1"}>
                 <div className="text-[10px] text-neutral-500"><SkillCat value={s.category} onChange={update && (v => upd({ category: v }))} /></div>
                 <div className="text-[10px]"><Editable value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} /></div>
               </div>
