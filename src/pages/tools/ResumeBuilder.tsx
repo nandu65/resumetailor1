@@ -968,7 +968,7 @@ export default function ResumeBuilder() {
                       ) : (
                         <div className="h-full flex flex-col items-center justify-center text-muted-foreground p-12 text-center">
                            <div className="h-20 w-20 rounded-3xl bg-muted/30 flex items-center justify-center mb-6"><Eye className="h-10 w-10 opacity-20" /></div>
-                           <h4 data-rs-placeholder-visible className="font-bold text-foreground mb-2">Live Preview</h4>
+                           <h4 className="font-bold text-foreground mb-2">Live Preview</h4>
                            <p className="text-xs max-w-[200px]">Fill in your details and click Generate to see your polished resume here.</p>
                         </div>
                       )}
