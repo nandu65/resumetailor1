@@ -109,7 +109,8 @@ export default function ResumeBuilder() {
   });
   const [targetJd, setTargetJd] = useState("");
   const [template, setTemplate] = useState<TemplateId>(() => {
-    return (localStorage.getItem("rs-current-template") as TemplateId) || "modern";
+    const saved = localStorage.getItem("rs-current-template");
+    return (saved as TemplateId) || "modern";
   });
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<"ai" | "verbatim">("ai");
@@ -427,7 +428,14 @@ export default function ResumeBuilder() {
                           {TEMPLATES.map(t => (
                             <button 
                               key={t.id} 
-                              onClick={() => setTemplate(t.id)} 
+                              onClick={() => {
+                                const newId = t.id;
+                                setTemplate(newId);
+                                // Sync current state to the new template's logic if needed
+                                // The canonical state resumeData already has everything, 
+                                // and sectionOrder is preserved in resumeData.settings.
+                              }} 
+
                               className={`group relative rounded-xl border-2 transition-all overflow-hidden flex flex-col ${template === t.id ? "border-primary shadow-glow bg-primary/5" : "border-border hover:border-primary/40 bg-background"}`}
                             >
                               <div className="aspect-[1/1.4] bg-muted relative overflow-hidden flex items-center justify-center group-hover:bg-muted/80 transition-colors">
@@ -853,22 +861,22 @@ export default function ResumeBuilder() {
                    <div className="space-y-6">
 
                       <div className="space-y-2">
-                        <Label className="text-xs font-bold text-muted-foreground ml-1">Core Skills</Label>
+                        <Label className="text-xs font-bold text-muted-foreground ml-1">Skills (One category per line, e.g., Languages: Java, Python)</Label>
                         <Textarea 
-                          value={resumeData.skills.map(s => s.items.join(', ')).join('\n')} 
+                          value={resumeData.skills.map(s => `${s.category}: ${s.items.join(', ')}`).join('\n')} 
                           onChange={e => {
                             const lines = e.target.value.split('\n').filter(Boolean);
                             const newSkills = lines.map(line => {
                                 const parts = line.split(':');
                                 if (parts.length > 1) {
-                                    return { category: parts[0].trim(), items: parts[1].split(',').map(i => i.trim()) };
+                                    return { category: parts[0].trim(), items: parts[1].split(',').map(i => i.trim()).filter(Boolean) };
                                 }
-                                return { category: "Skills", items: line.split(',').map(i => i.trim()) };
+                                return { category: "Other", items: line.split(',').map(i => i.trim()).filter(Boolean) };
                             });
                             setResumeData({ ...resumeData, skills: newSkills });
                           }} 
-                          placeholder="Design: Figma, UX Research&#10;Development: React, Node.js" 
-                          className="min-h-[80px] rounded-xl border-border/60" 
+                          placeholder="Languages: TypeScript, JavaScript&#10;Frameworks: React, Node.js" 
+                          className="min-h-[120px] rounded-xl border-border/60" 
                         />
                         <p className="text-[10px] text-muted-foreground ml-1">Tip: Use "Category: skill1, skill2" for grouping.</p>
                       </div>

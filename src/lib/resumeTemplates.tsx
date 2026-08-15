@@ -198,6 +198,12 @@ function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 }
 
+export function cloneResumeData(r: ResumeData): ResumeData {
+  return JSON.parse(JSON.stringify(r));
+}
+
+
+
 /* ---------- Update helpers passed down to previews ---------- */
 type UpdateFn = ((patch: Partial<ResumeData>) => void) | undefined;
 
@@ -355,15 +361,26 @@ function ModernPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
           {r.skills?.length > 0 && (
             <div className="mt-5">
               <div className="uppercase tracking-wider text-[9px] font-bold border-b border-emerald-600 pb-1 mb-2">Skills</div>
-              {r.skills.map((s, i) => {
-                const upd = makeSkillUpdater(update, r, i);
-                return (
-                  <div key={i} className="mb-2">
-                    <Editable as="div" value={s.category} onChange={update && (v => upd({ category: v }))} className="font-semibold text-[10px]" />
-                    <Editable as="div" value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} className="text-[10px] text-emerald-50" />
-                  </div>
-                );
-              })}
+              <div className="flex flex-wrap gap-1.5">
+                {r.skills.flatMap(s => s.items).map((it, k) => (
+                  <span key={k} className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-700/50 text-emerald-50 border border-emerald-600/30 whitespace-nowrap">
+                    {it}
+                  </span>
+                ))}
+              </div>
+              {update && (
+                <div className="mt-4 pt-2 border-t border-emerald-700/30 opacity-20 hover:opacity-100 transition-opacity">
+                  {r.skills.map((s, i) => {
+                    const upd = makeSkillUpdater(update, r, i);
+                    return (
+                      <div key={i} className="mb-2">
+                        <Editable as="div" value={s.category} onChange={update && (v => upd({ category: v }))} className="font-semibold text-[10px]" />
+                        <Editable as="div" value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} className="text-[10px] text-emerald-50" />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
           {r.certifications?.length > 0 && (
@@ -470,12 +487,21 @@ function ClassicPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
       {r.skills?.length > 0 && (
         <section className="mb-2">
           <h3 className="uppercase text-[11px] font-bold tracking-widest border-b border-neutral-400 mb-1">Skills</h3>
-          {r.skills.map((s, i) => {
-            const upd = makeSkillUpdater(update, r, i);
-            return (
-              <div key={i}><span className="font-bold"><Editable value={s.category} onChange={update && (v => upd({ category: v }))} />:</span> <Editable value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} /></div>
-            );
-          })}
+          <div className="flex flex-wrap gap-2 px-1">
+            {r.skills.flatMap(s => s.items).map((it, k) => (
+              <span key={k} className="text-[10px] px-2 py-0.5 rounded border border-neutral-200 bg-neutral-50">{it}</span>
+            ))}
+          </div>
+          {update && (
+            <div className="mt-3 pt-2 border-t border-neutral-100 opacity-20 hover:opacity-100 transition-opacity">
+              {r.skills.map((s, i) => {
+                const upd = makeSkillUpdater(update, r, i);
+                return (
+                  <div key={i}><span className="font-bold"><Editable value={s.category} onChange={update && (v => upd({ category: v }))} />:</span> <Editable value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} /></div>
+                );
+              })}
+            </div>
+          )}
         </section>
       )}
       {r.certifications?.length > 0 && (
@@ -1039,18 +1065,24 @@ function ElegantPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
         </section>
       )}
       {r.skills?.length > 0 && (
-        <section>{H("Core Competencies")}
-          <div className="text-center text-[11px]">
-            {r.skills.flatMap(s => s.items).join("  ·  ")}
+        <section>{H("Skills")}
+          <div className="flex flex-wrap justify-center gap-2 px-4">
+            {r.skills.flatMap(s => s.items).map((it, k) => (
+              <span key={k} className="text-[10px] px-2.5 py-1 rounded-full bg-stone-100 text-stone-800 border border-stone-200">{it}</span>
+            ))}
           </div>
-          {update && r.skills.map((s, i) => {
-            const upd = makeSkillUpdater(update, r, i);
-            return (
-              <div key={i} className="text-[9px] text-stone-400 text-center mt-1">
-                <Editable value={s.category} onChange={v => upd({ category: v })} />: <Editable value={s.items.join(", ")} onChange={v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) })} />
-              </div>
-            );
-          })}
+          {update && (
+            <div className="mt-4 pt-2 border-t border-stone-100 opacity-20 hover:opacity-100 transition-opacity">
+              {r.skills.map((s, i) => {
+                const upd = makeSkillUpdater(update, r, i);
+                return (
+                  <div key={i} className="text-[9px] text-stone-400 text-center mt-1">
+                    <Editable value={s.category} onChange={v => upd({ category: v })} />: <Editable value={s.items.join(", ")} onChange={v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) })} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
       )}
       {r.certifications?.length > 0 && (
@@ -1137,7 +1169,11 @@ function SidebarDarkPreview({ r, update }: { r: ResumeData; update?: UpdateFn })
                 return (
                   <div key={i} className="mb-2">
                     <Editable as="div" value={s.category} onChange={update && (v => upd({ category: v }))} className="font-semibold text-[10px]" />
-                    <Editable as="div" value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} className="text-[10px] text-teal-100" />
+                    <div className="flex flex-wrap gap-1 mt-0.5">
+                      {s.items.map((it, k) => (
+                        <span key={k} className="text-[9px] px-1.5 py-0.5 rounded-full bg-teal-600 text-teal-50 border border-teal-500/30">{it}</span>
+                      ))}
+                    </div>
                   </div>
                 );
               })}
@@ -1283,7 +1319,28 @@ function CenteredSerifPreview({ r, update }: { r: ResumeData; update?: UpdateFn 
           </div>
         );
       })}</>)}
-      {r.skills?.length > 0 && (<><Rule label="Skills" /><div className="text-center text-[10.5px]">{r.skills.flatMap(s => s.items).join(" · ")}</div>{update && r.skills.map((s, i) => { const upd = makeSkillUpdater(update, r, i); return (<div key={i} className="text-[9px] text-neutral-400 text-center mt-0.5"><Editable value={s.category} onChange={v => upd({ category: v })} />: <Editable value={s.items.join(", ")} onChange={v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) })} /></div>); })}</>)}
+      {r.skills?.length > 0 && (
+        <>
+          <Rule label="Skills" />
+          <div className="flex flex-wrap justify-center gap-2 px-6">
+            {r.skills.flatMap(s => s.items).map((it, k) => (
+              <span key={k} className="text-[10px] border border-neutral-300 px-2 py-0.5 rounded-sm bg-neutral-50">{it}</span>
+            ))}
+          </div>
+          {update && (
+            <div className="mt-4 pt-2 border-t border-neutral-100 opacity-20 hover:opacity-100 transition-opacity">
+              {r.skills.map((s, i) => {
+                const upd = makeSkillUpdater(update, r, i);
+                return (
+                  <div key={i} className="text-[9px] text-neutral-400 text-center mt-0.5">
+                    <Editable value={s.category} onChange={v => upd({ category: v })} />: <Editable value={s.items.join(", ")} onChange={v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) })} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
       {r.education?.length > 0 && (<><Rule label="Education" />{r.education.map((e, i) => { const upd = makeEduUpdater(update, r, i); return (
         <div key={i} className="flex justify-between mb-1"><span><Editable value={e.school} onChange={update && (v => upd({ school: v }))} /> — <span className="italic"><Editable value={e.degree} onChange={update && (v => upd({ degree: v }))} /></span></span><span className="text-[10px]"><Editable value={e.start} onChange={update && (v => upd({ start: v }))} /> – <Editable value={e.end} onChange={update && (v => upd({ end: v }))} /></span></div>
       ); })}</>)}
@@ -1530,7 +1587,11 @@ export function ResumePreview({
     template === "logo-boxed" ? <LogoBoxedPreview r={data} update={update} /> :
     <ClassicPreview r={data} update={update} />;
 
-  useEffect(() => { tagSections(rootRef.current); });
+  useEffect(() => {
+    // Add small delay to ensure DOM is ready for tagging
+    const timer = setTimeout(() => tagSections(rootRef.current), 50);
+    return () => clearTimeout(timer);
+  }, [template, data.settings?.sectionOrder, data.experience.length, data.education.length, data.projects.length, data.skills.length]);
 
   return (
     <div ref={rootRef} data-rs-root={scopeId}>
@@ -1678,35 +1739,59 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
   if (data.title) meta(data.title);
   meta([data.email, data.phone, data.location, ...(data.links?.map(l => `${l.label}: ${l.url}`) ?? [])].filter(Boolean).join("  |  "));
 
-  if (data.summary) { H2("Summary"); line(data.summary); }
-  if (data.experience?.length) {
-    H2("Experience");
-    data.experience.forEach(e => {
-      line(`${e.role} — ${e.company}${e.location ? `, ${e.location}` : ""}`, { bold: true });
-      if (e.start || e.end) line(`${e.start} – ${e.end}`, { italic: true, size: 9 });
-      e.bullets?.forEach(b => bullet(b));
-      y += (secSize() * 0.4);
-    });
-  }
-  if (data.projects?.length) {
-    H2("Projects");
-    data.projects.forEach(p => {
-      line(`${p.name}${p.tech ? ` — ${p.tech}` : ""}`, { bold: true });
-      p.bullets?.forEach(b => bullet(b));
-      y += (secSize() * 0.4);
-    });
-  }
-  if (data.education?.length) {
-    H2("Education");
-    data.education.forEach(e => {
-      line(`${e.degree} — ${e.school}${e.location ? `, ${e.location}` : ""}`, { bold: true });
-      if (e.start || e.end) line(`${e.start} – ${e.end}`, { italic: true, size: 9 });
-      if (e.details) line(e.details);
-      y += (secSize() * 0.4);
-    });
-  }
-  if (data.skills?.length) { H2("Skills"); data.skills.forEach(s => line(`${s.category}: ${s.items.join(", ")}`)); }
-  if (data.certifications?.length) { H2("Certifications"); data.certifications.forEach(c => bullet(c)); }
+  const order = data.settings?.sectionOrder || ["summary", "experience", "projects", "education", "skills", "certifications"];
+  
+  order.forEach(key => {
+    switch (key) {
+      case "summary":
+        if (data.summary) { H2("Summary"); line(data.summary); }
+        break;
+      case "experience":
+        if (data.experience?.length) {
+          H2("Experience");
+          data.experience.forEach(e => {
+            line(`${e.role} — ${e.company}${e.location ? `, ${e.location}` : ""}`, { bold: true });
+            if (e.start || e.end) line(`${e.start} – ${e.end}`, { italic: true, size: 9 });
+            e.bullets?.forEach(b => bullet(b));
+            y += (secSize() * 0.4);
+          });
+        }
+        break;
+      case "projects":
+        if (data.projects?.length) {
+          H2("Projects");
+          data.projects.forEach(p => {
+            line(`${p.name}${p.tech ? ` — ${p.tech}` : ""}`, { bold: true });
+            p.bullets?.forEach(b => bullet(b));
+            y += (secSize() * 0.4);
+          });
+        }
+        break;
+      case "education":
+        if (data.education?.length) {
+          H2("Education");
+          data.education.forEach(e => {
+            line(`${e.degree} — ${e.school}${e.location ? `, ${e.location}` : ""}`, { bold: true });
+            if (e.start || e.end) line(`${e.start} – ${e.end}`, { italic: true, size: 9 });
+            if (e.details) line(e.details);
+            y += (secSize() * 0.4);
+          });
+        }
+        break;
+      case "skills":
+        if (data.skills?.length) { 
+          H2("Skills"); 
+          data.skills.forEach(s => line(`${s.category}: ${s.items.join(", ")}`)); 
+        }
+        break;
+      case "certifications":
+        if (data.certifications?.length) { 
+          H2("Certifications"); 
+          data.certifications.forEach(c => bullet(c)); 
+        }
+        break;
+    }
+  });
 
   const safe = safeName(data.name);
   doc.save(`${safe}-${template}.pdf`);
@@ -1797,71 +1882,84 @@ export async function downloadResumeDocxFromData(data: ResumeData, template: Tem
   const contact = [data.email, data.phone, data.location, ...(data.links?.map(l => `${l.label}: ${l.url}`) ?? [])].filter(Boolean).join("  •  ");
   if (contact) children.push(P(contact, { size: baseSize - 2, align: AlignmentType.CENTER, color: "555555" }));
 
-  if (data.summary) { children.push(H("Summary")); children.push(P(data.summary, { sectionKey: "summary" })); }
+  const order = data.settings?.sectionOrder || ["summary", "experience", "projects", "education", "skills", "certifications"];
 
-  if (data.experience?.length) {
-    children.push(H("Experience"));
-    const secStyle = secStyles?.experience;
-    const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
-    data.experience.forEach(e => {
-      children.push(new Paragraph({
-        children: [
-          new TextRun({ text: `${e.role}`, bold: true, size: fontSize, font }),
-          new TextRun({ text: ` — ${e.company}${e.location ? `, ${e.location}` : ""}`, size: fontSize, font }),
-          new TextRun({ text: `   ${e.start} – ${e.end}`, italics: true, size: fontSize - 2, color: "666666", font }),
-        ],
-      }));
-      e.bullets?.forEach(b => children.push(bullet(b, "experience")));
-    });
-  }
-
-  if (data.projects?.length) {
-    children.push(H("Projects"));
-    const secStyle = secStyles?.projects;
-    const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
-    data.projects.forEach(p => {
-      children.push(new Paragraph({
-        children: [
-          new TextRun({ text: p.name, bold: true, size: fontSize, font }),
-          p.tech ? new TextRun({ text: ` — ${p.tech}`, italics: true, size: fontSize - 2, color: "666666", font }) : new TextRun(""),
-        ],
-      }));
-      p.bullets?.forEach(b => children.push(bullet(b, "projects")));
-    });
-  }
-
-  if (data.education?.length) {
-    children.push(H("Education"));
-    const secStyle = secStyles?.education;
-    const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
-    data.education.forEach(e => {
-      children.push(new Paragraph({
-        children: [
-          new TextRun({ text: e.degree, bold: true, size: fontSize, font }),
-          new TextRun({ text: ` — ${e.school}${e.location ? `, ${e.location}` : ""}`, size: fontSize, font }),
-          new TextRun({ text: `   ${e.start} – ${e.end}`, italics: true, size: fontSize - 2, color: "666666", font }),
-        ],
-      }));
-      if (e.details) children.push(P(e.details, { size: fontSize - 2, sectionKey: "education" }));
-    });
-  }
-
-  if (data.skills?.length) {
-    children.push(H("Skills"));
-    const secStyle = secStyles?.skills;
-    const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
-    data.skills.forEach(s => children.push(new Paragraph({
-      children: [
-        new TextRun({ text: `${s.category}: `, bold: true, size: fontSize, font }),
-        new TextRun({ text: s.items.join(", "), size: fontSize, font }),
-      ],
-    })));
-  }
-
-  if (data.certifications?.length) {
-    children.push(H("Certifications"));
-    data.certifications.forEach(c => children.push(bullet(c, "certifications")));
-  }
+  order.forEach(key => {
+    switch (key) {
+      case "summary":
+        if (data.summary) { children.push(H("Summary")); children.push(P(data.summary, { sectionKey: "summary" })); }
+        break;
+      case "experience":
+        if (data.experience?.length) {
+          children.push(H("Experience"));
+          const secStyle = secStyles?.experience;
+          const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
+          data.experience.forEach(e => {
+            children.push(new Paragraph({
+              children: [
+                new TextRun({ text: `${e.role}`, bold: true, size: fontSize, font }),
+                new TextRun({ text: ` — ${e.company}${e.location ? `, ${e.location}` : ""}`, size: fontSize, font }),
+                new TextRun({ text: `   ${e.start} – ${e.end}`, italics: true, size: fontSize - 2, color: "666666", font }),
+              ],
+            }));
+            e.bullets?.forEach(b => children.push(bullet(b, "experience")));
+          });
+        }
+        break;
+      case "projects":
+        if (data.projects?.length) {
+          children.push(H("Projects"));
+          const secStyle = secStyles?.projects;
+          const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
+          data.projects.forEach(p => {
+            children.push(new Paragraph({
+              children: [
+                new TextRun({ text: p.name, bold: true, size: fontSize, font }),
+                p.tech ? new TextRun({ text: ` — ${p.tech}`, italics: true, size: fontSize - 2, color: "666666", font }) : new TextRun(""),
+              ],
+            }));
+            p.bullets?.forEach(b => children.push(bullet(b, "projects")));
+          });
+        }
+        break;
+      case "education":
+        if (data.education?.length) {
+          children.push(H("Education"));
+          const secStyle = secStyles?.education;
+          const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
+          data.education.forEach(e => {
+            children.push(new Paragraph({
+              children: [
+                new TextRun({ text: e.degree, bold: true, size: fontSize, font }),
+                new TextRun({ text: ` — ${e.school}${e.location ? `, ${e.location}` : ""}`, size: fontSize, font }),
+                new TextRun({ text: `   ${e.start} – ${e.end}`, italics: true, size: fontSize - 2, color: "666666", font }),
+              ],
+            }));
+            if (e.details) children.push(P(e.details, { size: fontSize - 2, sectionKey: "education" }));
+          });
+        }
+        break;
+      case "skills":
+        if (data.skills?.length) {
+          children.push(H("Skills"));
+          const secStyle = secStyles?.skills;
+          const fontSize = secStyle?.fontSize ? secStyle.fontSize * 2 : baseSize;
+          data.skills.forEach(s => children.push(new Paragraph({
+            children: [
+              new TextRun({ text: `${s.category}: `, bold: true, size: fontSize, font }),
+              new TextRun({ text: s.items.join(", "), size: fontSize, font }),
+            ],
+          })));
+        }
+        break;
+      case "certifications":
+        if (data.certifications?.length) {
+          children.push(H("Certifications"));
+          data.certifications.forEach(c => children.push(bullet(c, "certifications")));
+        }
+        break;
+    }
+  });
 
   const doc = new Document({
     numbering: {
