@@ -285,7 +285,6 @@ export default function ResumeBuilder() {
                       <div>
                         <Label className="text-base font-bold mb-4 block">Templates</Label>
                         <div className="grid grid-cols-2 gap-4">
-                        <div className="grid grid-cols-2 gap-4">
                           {TEMPLATES.map(t => (
                             <button 
                               key={t.id} 
