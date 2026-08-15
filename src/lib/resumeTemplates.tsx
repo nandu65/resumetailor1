@@ -136,8 +136,10 @@ export const Editable = React.memo(function Editable({
       onBlur={
         editable
           ? (e: any) => {
-              const txt = multiline
-                ? (e.currentTarget.innerHTML as string)
+              const html = e.currentTarget.innerHTML as string;
+              const hasMarkup = /<(b|i|u|strong|em|span|font)\b/i.test(html);
+              const txt = multiline || hasMarkup
+                ? html.replace(/<div>/gi, multiline ? "<div>" : " ").replace(/<\/div>/gi, "").trim()
                 : (e.currentTarget.innerText as string).replace(/\s+/g, " ").trim();
               if (txt !== value) onChange!(txt);
             }
@@ -260,6 +262,50 @@ export function normalizeResumeSkills<T extends { skills?: { category: string; i
   const seen = new Set<string>();
   const items = generic.filter(i => { const k = i.trim().toLowerCase(); if (!k || seen.has(k)) return false; seen.add(k); return true; });
   return { ...r, skills: [{ category: "Skills", items }, ...named] };
+}
+
+
+export type RichSegment = { text: string; bold: boolean; italic: boolean; underline: boolean; fontSize?: number; fontFamily?: string };
+
+/** Parse inline HTML produced by the editable preview into styled segments used by PDF/DOCX export. */
+export function parseRichSegments(html: string): RichSegment[] {
+  if (!html) return [{ text: "", bold: false, italic: false, underline: false }];
+  if (typeof document === "undefined" || !/[<&]/.test(html)) {
+    return [{ text: html, bold: false, italic: false, underline: false }];
+  }
+  const root = document.createElement("div");
+  root.innerHTML = html;
+  const out: RichSegment[] = [];
+  const walk = (node: Node, inherited: Omit<RichSegment, "text">) => {
+    node.childNodes.forEach(child => {
+      if (child.nodeType === Node.TEXT_NODE) {
+        const text = child.textContent || "";
+        if (text) out.push({ ...inherited, text });
+        return;
+      }
+      if (child.nodeType !== Node.ELEMENT_NODE) return;
+      const el = child as HTMLElement;
+      const tag = el.tagName.toLowerCase();
+      const style = el.style;
+      const next: Omit<RichSegment, "text"> = {
+        bold: inherited.bold || tag === "b" || tag === "strong" || parseInt(style.fontWeight || "0", 10) >= 600 || style.fontWeight === "bold",
+        italic: inherited.italic || tag === "i" || tag === "em" || style.fontStyle === "italic",
+        underline: inherited.underline || tag === "u" || (style.textDecoration || "").includes("underline"),
+        fontSize: style.fontSize ? parseFloat(style.fontSize) : inherited.fontSize,
+        fontFamily: style.fontFamily || inherited.fontFamily,
+      };
+      walk(el, next);
+      if (tag === "br" || tag === "div" || tag === "p" || tag === "li") out.push({ ...next, text: "\n" });
+    });
+  };
+  walk(root, { bold: false, italic: false, underline: false });
+  const merged = out.filter(s => s.text !== "");
+  return merged.length ? merged : [{ text: "", bold: false, italic: false, underline: false }];
+}
+
+/** Plain text of inline HTML (used where styling can't be represented). */
+export function richToPlain(html: string) {
+  return parseRichSegments(html).map(s => s.text).join("").replace(/\s+/g, " ").trim();
 }
 
 /* ---------- HTML Preview components ---------- */
@@ -1642,7 +1688,8 @@ export function ResumePreview({
 
 
 /* ---------- PDF export ---------- */
-export function downloadResumePdfFromData(data: ResumeData, template: TemplateId) {
+export function downloadResumePdfFromData(rawData: ResumeData, template: TemplateId) {
+  const data = normalizeResumeSkills(rawData);
   const doc = new jsPDF({ unit: "pt", format: "letter" });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
@@ -1836,7 +1883,8 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
 }
 
 /* ---------- DOCX export (editable in Word / Google Docs) ---------- */
-export async function downloadResumeDocxFromData(data: ResumeData, template: TemplateId) {
+export async function downloadResumeDocxFromData(rawData: ResumeData, template: TemplateId) {
+  const data = normalizeResumeSkills(rawData);
   const serifTpls: TemplateId[] = ["classic", "executive", "elegant", "centered-serif"];
   const font = serifTpls.includes(template) ? "Times New Roman" : "Calibri";
   const accentMap: Record<TemplateId, string> = {
