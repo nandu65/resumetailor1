@@ -56,22 +56,22 @@ export type TemplateId =
   | "timeline" | "elegant" | "sidebar-dark" | "photo-header"
   | "centered-serif" | "banner-photo" | "teal-left" | "photo-grid" | "logo-boxed";
 
-export const TEMPLATES: { id: TemplateId; name: string; desc: string }[] = [
-  { id: "modern", name: "Modern", desc: "Sidebar accent, great for tech & design" },
-  { id: "classic", name: "Classic ATS", desc: "Clean single column, safest for ATS" },
-  { id: "compact", name: "Compact", desc: "One-page dense, ideal for grads" },
-  { id: "executive", name: "Executive", desc: "Elegant serif with strong header — senior roles" },
-  { id: "creative", name: "Creative", desc: "Bold indigo banner, two-column — design & marketing" },
-  { id: "minimal", name: "Minimal", desc: "Ultra-clean typography, generous whitespace" },
-  { id: "timeline", name: "Timeline", desc: "Left date rail with teal accents — consultants & analysts" },
-  { id: "elegant", name: "Elegant", desc: "Cream background, italic summary — executive presence" },
-  { id: "sidebar-dark", name: "Sidebar Pro", desc: "Dark teal right sidebar with photo — polished pros" },
-  { id: "photo-header", name: "Photo Header", desc: "Dark banner with photo circle — sales & client-facing" },
-  { id: "centered-serif", name: "Centered Serif", desc: "Centered name & rule-lined sections — cloud & engineering" },
-  { id: "banner-photo", name: "Banner Photo", desc: "Navy banner with photo, two-column body — sales & CRM" },
-  { id: "teal-left", name: "Teal Rail", desc: "Solid teal LEFT column with icon achievements — leadership" },
-  { id: "photo-grid", name: "Photo Grid", desc: "Centered photo header + 3-column achievement boxes — account executives" },
-  { id: "logo-boxed", name: "Logo Boxed", desc: "Centered header, company logo tiles per role — analysts & business" },
+export const TEMPLATES: { id: TemplateId; name: string; desc: string; previewUrl?: string }[] = [
+  { id: "modern", name: "Modern", desc: "Sidebar accent, great for tech & design", previewUrl: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=560&fit=crop&q=80" },
+  { id: "classic", name: "Classic ATS", desc: "Clean single column, safest for ATS", previewUrl: "https://images.unsplash.com/photo-1626197031507-c17099753214?w=400&h=560&fit=crop&q=80" },
+  { id: "compact", name: "Compact", desc: "One-page dense, ideal for grads", previewUrl: "https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?w=400&h=560&fit=crop&q=80" },
+  { id: "executive", name: "Executive", desc: "Elegant serif with strong header — senior roles", previewUrl: "https://images.unsplash.com/photo-1506784919141-93728286a59d?w=400&h=560&fit=crop&q=80" },
+  { id: "creative", name: "Creative", desc: "Bold indigo banner, two-column — design & marketing", previewUrl: "https://images.unsplash.com/photo-1626197031507-c17099753214?w=400&h=560&fit=crop&q=80" },
+  { id: "minimal", name: "Minimal", desc: "Ultra-clean typography, generous whitespace", previewUrl: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=560&fit=crop&q=80" },
+  { id: "timeline", name: "Timeline", desc: "Left date rail with teal accents — consultants & analysts", previewUrl: "https://images.unsplash.com/photo-1506784919141-93728286a59d?w=400&h=560&fit=crop&q=80" },
+  { id: "elegant", name: "Elegant", desc: "Cream background, italic summary — executive presence", previewUrl: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=560&fit=crop&q=80" },
+  { id: "sidebar-dark", name: "Sidebar Pro", desc: "Dark teal right sidebar with photo — polished pros", previewUrl: "https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?w=400&h=560&fit=crop&q=80" },
+  { id: "photo-header", name: "Photo Header", desc: "Dark banner with photo circle — sales & client-facing", previewUrl: "https://images.unsplash.com/photo-1506784919141-93728286a59d?w=400&h=560&fit=crop&q=80" },
+  { id: "centered-serif", name: "Centered Serif", desc: "Centered name & rule-lined sections — cloud & engineering", previewUrl: "https://images.unsplash.com/photo-1626197031507-c17099753214?w=400&h=560&fit=crop&q=80" },
+  { id: "banner-photo", name: "Banner Photo", desc: "Navy banner with photo, two-column body — sales & CRM", previewUrl: "https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?w=400&h=560&fit=crop&q=80" },
+  { id: "teal-left", name: "Teal Rail", desc: "Solid teal LEFT column with icon achievements — leadership", previewUrl: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=560&fit=crop&q=80" },
+  { id: "photo-grid", name: "Photo Grid", desc: "Centered photo header + 3-column achievement boxes — account executives", previewUrl: "https://images.unsplash.com/photo-1506784919141-93728286a59d?w=400&h=560&fit=crop&q=80" },
+  { id: "logo-boxed", name: "Logo Boxed", desc: "Centered header, company logo tiles per role — analysts & business", previewUrl: "https://images.unsplash.com/photo-1626197031507-c17099753214?w=400&h=560&fit=crop&q=80" },
 ];
 
 
