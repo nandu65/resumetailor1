@@ -27,8 +27,68 @@ import { TemplatePreferencesWizard, DEFAULT_PREFS, ResumePrefs } from "@/compone
 import { PreferenceFilterBar, scoreTemplate } from "@/components/PreferenceFilterBar";
 
 const EMPTY_RESUME: ResumeData = {
-  name: "", title: "", email: "", phone: "", location: "", links: [],
-  summary: "", experience: [], education: [], projects: [], skills: [], certifications: [],
+  name: "Harsha Naidu",
+  title: "Senior Software Engineer",
+  email: "harsha.naidu@example.com",
+  phone: "+91 98765 43210",
+  location: "Bangalore, India",
+  links: [
+    { label: "LinkedIn", url: "linkedin.com/in/harshanaidu" },
+    { label: "GitHub", url: "github.com/harshanaidu" }
+  ],
+  summary: "Experienced Software Engineer with a passion for building scalable web applications and leading high-performing teams. Proven track record of delivering high-quality software solutions in fast-paced environments.",
+  experience: [
+    {
+      company: "Tech Solutions Inc.",
+      role: "Senior Full Stack Developer",
+      location: "Bangalore",
+      start: "2021",
+      end: "Present",
+      bullets: [
+        "Led the migration of legacy architecture to modern microservices, improving system reliability by 40%.",
+        "Mentored a team of 5 junior developers, fostering a culture of clean code and rigorous testing.",
+        "Optimized frontend performance, reducing page load times by 50% across the main product suite."
+      ]
+    },
+    {
+      company: "Innovate Web Systems",
+      role: "Software Developer",
+      location: "Chennai",
+      start: "2018",
+      end: "2021",
+      bullets: [
+        "Developed and maintained critical customer-facing features using React and Node.js.",
+        "Implemented automated CI/CD pipelines, reducing deployment errors by 30%.",
+        "Collaborated with design teams to ensure pixel-perfect implementation of UI/UX requirements."
+      ]
+    }
+  ],
+  education: [
+    {
+      school: "National Institute of Technology",
+      degree: "Bachelor of Technology in Computer Science",
+      location: "India",
+      start: "2014",
+      end: "2018",
+      details: "Graduated with Honors. Specialized in Distributed Systems."
+    }
+  ],
+  projects: [
+    {
+      name: "ResumeShot AI",
+      tech: "React, Supabase, Tailwind CSS",
+      bullets: [
+        "Built a high-performance resume builder with real-time AI optimization.",
+        "Integrated multi-format export engine supporting PDF and DOCX."
+      ]
+    }
+  ],
+  skills: [
+    { category: "Languages", items: ["TypeScript", "JavaScript", "Python", "SQL"] },
+    { category: "Frameworks", items: ["React", "Node.js", "Express", "Tailwind CSS"] },
+    { category: "Tools", items: ["Docker", "AWS", "Git", "Kubernetes"] }
+  ],
+  certifications: ["AWS Certified Solutions Architect", "Google Professional Cloud Developer"],
   settings: { fontSize: 11, fontFamily: "Inter, sans-serif", sections: {} }
 };
 
