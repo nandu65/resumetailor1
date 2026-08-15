@@ -292,24 +292,39 @@ export default function ResumeBuilder() {
                               className={`group relative rounded-xl border-2 transition-all overflow-hidden flex flex-col ${template === t.id ? "border-primary shadow-glow bg-primary/5" : "border-border hover:border-primary/40 bg-background"}`}
                             >
                               <div className="aspect-[1/1.4] bg-muted/30 relative overflow-hidden flex items-center justify-center group-hover:bg-muted/50 transition-colors">
-                                <div className="absolute inset-0 flex items-center justify-center opacity-20 group-hover:opacity-30 transition-opacity">
-                                  <FileText className="h-20 w-20 text-muted-foreground rotate-12" />
-                                </div>
-                                <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-                                  <div className={`h-12 w-12 rounded-lg mb-3 flex items-center justify-center shadow-sm ${template === t.id ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground"}`}>
-                                    <FileText className="h-6 w-6" />
-                                  </div>
-                                  <span className="text-[10px] font-bold text-center leading-tight uppercase tracking-widest opacity-60">Template Preview</span>
+                            <button 
+                              key={t.id} 
+                              onClick={() => setTemplate(t.id)} 
+                              className={`group relative rounded-xl border-2 transition-all overflow-hidden flex flex-col ${template === t.id ? "border-primary shadow-glow bg-primary/5" : "border-border hover:border-primary/40 bg-background"}`}
+                            >
+                              <div className="aspect-[1/1.4] bg-muted relative overflow-hidden flex items-center justify-center group-hover:bg-muted/80 transition-colors">
+                                <img 
+                                  src={`/templates/${t.id}.png`} 
+                                  alt={t.name}
+                                  className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                                  onError={(e) => {
+                                    // Fallback if image doesn't exist yet
+                                    e.currentTarget.style.display = 'none';
+                                    e.currentTarget.parentElement?.querySelector('.fallback')?.classList.remove('hidden');
+                                  }}
+                                />
+                                <div className="fallback hidden absolute inset-0 flex flex-col items-center justify-center p-4">
+                                  <FileText className="h-10 w-10 text-muted-foreground mb-2 opacity-20" />
+                                  <span className="text-[10px] font-bold text-center leading-tight uppercase tracking-widest opacity-40">Preview</span>
                                 </div>
                                 {template === t.id && (
-                                  <div className="absolute inset-0 bg-primary/10 border-2 border-primary animate-in fade-in zoom-in-95 duration-300" />
+                                  <div className="absolute inset-0 bg-primary/5 border-2 border-primary z-10" />
                                 )}
                               </div>
-                              <div className="p-3 bg-background border-t">
-                                <span className="text-xs font-bold block">{t.name}</span>
-                                <span className="text-[9px] text-muted-foreground leading-tight mt-1 line-clamp-1">{t.desc}</span>
+                              <div className="p-2.5 bg-background border-t">
+                                <span className="text-[11px] font-bold block truncate">{t.name}</span>
+                                <span className="text-[9px] text-muted-foreground leading-tight mt-0.5 line-clamp-1">{t.desc}</span>
                               </div>
-                              {template === t.id && <div className="absolute top-2 right-2 z-10 bg-primary text-primary-foreground rounded-full p-0.5 shadow-lg"><CheckCircle2 className="h-3 w-3" /></div>}
+                              {template === t.id && (
+                                <div className="absolute top-2 right-2 z-20 bg-primary text-primary-foreground rounded-full p-0.5 shadow-lg animate-in zoom-in">
+                                  <CheckCircle2 className="h-3 w-3" />
+                                </div>
+                              )}
                             </button>
                           ))}
                         </div>
