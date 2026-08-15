@@ -141,7 +141,11 @@ export const Editable = React.memo(function Editable({
             }
           : undefined
       }
-    />
+      dangerouslySetInnerHTML={value?.includes("<") ? { __html: value } : undefined}
+    >
+      {!value?.includes("<") ? value : null}
+    </Tag>
+
   );
 });
 
