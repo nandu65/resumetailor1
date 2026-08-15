@@ -708,13 +708,13 @@ export default function ResumeBuilder() {
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-80" align="end">
-                                    <SectionStyleControls value={sectionStyles} onChange={setSectionStyles} baseSize={globalFontSize} sectionKey="certifications" hideHeader />
+                                    <SectionStyleControls value={resumeData.settings?.sections || {}} onChange={sections => setResumeData(prev => ({ ...prev, settings: { ...prev.settings, sections } }))} baseSize={resumeData.settings?.fontSize || 11} sectionKey="certifications" hideHeader />
                                 </PopoverContent>
                             </Popover>
                         </div>
                         <Textarea 
-                          value={certifications} 
-                          onChange={e => setCertifications(e.target.value)} 
+                          value={resumeData.certifications.join('\n')} 
+                          onChange={e => setResumeData({ ...resumeData, certifications: e.target.value.split('\n').filter(Boolean) })} 
                           placeholder="AWS Certified Developer, PMP..." 
                           className="min-h-[60px] rounded-xl border-border/60" 
                         />
