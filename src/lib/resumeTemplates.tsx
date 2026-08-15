@@ -1480,7 +1480,11 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
   };
   const accent: [number, number, number] = accentMap[template] ?? [40, 40, 40];
   const font = data.settings?.fontFamily || (template === "classic" || template === "executive" || template === "centered-serif" || template === "elegant" ? "times" : "helvetica");
-  const baseSize = data.settings?.fontSize || 10;
+  const baseSize = data.settings?.fontSize || (template === "compact" ? 9 : 10);
+  
+  // Apply template-specific layout adjustments to PDF
+  const isTwoColumn = template === "modern" || template === "creative" || template === "sidebar-dark" || template === "banner-photo" || template === "teal-left";
+  const headerCenter = template === "classic" || template === "centered-serif" || template === "photo-grid";
   let y = margin;
 
   const ensure = (h = 14) => { if (y + h > pageH - margin) { doc.addPage(); y = margin; } };
@@ -1489,14 +1493,18 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
     doc.setFont(font, "bold"); 
     doc.setFontSize(size); 
     doc.setTextColor(...accent); 
-    doc.text(t, margin, y); 
+    const x = headerCenter ? pageW / 2 : margin;
+    const align = headerCenter ? "center" : "left";
+    doc.text(t, x, y, { align }); 
     y += (size * 0.9); 
   };
   const meta = (t: string) => { 
     doc.setFont(font, "normal"); 
     doc.setFontSize(baseSize * 0.9); 
     doc.setTextColor(100); 
-    doc.text(t, margin, y); 
+    const x = headerCenter ? pageW / 2 : margin;
+    const align = headerCenter ? "center" : "left";
+    doc.text(t, x, y, { align }); 
     y += (baseSize * 1.4); 
   };
   const secStyles = data.settings?.sections;
