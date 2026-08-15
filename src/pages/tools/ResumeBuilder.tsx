@@ -164,7 +164,12 @@ export default function ResumeBuilder() {
         toast.error((data as any)?.error || error?.message || "Failed");
         return;
       }
-      setResumeData({ ...EMPTY_RESUME, ...(data as any).resume, settings: resumeData.settings });
+      const generated = (data as any).resume;
+      setResumeData({
+        ...resumeData,
+        ...generated,
+        settings: resumeData.settings // Preserve user settings
+      });
       setShowEditHint(true);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
