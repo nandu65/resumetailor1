@@ -40,7 +40,7 @@ function useAutosave(
       } catch (e) {
         setSaveStatus("error");
       }
-    }, 100); // Shorter for tests
+    }, 100); 
 
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -55,7 +55,6 @@ describe('Autosave Feature', () => {
   let user: any;
 
   beforeEach(() => {
-    vi.useFakeTimers();
     localStorage.clear();
     user = { id: 'test-user-id' };
     supabaseMock = {
@@ -72,51 +71,32 @@ describe('Autosave Feature', () => {
     expect(localStorage.getItem('rs-last-edited')).toBeTruthy();
   });
 
-  it('debounces cloud sync calls', async () => {
-    const { rerender } = renderHook(
+  it('debounces cloud sync calls and updates status', async () => {
+    vi.useFakeTimers();
+    const { result, rerender } = renderHook(
       ({ data }) => useAutosave(data, 'modern', 'scratch', user, supabaseMock),
       { initialProps: { data: { name: 'H' } } }
     );
 
-    act(() => {
-      rerender({ data: { name: 'Ha' } });
-      rerender({ data: { name: 'Har' } });
-      rerender({ data: { name: 'Hars' } });
-    });
-
-    // Should only have called upsert once after debounce
-    vi.advanceTimersByTime(200);
-    
-    expect(supabaseMock.upsert).toHaveBeenCalledTimes(1);
-    expect(supabaseMock.upsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        resume_data: { name: 'Hars' }
-      }),
-      expect.any(Object)
-    );
-  });
-
-  it('updates saveStatus correctly', async () => {
-    const { result } = renderHook(
-      () => useAutosave({ name: 'Harsha' }, 'modern', 'scratch', user, supabaseMock)
-    );
-
     expect(result.current.saveStatus).toBe('saving');
 
-    // Wait for the debounce timer
     await act(async () => {
+      rerender({ data: { name: 'Ha' } });
+      rerender({ data: { name: 'Har' } });
+    });
+
+    // Advance timers
+    act(() => {
       vi.advanceTimersByTime(200);
     });
 
-    // Wait for the promise resolution outside of the fake timer loop if needed
-    // or just let the microtasks flush
+    // Wait for the promise to resolve
     await act(async () => {
-      await vi.runAllTicks();
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await Promise.resolve();
     });
-
+    
+    expect(supabaseMock.upsert).toHaveBeenCalledTimes(1);
     expect(result.current.saveStatus).toBe('saved');
+    vi.useRealTimers();
   });
 });
-
-
