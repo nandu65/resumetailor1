@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, Sparkles, Plus, Trash2, Download, FileText, Wand2, FileEdit, Upload, FilePlus2, MousePointer2, ArrowDown, Link2, Wand, CheckCircle2, ArrowLeft, Type, TypeIcon, SpellCheck, Undo2, Redo2, Settings2, Palette, ChevronRight, Share2, Printer, Eye, Target, Bold, Italic, List, ListOrdered, Link as LinkIcon, Underline, Cloud, CloudOff } from "lucide-react";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
+import { applyFormatToSelection, copyFormatFromSelection, pasteFormatToSelection, describeFormat, TextFormat } from "@/lib/richFormat";
+import { History } from "lucide-react";
 
 
 import { SectionStyleControls, SectionStyles } from "@/components/SectionStyleControls";
@@ -129,6 +131,7 @@ export default function ResumeBuilder() {
   const [spellCheckEnabled, setSpellCheckEnabled] = useState(true);
   const restoring = useRef(false);
   const [showFormattingToolbar, setShowFormattingToolbar] = useState(false);
+  const [copiedFormat, setCopiedFormat] = useState<TextFormat | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -148,27 +151,20 @@ export default function ResumeBuilder() {
   }, []);
 
   const handleFormat = (command: string, value?: string) => {
-    if (command === 'fontSize') {
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
-      
-      const node = selection.anchorNode?.parentElement;
-      if (node) {
-        const currentSize = window.getComputedStyle(node).fontSize;
-        const numericSize = parseFloat(currentSize);
-        const newSize = value === 'increase' ? numericSize + 1 : numericSize - 1;
-        document.execCommand('fontSize', false, '7'); // Dummy to trigger font tag
-        const fontElements = document.getElementsByTagName("font");
-        for (let i = 0; i < fontElements.length; i++) {
-            if (fontElements[i].size === "7") {
-                fontElements[i].removeAttribute("size");
-                fontElements[i].style.fontSize = newSize + "px";
-            }
-        }
-      }
-    } else {
-      document.execCommand(command, false, value);
-    }
+    applyFormatToSelection(command, value);
+  };
+
+  const handleCopyFormat = () => {
+    const fmt = copyFormatFromSelection();
+    if (!fmt) return toast.error("Select some formatted text first");
+    setCopiedFormat(fmt);
+    toast.success(`Format copied — ${describeFormat(fmt)}`);
+  };
+
+  const handlePasteFormat = () => {
+    if (!copiedFormat) return;
+    pasteFormatToSelection(copiedFormat);
+    toast.success("Format applied");
   };
 
   const onDragEnd = (result: any) => {
@@ -359,7 +355,22 @@ export default function ResumeBuilder() {
     setTimeout(() => { restoring.current = false; }, 0);
   }, []);
 
-  const { undo, redo, canUndo, canRedo } = useUndoRedo(snapshot, applySnapshot, { delay: 450 });
+  const describeChange = useCallback((prev: typeof snapshot, next: typeof snapshot) => {
+    if (prev.template !== next.template) return `Template → ${next.template}`;
+    const po = JSON.stringify(prev.resumeData?.settings?.sectionOrder);
+    const no = JSON.stringify(next.resumeData?.settings?.sectionOrder);
+    if (po !== no) return "Section moved";
+    if (JSON.stringify(prev.resumeData?.settings?.sections) !== JSON.stringify(next.resumeData?.settings?.sections)) return "Formatting changed";
+    if (JSON.stringify(prev.resumeData?.skills) !== JSON.stringify(next.resumeData?.skills)) return "Skills edited";
+    if (JSON.stringify(prev.resumeData?.experience) !== JSON.stringify(next.resumeData?.experience)) return "Experience edited";
+    if (JSON.stringify(prev.resumeData?.education) !== JSON.stringify(next.resumeData?.education)) return "Education edited";
+    if (JSON.stringify(prev.resumeData?.projects) !== JSON.stringify(next.resumeData?.projects)) return "Projects edited";
+    if (prev.resumeData?.summary !== next.resumeData?.summary) return "Summary edited";
+    if (prev.targetJd !== next.targetJd) return "Job description updated";
+    return "Content edited";
+  }, []);
+
+  const { undo, redo, canUndo, canRedo, history } = useUndoRedo(snapshot, applySnapshot, { delay: 450, describe: describeChange });
 
   const addExp = () => setResumeData(prev => ({
     ...prev,
@@ -491,8 +502,30 @@ export default function ResumeBuilder() {
                 </div>
                 <Separator orientation="vertical" className="h-6 mx-2 hidden sm:block" />
                 <div className="flex items-center gap-1">
-                  <Button variant="outline" size="icon" onClick={undo} disabled={!canUndo} className="h-8 w-8"><Undo2 className="h-4 w-4" /></Button>
-                  <Button variant="outline" size="icon" onClick={redo} disabled={!canRedo} className="h-8 w-8"><Redo2 className="h-4 w-4" /></Button>
+                  <Button variant="outline" size="icon" onClick={undo} disabled={!canUndo} className="h-8 w-8" title="Undo (Ctrl+Z)"><Undo2 className="h-4 w-4" /></Button>
+                  <Button variant="outline" size="icon" onClick={redo} disabled={!canRedo} className="h-8 w-8" title="Redo (Ctrl+Shift+Z)"><Redo2 className="h-4 w-4" /></Button>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="icon" className="h-8 w-8" title="Edit history"><History className="h-4 w-4" /></Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="w-64 p-0">
+                      <div className="px-3 py-2 border-b text-xs font-bold">Recent edits</div>
+                      <div className="max-h-64 overflow-y-auto">
+                        {history.length === 0 ? (
+                          <p className="px-3 py-4 text-xs text-muted-foreground">No edits yet — changes you make will be listed here.</p>
+                        ) : history.map((h, i) => (
+                          <div key={`${h.at}-${i}`} className="px-3 py-2 text-xs flex items-center justify-between gap-2 border-b last:border-0">
+                            <span className="truncate">{h.label}</span>
+                            <span className="text-[10px] text-muted-foreground shrink-0">{new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex gap-2 p-2 border-t">
+                        <Button variant="outline" size="sm" className="flex-1 h-7 text-xs" onClick={undo} disabled={!canUndo}>Undo</Button>
+                        <Button variant="outline" size="sm" className="flex-1 h-7 text-xs" onClick={redo} disabled={!canRedo}>Redo</Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
 
@@ -1121,6 +1154,9 @@ export default function ResumeBuilder() {
                    <FormattingToolbar 
                      onFormat={handleFormat} 
                      onClose={() => setShowFormattingToolbar(false)} 
+                     onCopyFormat={handleCopyFormat}
+                     onPasteFormat={handlePasteFormat}
+                     copiedFormatLabel={copiedFormat ? describeFormat(copiedFormat) : null}
                    />
                  )}
                  <div className="h-full flex flex-col bg-muted/20 rounded-[2.5rem] border-4 border-muted/50 p-2 shadow-card overflow-hidden">
@@ -1131,7 +1167,7 @@ export default function ResumeBuilder() {
                        variant="ghost" 
                        size="sm" 
                        className="h-8 w-8 p-0" 
-                       onClick={() => document.execCommand('bold', false)}
+                       onClick={() => handleFormat('bold')}
                        title="Bold"
                      >
                        <Bold className="h-4 w-4" />
@@ -1140,7 +1176,7 @@ export default function ResumeBuilder() {
                        variant="ghost" 
                        size="sm" 
                        className="h-8 w-8 p-0" 
-                       onClick={() => document.execCommand('italic', false)}
+                       onClick={() => handleFormat('italic')}
                        title="Italic"
                      >
                        <Italic className="h-4 w-4" />
@@ -1149,7 +1185,7 @@ export default function ResumeBuilder() {
                        variant="ghost" 
                        size="sm" 
                        className="h-8 w-8 p-0" 
-                       onClick={() => document.execCommand('underline', false)}
+                       onClick={() => handleFormat('underline')}
                        title="Underline"
                      >
                        <Underline className="h-4 w-4" />
@@ -1159,7 +1195,7 @@ export default function ResumeBuilder() {
                        variant="ghost" 
                        size="sm" 
                        className="h-8 w-8 p-0" 
-                       onClick={() => document.execCommand('insertUnorderedList', false)}
+                       onClick={() => handleFormat('insertUnorderedList')}
                        title="Bullet List"
                      >
                        <List className="h-4 w-4" />
@@ -1168,7 +1204,7 @@ export default function ResumeBuilder() {
                        variant="ghost" 
                        size="sm" 
                        className="h-8 w-8 p-0" 
-                       onClick={() => document.execCommand('insertOrderedList', false)}
+                       onClick={() => handleFormat('insertOrderedList')}
                        title="Numbered List"
                      >
                        <ListOrdered className="h-4 w-4" />
@@ -1180,7 +1216,7 @@ export default function ResumeBuilder() {
                        className="h-8 w-8 p-0" 
                        onClick={() => {
                          const url = prompt("Enter the URL");
-                         if (url) document.execCommand('createLink', false, url);
+                         if (url) handleFormat('createLink', url);
                        }}
                        title="Insert Link"
                      >
@@ -1190,7 +1226,7 @@ export default function ResumeBuilder() {
                        variant="ghost" 
                        size="sm" 
                        className="h-8 w-8 p-0 ml-auto" 
-                       onClick={() => document.execCommand('removeFormat', false)}
+                       onClick={() => handleFormat('removeFormat')}
                        title="Clear Formatting"
                      >
                        <Type className="h-4 w-4" />
@@ -1215,6 +1251,9 @@ export default function ResumeBuilder() {
                         <FormattingToolbar
                           onFormat={handleFormat}
                           onClose={() => setShowFormattingToolbar(false)}
+                          onCopyFormat={handleCopyFormat}
+                          onPasteFormat={handlePasteFormat}
+                          copiedFormatLabel={copiedFormat ? describeFormat(copiedFormat) : null}
                         />
                       )}
                    </div>
