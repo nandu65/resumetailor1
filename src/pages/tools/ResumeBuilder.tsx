@@ -35,6 +35,7 @@ type Proj = { name: string; tech: string; description: string };
 const EMPTY_RESUME: ResumeData = {
   name: "", title: "", email: "", phone: "", location: "", links: [],
   summary: "", experience: [], education: [], projects: [], skills: [], certifications: [],
+  settings: { fontSize: 11, fontFamily: "Inter, sans-serif", sections: {} }
 };
 
 export default function ResumeBuilder() {
@@ -44,35 +45,20 @@ export default function ResumeBuilder() {
     toast.info(`Sign in to ${intent}`);
     navigate("/auth", { state: { from: "/tools/resume-builder" } });
   };
-  const [basics, setBasics] = useState({ name: "", title: "", email: "", phone: "", location: "" });
-  const [links, setLinks] = useState<{ label: string; url: string }[]>([
-    { label: "LinkedIn", url: "" },
-  ]);
-  const [summary, setSummary] = useState("");
-  const [experience, setExperience] = useState<Exp[]>([{ company: "", role: "", location: "", start: "", end: "", description: "" }]);
-  const [education, setEducation] = useState<Edu[]>([{ school: "", degree: "", location: "", start: "", end: "", details: "" }]);
-  const [projects, setProjects] = useState<Proj[]>([]);
-  const [skills, setSkills] = useState("");
-  const [certifications, setCertifications] = useState("");
+
+  const [resumeData, setResumeData] = useState<ResumeData>(EMPTY_RESUME);
   const [targetJd, setTargetJd] = useState("");
   const [template, setTemplate] = useState<TemplateId>("modern");
   const [loading, setLoading] = useState(false);
-  const [resume, setResume] = useState<ResumeData | null>(null);
   const [mode, setMode] = useState<"ai" | "verbatim">("ai");
   const [starter, setStarter] = useState<"choose" | "scratch" | "uploaded" | "wizard">("choose");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const previewRef = useRef<HTMLDivElement>(null);
   const [showEditHint, setShowEditHint] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [prefs, setPrefs] = useState<ResumePrefs>(DEFAULT_PREFS);
-  const [prefsSet, setPrefsSet] = useState(false);
-  const [globalFontSize, setGlobalFontSize] = useState(11);
-  const [globalFontFamily, setGlobalFontFamily] = useState("Inter");
   const [spellCheckEnabled, setSpellCheckEnabled] = useState(true);
-  const [sectionStyles, setSectionStyles] = useState<SectionStyles>({});
   const restoring = useRef(false);
-
 
   const fontFamilies = [
     { label: "Modern Sans", value: "Inter, sans-serif" },
@@ -93,30 +79,41 @@ export default function ResumeBuilder() {
         throw new Error((data as any)?.error || error?.message || "Parse failed");
       }
       const p = (data as any).parsed || {};
-      setBasics({
-        name: p.name || "", title: p.title || "", email: p.email || "", phone: p.phone || "",
-        location: p.location || "",
-      });
+      
       const parsedLinks: { label: string; url: string }[] = [];
       if (p.linkedin) parsedLinks.push({ label: "LinkedIn", url: p.linkedin });
       if (p.github) parsedLinks.push({ label: "GitHub", url: p.github });
       if (p.portfolio) parsedLinks.push({ label: "Portfolio", url: p.portfolio });
       if (Array.isArray(p.links)) p.links.forEach((l: any) => l?.url && parsedLinks.push({ label: l.label || "Link", url: l.url }));
-      setLinks(parsedLinks.length ? parsedLinks : [{ label: "LinkedIn", url: "" }]);
-      setSummary(p.summary || "");
-      setExperience((p.experience || []).length ? p.experience.map((e: any) => ({
-        company: e.company || "", role: e.role || "", location: e.location || "",
-        start: e.start || "", end: e.end || "", description: (e.bullets || []).join("\n"),
-      })) : [{ company: "", role: "", location: "", start: "", end: "", description: "" }]);
-      setEducation((p.education || []).length ? p.education.map((e: any) => ({
-        school: e.school || "", degree: e.degree || "", location: e.location || "",
-        start: e.start || "", end: e.end || "", details: e.details || "",
-      })) : [{ school: "", degree: "", location: "", start: "", end: "", details: "" }]);
-      setProjects((p.projects || []).map((x: any) => ({
-        name: x.name || "", tech: x.tech || "", description: (x.bullets || []).join("\n"),
-      })));
-      setSkills((p.skills || []).join("\n"));
-      setCertifications((p.certifications || []).join("\n"));
+
+      const newResume: ResumeData = {
+        ...EMPTY_RESUME,
+        name: p.name || "",
+        title: p.title || "",
+        email: p.email || "",
+        phone: p.phone || "",
+        location: p.location || "",
+        links: parsedLinks.length ? parsedLinks : [{ label: "LinkedIn", url: "" }],
+        summary: p.summary || "",
+        experience: (p.experience || []).map((e: any) => ({
+          company: e.company || "", role: e.role || "", location: e.location || "",
+          start: e.start || "", end: e.end || "", bullets: e.bullets || [],
+        })),
+        education: (p.education || []).map((e: any) => ({
+          school: e.school || "", degree: e.degree || "", location: e.location || "",
+          start: e.start || "", end: e.end || "", details: e.details || "",
+        })),
+        projects: (p.projects || []).map((x: any) => ({
+          name: x.name || "", tech: x.tech || "", bullets: x.bullets || [],
+        })),
+        skills: (p.skills || []).map((s: any) => {
+          if (typeof s === "string") return { category: "Skills", items: [s] };
+          return { category: s.category || "Skills", items: s.items || [] };
+        }),
+        certifications: p.certifications || [],
+      };
+
+      setResumeData(newResume);
       setStarter("uploaded");
       toast.success("Resume imported — review the fields below, then generate.");
     } catch (e) {
@@ -127,91 +124,37 @@ export default function ResumeBuilder() {
     }
   };
 
-  useEffect(() => {
-    if (!resume || restoring.current) return;
-    setBasics(b => ({
-      ...b,
-      name: resume.name || b.name,
-      title: resume.title || b.title,
-      email: resume.email || b.email,
-      phone: resume.phone || b.phone,
-      location: resume.location || b.location,
-    }));
-    if (resume.links && resume.links.length) {
-      setLinks(resume.links.map(l => ({ label: l.label || "Link", url: l.url || "" })));
-    }
-    setSummary(resume.summary || "");
-    setExperience((resume.experience || []).map(e => ({
-      company: e.company || "", role: e.role || "", location: e.location || "",
-      start: e.start || "", end: e.end || "",
-      description: Array.isArray(e.bullets) ? e.bullets.join("\n") : (e as any).description || "",
-    })));
-    setEducation((resume.education || []).map((e: any) => ({
-      school: e.school || "", degree: e.degree || "", location: e.location || "",
-      start: e.start || "", end: e.end || "", details: e.details || "",
-    })));
-    setProjects((resume.projects || []).map(p => ({
-      name: p.name || "", tech: p.tech || "",
-      description: Array.isArray(p.bullets) ? p.bullets.join("\n") : (p as any).description || "",
-    })));
-    setSkills((resume.skills || []).map(s => {
-      if (typeof s === "string") return s;
-      return s.category ? `${s.category}: ${s.items.join(", ")}` : s.items.join(", ");
-    }).join("\n"));
-    setCertifications((resume.certifications || []).join("\n"));
-  }, [resume]);
-
-  const syncSettingsToResume = useCallback(() => {
-    setResume(prev => {
-      if (!prev) {
-        // Build initial resume if none exists to hold settings
-        return buildResumeDataVerbatim({
-          ...basics, linkedin: "", github: "", portfolio: "",
-          summary, experience, education, projects, skills, certifications,
-          settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
-        });
-      }
-      return {
-        ...prev,
-        settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
-      };
-    });
-  }, [basics, summary, experience, education, projects, skills, certifications, globalFontSize, globalFontFamily, sectionStyles]);
-
-  useEffect(() => { syncSettingsToResume(); }, [syncSettingsToResume]);
-
   /* ---- Undo / Redo over the whole editing state ---- */
   const snapshot = useMemo(() => ({
-    basics, links, summary, experience, education, projects, skills, certifications,
-    template, resume, globalFontSize, globalFontFamily, sectionStyles,
-  }), [basics, links, summary, experience, education, projects, skills, certifications,
-       template, resume, globalFontSize, globalFontFamily, sectionStyles]);
+    resumeData, template, targetJd
+  }), [resumeData, template, targetJd]);
 
   const applySnapshot = useCallback((s: typeof snapshot) => {
     restoring.current = true;
-    setBasics(s.basics); setLinks(s.links); setSummary(s.summary);
-    setExperience(s.experience); setEducation(s.education); setProjects(s.projects);
-    setSkills(s.skills); setCertifications(s.certifications);
-    setTemplate(s.template); setResume(s.resume);
-    setGlobalFontSize(s.globalFontSize); setGlobalFontFamily(s.globalFontFamily);
-    setSectionStyles(s.sectionStyles);
+    setResumeData(s.resumeData);
+    setTemplate(s.template);
+    setTargetJd(s.targetJd);
     setTimeout(() => { restoring.current = false; }, 0);
   }, []);
 
   const { undo, redo, canUndo, canRedo } = useUndoRedo(snapshot, applySnapshot, { delay: 450 });
 
-
-  const addExp = () => setExperience([...experience, { company: "", role: "", location: "", start: "", end: "", description: "" }]);
-  const addEdu = () => setEducation([...education, { school: "", degree: "", location: "", start: "", end: "", details: "" }]);
-  const addProj = () => setProjects([...projects, { name: "", tech: "", description: "" }]);
+  const addExp = () => setResumeData(prev => ({
+    ...prev,
+    experience: [...prev.experience, { company: "", role: "", location: "", start: "", end: "", bullets: [] }]
+  }));
+  const addEdu = () => setResumeData(prev => ({
+    ...prev,
+    education: [...prev.education, { school: "", degree: "", location: "", start: "", end: "", details: "" }]
+  }));
+  const addProj = () => setResumeData(prev => ({
+    ...prev,
+    projects: [...prev.projects, { name: "", tech: "", bullets: [] }]
+  }));
 
   const generate = async () => {
-    if (!basics.name.trim()) return toast.error("Add your name at minimum");
+    if (!resumeData.name.trim()) return toast.error("Add your name at minimum");
     if (mode === "verbatim") {
-      setResume(buildResumeDataVerbatim({ 
-        ...basics, summary, experience, education, projects, skills, certifications,
-        settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
-      }));
       setShowEditHint(true);
       return;
     }
@@ -219,18 +162,15 @@ export default function ResumeBuilder() {
     setLoading(true);
     try {
       const profile = {
-        ...basics,
-        links: links.filter(l => l.url.trim()).map(l => ({ label: l.label.trim() || "Link", url: l.url.trim() })),
-        summary, experience, education, projects,
-        skills: skills.split("\n").map(s => s.trim()).filter(Boolean),
-        certifications: certifications.split("\n").map(s => s.trim()).filter(Boolean),
+        ...resumeData,
+        links: resumeData.links.filter(l => l.url.trim()).map(l => ({ label: l.label.trim() || "Link", url: l.url.trim() })),
       };
       const { data, error } = await supabase.functions.invoke("generate-resume", { body: { profile, targetJd } });
       if (error || (data as any)?.error) {
         toast.error((data as any)?.error || error?.message || "Failed");
         return;
       }
-      setResume({ ...EMPTY_RESUME, ...(data as any).resume, settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles } });
+      setResumeData({ ...EMPTY_RESUME, ...(data as any).resume, settings: resumeData.settings });
       setShowEditHint(true);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
@@ -239,32 +179,14 @@ export default function ResumeBuilder() {
     }
   };
 
-  const isResumeSync = () => {
-    if (!resume) return false;
-    const currentData = buildResumeDataVerbatim({ 
-      ...basics, summary, experience, education, projects, skills, certifications,
-      settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
-    });
-    const compare = (d: any) => { const { settings, ...rest } = d; return JSON.stringify(rest); };
-    return compare(currentData) === compare(resume);
-  };
-
   const downloadPdf = () => {
-    const currentResume = buildResumeDataVerbatim({ 
-      ...basics, summary, experience, education, projects, skills, certifications,
-      settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
-    });
-    // Use current settings and latest form data for the download
-    downloadResumePdfFromData(resume ? { ...resume, settings: currentResume.settings } : currentResume, template);
+    downloadResumePdfFromData(resumeData, template);
   };
   
   const downloadDocx = () => {
-    const currentResume = buildResumeDataVerbatim({ 
-      ...basics, summary, experience, education, projects, skills, certifications,
-      settings: { fontSize: globalFontSize, fontFamily: globalFontFamily, sections: sectionStyles }
-    });
-    downloadResumeDocxFromData(resume ? { ...resume, settings: currentResume.settings } : currentResume, template);
+    downloadResumeDocxFromData(resumeData, template);
   };
+
 
   return (
     <div className="min-h-screen bg-background">
