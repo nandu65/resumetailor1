@@ -103,10 +103,14 @@ describe('Autosave Feature', () => {
 
     expect(result.current.saveStatus).toBe('saving');
 
+    // Wait for the debounce timer AND the promise resolution
     await act(async () => {
       vi.advanceTimersByTime(200);
+      // Wait for any pending promises (the upsert)
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
     expect(result.current.saveStatus).toBe('saved');
   });
 });
+
