@@ -335,8 +335,8 @@ export default function ResumeBuilder() {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-48 p-2" align="end">
-                    <Button variant="ghost" className="w-full justify-start gap-2" onClick={downloadPdf} disabled={!resumeData}><FileText className="h-4 w-4" /> PDF Document</Button>
-                    <Button variant="ghost" className="w-full justify-start gap-2" onClick={downloadDocx} disabled={!resumeData}><FileEdit className="h-4 w-4" /> Word (DOCX)</Button>
+                    <Button variant="ghost" className="w-full justify-start gap-2" onClick={downloadPdf} disabled={!resumeData || !resumeData.name}><FileText className="h-4 w-4" /> PDF Document</Button>
+                    <Button variant="ghost" className="w-full justify-start gap-2" onClick={downloadDocx} disabled={!resumeData || !resumeData.name}><FileEdit className="h-4 w-4" /> Word (DOCX)</Button>
                   </PopoverContent>
                 </Popover>
 
