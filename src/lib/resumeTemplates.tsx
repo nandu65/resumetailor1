@@ -1615,7 +1615,7 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
       line(`${e.degree} — ${e.school}${e.location ? `, ${e.location}` : ""}`, { bold: true });
       if (e.start || e.end) line(`${e.start} – ${e.end}`, { italic: true, size: 9 });
       if (e.details) line(e.details);
-      y += 4;
+      y += (secSize() * 0.4);
     });
   }
   if (data.skills?.length) { H2("Skills"); data.skills.forEach(s => line(`${s.category}: ${s.items.join(", ")}`)); }
