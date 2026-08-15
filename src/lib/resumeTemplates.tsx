@@ -56,7 +56,38 @@ export type TemplateId =
   | "timeline" | "elegant" | "sidebar-dark" | "photo-header"
   | "centered-serif" | "banner-photo" | "teal-left" | "photo-grid" | "logo-boxed";
 
-export const TEMPLATES: { id: TemplateId; name: string; desc: string; previewUrl?: string }[] = [];
+export const TEMPLATES: { id: TemplateId; name: string; desc: string; previewUrl?: string }[] = [
+  { 
+    id: "modern", 
+    name: "Modern Professional", 
+    desc: "Clean sidebar layout with emerald accents, ideal for technology and design roles.",
+    previewUrl: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=560&fit=crop&q=80" 
+  },
+  { 
+    id: "executive", 
+    name: "Executive Serif", 
+    desc: "Distinguished typography with amber-toned headers for senior leadership positions.",
+    previewUrl: "https://images.unsplash.com/photo-1506784919141-93728286a59d?w=400&h=560&fit=crop&q=80" 
+  },
+  { 
+    id: "creative", 
+    name: "Creative Indigo", 
+    desc: "Bold gradient header and two-column structure for marketing and creative professionals.",
+    previewUrl: "https://images.unsplash.com/photo-1626197031507-c17099753214?w=400&h=560&fit=crop&q=80" 
+  },
+  { 
+    id: "minimal", 
+    name: "Ultra Minimal", 
+    desc: "Sophisticated use of whitespace and light weights for a modern, airy aesthetic.",
+    previewUrl: "https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?w=400&h=560&fit=crop&q=80" 
+  },
+  { 
+    id: "classic", 
+    name: "Classic ATS-Optimized", 
+    desc: "Single-column format designed for maximum compatibility with tracking systems.",
+    previewUrl: "https://images.unsplash.com/photo-1626197031507-c17099753214?w=400&h=560&fit=crop&q=80" 
+  }
+];
 
 
 /* ---------- Inline editable primitive ---------- */
