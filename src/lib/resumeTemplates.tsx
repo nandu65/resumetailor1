@@ -1522,8 +1522,8 @@ export function downloadResumePdfFromData(data: ResumeData, template: TemplateId
   const H2 = (t: string) => {
     curSec = secOf(t);
     ensure(24); y += 6;
-    doc.setFont(font, "bold"); doc.setFontSize(secStyles?.headings?.fontSize ?? 11); doc.setTextColor(...accent);
-    doc.text(t.toUpperCase(), margin, y); y += 4;
+    doc.setFont(font, "bold"); doc.setFontSize(secStyles?.headings?.fontSize ?? (baseSize + 1)); doc.setTextColor(...accent);
+    doc.text(t.toUpperCase(), margin, y); y += (baseSize * 0.4);
     doc.setDrawColor(...accent); doc.setLineWidth(0.8);
     doc.line(margin, y, pageW - margin, y); y += 12;
     doc.setTextColor(30, 30, 30);
