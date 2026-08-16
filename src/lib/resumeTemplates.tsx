@@ -134,7 +134,10 @@ export const Editable = React.memo(function Editable({
           ? " outline-none focus:bg-primary/5 focus:ring-1 focus:ring-primary/40 rounded px-0.5"
           : "")
       }
-      style={style}
+      style={{ ...style, cursor: editable ? "text" : "default" }}
+      onPointerDown={(e: React.PointerEvent) => {
+        if (editable) e.stopPropagation();
+      }}
       onBlur={
         editable
           ? (e: any) => {
