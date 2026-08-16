@@ -1035,6 +1035,33 @@ export type Database = {
           },
         ]
       }
+      resume_versions: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          resume_data: Json
+          template_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          resume_data: Json
+          template_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          resume_data?: Json
+          template_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_notifications: {
         Row: {
           body: string
