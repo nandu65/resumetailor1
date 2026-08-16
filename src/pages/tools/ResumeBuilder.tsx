@@ -530,6 +530,36 @@ export default function ResumeBuilder() {
                       </div>
                     </PopoverContent>
                   </Popover>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="icon" className="h-8 w-8" title="Resume versions"><FileText className="h-4 w-4" /></Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="w-80 p-0">
+                      <div className="px-3 py-2 border-b text-xs font-bold flex items-center justify-between">
+                        <span>Resume Versions</span>
+                        <Button variant="ghost" size="sm" className="h-7 px-2 text-[10px] gap-1" onClick={() => setShowVersionDialog(true)}>
+                          <Plus className="h-3 w-3" /> Save Current
+                        </Button>
+                      </div>
+                      <div className="max-h-80 overflow-y-auto">
+                        {loadingVersions ? (
+                          <div className="p-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+                        ) : versions.length === 0 ? (
+                          <p className="px-3 py-6 text-xs text-muted-foreground text-center italic">No named versions saved yet.</p>
+                        ) : versions.map((v) => (
+                          <div key={v.id} className="px-3 py-3 text-xs flex items-center justify-between border-b last:border-0 hover:bg-muted/30 transition-colors group">
+                            <div className="flex-1 min-w-0 pr-2">
+                              <div className="font-bold truncate text-foreground">{v.name}</div>
+                              <div className="text-[10px] text-muted-foreground mt-0.5">
+                                {new Date(v.created_at).toLocaleDateString()} {new Date(v.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </div>
+                            <Button variant="outline" size="sm" className="h-7 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => restoreVersion(v)}>Restore</Button>
+                          </div>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
 
@@ -1272,6 +1302,29 @@ export default function ResumeBuilder() {
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>Your resume is ready!</DialogTitle><DialogDescription>Click any text in the preview to edit.</DialogDescription></DialogHeader>
           <DialogFooter><Button onClick={() => setShowEditHint(false)}>Got it</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showVersionDialog} onOpenChange={setShowVersionDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Save Resume Version</DialogTitle>
+            <DialogDescription>Give this snapshot a name to easily roll back later.</DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="version-name" className="text-xs mb-1.5 block">Version Name</Label>
+            <Input 
+              id="version-name" 
+              placeholder="e.g., Before AI Polish, Post-Project Update" 
+              value={versionName} 
+              onChange={e => setVersionName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && saveVersion()}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowVersionDialog(false)}>Cancel</Button>
+            <Button onClick={saveVersion} disabled={!versionName.trim()}>Save Version</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

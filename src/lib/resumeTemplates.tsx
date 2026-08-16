@@ -6,6 +6,8 @@ import {
 } from "docx";
 import { saveAs } from "file-saver";
 import { Droppable, Draggable } from "react-beautiful-dnd";
+import { MousePointer2 } from "lucide-react";
+
 
 
 export interface ResumeData {
@@ -396,7 +398,7 @@ function ModernPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
 
     return (
       <Draggable key={key} draggableId={key} index={index}>
-        {(provided) => (
+        {(provided, snapshot) => (
           <section
             ref={provided.innerRef}
             {...provided.draggableProps}
