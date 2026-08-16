@@ -400,9 +400,11 @@ function ModernPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
           <section
             ref={provided.innerRef}
             {...provided.draggableProps}
-            {...provided.dragHandleProps}
-            className="mb-4 group relative"
+            className={`mb-4 group relative ${snapshot.isDragging ? "opacity-100 z-50 ring-2 ring-primary ring-offset-4 rounded bg-white shadow-2xl" : ""}`}
           >
+            <div {...provided.dragHandleProps} className="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1">
+              <MousePointer2 className="h-3 w-3 text-primary/40" />
+            </div>
             <h3 className="uppercase tracking-wider text-[10px] font-bold text-emerald-800 border-b-2 border-emerald-800 pb-0.5 mb-1.5 group-hover:bg-emerald-50 transition-colors">
               {title}
             </h3>

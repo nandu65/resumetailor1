@@ -134,6 +134,10 @@ export default function ResumeBuilder() {
   const [copiedFormat, setCopiedFormat] = useState<TextFormat | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [showVersionDialog, setShowVersionDialog] = useState(false);
+  const [versionName, setVersionName] = useState("");
+  const [versions, setVersions] = useState<any[]>([]);
+  const [loadingVersions, setLoadingVersions] = useState(false);
 
 
   useEffect(() => {
