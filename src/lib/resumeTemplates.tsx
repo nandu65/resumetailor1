@@ -136,7 +136,13 @@ export const Editable = React.memo(function Editable({
       }
       style={{ ...style, cursor: editable ? "text" : "default" }}
       onPointerDown={(e: React.PointerEvent) => {
-        if (editable) e.stopPropagation();
+        if (editable) {
+          // Check if we are already focused. If not, don't stop propagation immediately
+          // to allow the drag handle to work if they are dragging by the handle.
+          // react-beautiful-dnd drag handle has its own listener.
+          const isFocused = document.activeElement === ref.current;
+          if (isFocused) e.stopPropagation();
+        }
       }}
       onBlur={
         editable
