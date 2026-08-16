@@ -430,6 +430,57 @@ export default function ResumeBuilder() {
     downloadResumeDocxFromData(resumeData, template);
   };
 
+  const loadVersions = useCallback(async () => {
+    if (!user) return;
+    setLoadingVersions(true);
+    try {
+      const { data, error } = await supabase
+        .from("resume_versions")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      setVersions(data || []);
+    } catch (e) {
+      console.error("Failed to load versions:", e);
+    } finally {
+      setLoadingVersions(false);
+    }
+  }, [user]);
+
+  const saveVersion = async () => {
+    if (!user) return requireAuth("save a version");
+    if (!versionName.trim()) return toast.error("Enter a name for this version");
+    
+    try {
+      const { error } = await supabase.from("resume_versions").insert({
+        user_id: user.id,
+        name: versionName.trim(),
+        resume_data: resumeData as any,
+        template_id: template
+      });
+
+      if (error) throw error;
+      toast.success("Version saved");
+      setVersionName("");
+      setShowVersionDialog(false);
+      loadVersions();
+    } catch (e) {
+      toast.error("Failed to save version");
+      console.error(e);
+    }
+  };
+
+  const restoreVersion = (v: any) => {
+    setResumeData(v.resume_data);
+    setTemplate(v.template_id as TemplateId);
+    toast.success(`Restored to: ${v.name}`);
+  };
+
+  useEffect(() => {
+    if (user) loadVersions();
+  }, [user, loadVersions]);
+
+
 
   return (
     <div className="min-h-screen bg-background">
