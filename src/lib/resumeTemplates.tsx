@@ -389,11 +389,8 @@ function ModernPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
         }
         break;
       case "skills":
-        // In Modern template, Skills are usually in the sidebar. We'll handle them separately or as part of the main flow if needed.
-        // For DND, we only reorder main content sections.
         return null;
       case "certifications":
-        // Sidebar usually.
         return null;
     }
 
@@ -405,15 +402,17 @@ function ModernPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
           <section
             ref={provided.innerRef}
             {...provided.draggableProps}
-            className={`mb-4 group relative ${snapshot.isDragging ? "opacity-100 z-50 ring-2 ring-primary ring-offset-4 rounded bg-white shadow-2xl" : ""}`}
+            className={`mb-4 group relative ${snapshot.isDragging ? "opacity-100 z-50 ring-2 ring-primary ring-offset-4 rounded bg-white shadow-2xl scale-[1.02]" : ""}`}
           >
-            <div {...provided.dragHandleProps} className="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1">
-              <MousePointer2 className="h-3 w-3 text-primary/40" />
+            <div {...provided.dragHandleProps} className="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1 bg-white/80 rounded-full shadow-sm">
+              <MousePointer2 className="h-3.5 w-3.5 text-primary" />
             </div>
             <h3 className="uppercase tracking-wider text-[10px] font-bold text-emerald-800 border-b-2 border-emerald-800 pb-0.5 mb-1.5 group-hover:bg-emerald-50 transition-colors">
               {title}
             </h3>
-            {content}
+            <div className={snapshot.isDragging ? "pointer-events-none" : ""}>
+              {content}
+            </div>
           </section>
         )}
       </Draggable>
@@ -459,24 +458,11 @@ function ModernPreview({ r, update }: { r: ResumeData; update?: UpdateFn }) {
                   </span>
                 ))}
               </div>
-              {update && (
-                <div className="mt-4 pt-2 border-t border-emerald-700/30 opacity-20 hover:opacity-100 transition-opacity">
-                  {r.skills.map((s, i) => {
-                    const upd = makeSkillUpdater(update, r, i);
-                    return (
-                      <div key={i} className="mb-2">
-                        <SkillCat as="div" value={s.category} onChange={update && (v => upd({ category: v }))} className="font-semibold text-[10px]" />
-                        <Editable as="div" value={s.items.join(", ")} onChange={update && (v => upd({ items: v.split(",").map(x => x.trim()).filter(Boolean) }))} className="text-[10px] text-emerald-50" />
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
             </div>
           )}
           {r.certifications?.length > 0 && (
-            <div className="mt-4">
-              <div className="uppercase tracking-wider text-[9px] font-bold border-b border-emerald-600 pb-1 mb-2">Certs</div>
+            <div className="mt-5">
+              <div className="uppercase tracking-wider text-[9px] font-bold border-b border-emerald-600 pb-1 mb-2">Certifications</div>
               <Editable as="div" multiline value={r.certifications.join("\n")} onChange={update && (v => on({ certifications: v.split("\n").map(x => x.trim()).filter(Boolean) }))} className="text-[10px] whitespace-pre-wrap" />
             </div>
           )}
