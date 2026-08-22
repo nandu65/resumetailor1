@@ -1326,7 +1326,7 @@ export default function ResumeBuilder() {
 
                    <div className="flex-1 overflow-y-auto rounded-[2rem] bg-background scrollbar-hide relative">
                        {resumeData ? (
-                          <div className="p-8 origin-top scale-[0.9] transform-gpu transition-transform w-[794px] mx-auto">
+                          <div className="p-8 origin-top scale-[0.9] transform-gpu transition-transform w-[794px] mx-auto resume-export-target">
                              <DragDropContext onDragEnd={onDragEnd}>
                                <ResumePreview template={template} data={resumeData} onChange={setResumeData} />
                              </DragDropContext>
