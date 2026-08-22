@@ -1930,30 +1930,43 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
   }
 
   try {
-    // Temporarily disable height constraints to capture full content
-    const originalStyle = element.style.height;
+    // Check if element is hidden or zero-sized (common issue with portals/tabs)
+    const rect = element.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+      console.warn("Target element has zero dimensions. Attempting to clone for capture.");
+    }
+
+    // Temporarily disable height constraints and ensure it's visible for capture
+    const originalStyle = {
+      height: element.style.height,
+      position: element.style.position,
+      overflow: element.style.overflow,
+      visibility: element.style.visibility,
+      display: element.style.display
+    };
+
     element.style.height = 'auto';
+    element.style.overflow = 'visible';
+    element.style.visibility = 'visible';
+    element.style.display = 'block';
     
+    // Create canvas from the element
     const canvas = await html2canvas(element, {
-      scale: 2, // Higher resolution for print quality
+      scale: 2, 
       useCORS: true,
       logging: false,
       backgroundColor: "#ffffff",
-      // Remove hardcoded width to allow template-specific widths (e.g. A4 vs Letter)
-      // but ensure we capture the full scroll width
-      width: element.scrollWidth,
-      height: element.scrollHeight,
-      windowWidth: element.scrollWidth,
-      windowHeight: element.scrollHeight
+      width: element.scrollWidth || 794, // Standard A4 width in pixels at 96 DPI
+      height: element.scrollHeight || 1123,
+      windowWidth: element.scrollWidth || 794,
+      windowHeight: element.scrollHeight || 1123
     });
 
-    // Restore original style
-    element.style.height = originalStyle;
+    // Restore original styles
+    Object.assign(element.style, originalStyle);
 
     const imgData = canvas.toDataURL("image/jpeg", 1.0);
     
-    // Create PDF with the same aspect ratio as the captured canvas
-    // Default to A4 points: 595.28 x 841.89
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "pt",
