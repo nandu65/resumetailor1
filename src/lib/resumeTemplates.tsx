@@ -1992,7 +1992,7 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
     // Restore original styles
     Object.assign(element.style, originalStyle);
 
-    const imgData = canvas.toDataURL("image/jpeg", 1.0);
+    const imgData = canvas.toDataURL("image/png", 1.0); // Use PNG for better quality/transparency handling
     
     const pdf = new jsPDF({
       orientation: "portrait",
