@@ -1912,7 +1912,11 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
   // Use html2canvas to capture the actual DOM for perfect visual fidelity
   const element = document.querySelector(`[data-rs-root]`) as HTMLElement;
   if (!element) {
-    console.error("Resume preview element not found for PDF export");
+    const msg = "Resume preview not found. Please ensure the preview is visible before exporting.";
+    console.error(msg);
+    if (typeof window !== 'undefined') {
+        import('sonner').then(({ toast }) => toast.error(msg));
+    }
     return;
   }
 
@@ -1949,6 +1953,8 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
 /* ---------- DOCX export (editable in Word / Google Docs) ---------- */
 export async function downloadResumeDocxFromData(rawData: ResumeData, template: TemplateId) {
   const data = normalizeResumeSkills(rawData);
+  const isVisualMatch = true; // For now, we use a single-column honest DOCX but label it
+  const label = "Editable";
   const serifTpls: TemplateId[] = ["classic", "executive", "elegant", "centered-serif"];
   const font = serifTpls.includes(template) ? "Times New Roman" : "Calibri";
   const accentMap: Record<TemplateId, string> = {
@@ -2120,7 +2126,7 @@ export async function downloadResumeDocxFromData(rawData: ResumeData, template: 
   });
 
   const blob = await Packer.toBlob(doc);
-  saveAs(blob, `${safeName(data.name)}-${template}.docx`);
+  saveAs(blob, `${safeName(data.name)}-${template}-${label}.docx`);
 }
 
 function safeName(name: string) {
