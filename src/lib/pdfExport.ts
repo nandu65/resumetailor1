@@ -22,10 +22,23 @@ function safeName(opt: ExportData, ext: string) {
 
 /* ---------- PDF ---------- */
 export async function downloadResumePdf(opt: ExportData) {
-  const element = document.querySelector(`[data-rs-root]`) as HTMLElement;
-  if (!element) return;
+  // Try to find by data-rs-root first
+  let element = document.querySelector(`[data-rs-root]`) as HTMLElement;
+  if (!element) {
+    element = document.querySelector(".resume-root-container") as HTMLElement;
+  }
   
-  const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+  if (!element) {
+    console.error("Resume preview not found for PDF export.");
+    return;
+  }
+  
+  const canvas = await html2canvas(element, { 
+    scale: 2, 
+    useCORS: true,
+    backgroundColor: "#ffffff",
+    logging: false
+  });
   const imgData = canvas.toDataURL("image/jpeg", 1.0);
   
   const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });

@@ -1895,7 +1895,7 @@ export function ResumePreview({
   }, [template, data.settings?.sectionOrder, data.experience.length, data.education.length, data.projects.length, data.skills.length]);
 
   return (
-    <div ref={rootRef} data-rs-root={scopeId}>
+    <div ref={rootRef} data-rs-root={scopeId} data-rs-template={template} className="resume-root-container">
       <style dangerouslySetInnerHTML={{ __html: sectionCss(`[data-rs-root="${scopeId}"]`, data.settings?.sections) }} />
       <PagedSheet>{inner}</PagedSheet>
     </div>
@@ -1910,7 +1910,25 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
   const safe = safeName(data.name);
   
   // Use html2canvas to capture the actual DOM for perfect visual fidelity
-  const element = document.querySelector(`[data-rs-root]`) as HTMLElement;
+  // We look for a few potential root elements to ensure we capture the right one
+  let element = document.querySelector(`[data-rs-root]`) as HTMLElement;
+  
+  if (!element) {
+    element = document.querySelector(".resume-root-container") as HTMLElement;
+  }
+  
+  if (!element) {
+    element = document.querySelector(".resume-export-target") as HTMLElement;
+  }
+  
+  // If we still don't have it, try finding the inner most div of the preview area
+  if (!element) {
+    const previewArea = document.querySelector(".flex-1.overflow-y-auto.rounded-\\[2rem\\]");
+    if (previewArea) {
+      element = previewArea.querySelector("div > div") as HTMLElement;
+    }
+  }
+
   if (!element) {
     const msg = "Resume preview not found. Please ensure the preview is visible before exporting.";
     console.error(msg);
@@ -1921,32 +1939,63 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
   }
 
   try {
+    // Check if element is hidden or zero-sized (common issue with portals/tabs)
+    const rect = element.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+      console.warn("Target element has zero dimensions. Attempting to clone or force visibility.");
+    }
+
+    // Force capturing in a clean state
+    const originalStyle = {
+      height: element.style.height,
+      position: element.style.position,
+      overflow: element.style.overflow,
+      visibility: element.style.visibility,
+      display: element.style.display,
+      transform: element.style.transform,
+      width: element.style.width
+    };
+
+    // Ensure it's captured at its natural size without scaling or overflow cuts
+    element.style.height = 'auto';
+    element.style.overflow = 'visible';
+    element.style.visibility = 'visible';
+    element.style.display = 'block';
+    element.style.transform = 'none'; // CRITICAL: remove scale-[0.9] etc.
+    element.style.width = '794px'; // Fixed A4 width for consistency
+    
     const canvas = await html2canvas(element, {
-      scale: 2, // Higher resolution
+      scale: 2, 
       useCORS: true,
       logging: false,
       backgroundColor: "#ffffff",
-      width: 794, // Standard A4 width in px at 96 DPI
-      windowWidth: 794
+      width: 794,
+      height: element.scrollHeight || 1123,
+      windowWidth: 794,
+      windowHeight: element.scrollHeight || 1123
     });
+
+    // Restore original styles
+    Object.assign(element.style, originalStyle);
 
     const imgData = canvas.toDataURL("image/jpeg", 1.0);
     
-    // A4 dimensions in points: 595.28 x 841.89
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "pt",
       format: "a4"
     });
 
-    const imgProps = pdf.getImageProperties(imgData);
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
     pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
     pdf.save(`${safe}-${template}.pdf`);
   } catch (err) {
     console.error("PDF export failed:", err);
+    if (typeof window !== 'undefined') {
+      import('sonner').then(({ toast }) => toast.error("Export failed. Please try again."));
+    }
   }
 }
 
