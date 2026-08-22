@@ -1921,6 +1921,10 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
   }
   
   if (!element) {
+    element = document.querySelector(".resume-export-target") as HTMLElement;
+  }
+  
+  if (!element) {
     const msg = "Resume preview not found. Please ensure the preview is visible before exporting.";
     console.error(msg);
     if (typeof window !== 'undefined') {
