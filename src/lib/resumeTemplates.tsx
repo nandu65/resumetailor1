@@ -1911,7 +1911,14 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
   
   // Use html2canvas to capture the actual DOM for perfect visual fidelity
   // We look for the data-rs-root element which contains the full rendered template
-  const element = document.querySelector(`[data-rs-root]`) as HTMLElement;
+  // Attempt to find the preview element by data-rs-root
+  let element = document.querySelector(`[data-rs-root]`) as HTMLElement;
+  
+  // Fallback: If not found in the main document (e.g. inside a portal or obscured),
+  // check for the specific class name we added
+  if (!element) {
+    element = document.querySelector(".resume-root-container") as HTMLElement;
+  }
   
   if (!element) {
     const msg = "Resume preview not found. Please ensure the preview is visible before exporting.";
