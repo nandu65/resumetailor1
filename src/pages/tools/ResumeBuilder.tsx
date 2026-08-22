@@ -1326,11 +1326,11 @@ export default function ResumeBuilder() {
 
                    <div className="flex-1 overflow-y-auto rounded-[2rem] bg-background scrollbar-hide relative">
                        {resumeData ? (
-                          <div className="p-8 origin-top scale-[0.9] transform-gpu transition-transform w-[794px] mx-auto resume-export-target">
-                             <DragDropContext onDragEnd={onDragEnd}>
-                               <ResumePreview template={template} data={resumeData} onChange={setResumeData} />
-                             </DragDropContext>
-                          </div>
+                           <div className="p-8 origin-top scale-[0.9] transform-gpu transition-transform w-[794px] mx-auto resume-export-target" style={{ backgroundColor: 'white' }}>
+                              <DragDropContext onDragEnd={onDragEnd}>
+                                <ResumePreview template={template} data={resumeData} onChange={setResumeData} />
+                              </DragDropContext>
+                           </div>
                       ) : (
                         <div className="h-full flex flex-col items-center justify-center text-muted-foreground p-12 text-center">
                            <div className="h-20 w-20 rounded-3xl bg-muted/30 flex items-center justify-center mb-6"><Eye className="h-10 w-10 opacity-20" /></div>
