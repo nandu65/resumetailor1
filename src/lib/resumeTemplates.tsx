@@ -1910,12 +1910,9 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
   const safe = safeName(data.name);
   
   // Use html2canvas to capture the actual DOM for perfect visual fidelity
-  // We look for the data-rs-root element which contains the full rendered template
-  // Attempt to find the preview element by data-rs-root
+  // We look for a few potential root elements to ensure we capture the right one
   let element = document.querySelector(`[data-rs-root]`) as HTMLElement;
   
-  // Fallback: If not found in the main document (e.g. inside a portal or obscured),
-  // check for the specific class name we added
   if (!element) {
     element = document.querySelector(".resume-root-container") as HTMLElement;
   }
@@ -1924,6 +1921,14 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
     element = document.querySelector(".resume-export-target") as HTMLElement;
   }
   
+  // If we still don't have it, try finding the inner most div of the preview area
+  if (!element) {
+    const previewArea = document.querySelector(".flex-1.overflow-y-auto.rounded-\\[2rem\\]");
+    if (previewArea) {
+      element = previewArea.querySelector("div > div") as HTMLElement;
+    }
+  }
+
   if (!element) {
     const msg = "Resume preview not found. Please ensure the preview is visible before exporting.";
     console.error(msg);
@@ -1937,32 +1942,36 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
     // Check if element is hidden or zero-sized (common issue with portals/tabs)
     const rect = element.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) {
-      console.warn("Target element has zero dimensions. Attempting to clone for capture.");
+      console.warn("Target element has zero dimensions. Attempting to clone or force visibility.");
     }
 
-    // Temporarily disable height constraints and ensure it's visible for capture
+    // Force capturing in a clean state
     const originalStyle = {
       height: element.style.height,
       position: element.style.position,
       overflow: element.style.overflow,
       visibility: element.style.visibility,
-      display: element.style.display
+      display: element.style.display,
+      transform: element.style.transform,
+      width: element.style.width
     };
 
+    // Ensure it's captured at its natural size without scaling or overflow cuts
     element.style.height = 'auto';
     element.style.overflow = 'visible';
     element.style.visibility = 'visible';
     element.style.display = 'block';
+    element.style.transform = 'none'; // CRITICAL: remove scale-[0.9] etc.
+    element.style.width = '794px'; // Fixed A4 width for consistency
     
-    // Create canvas from the element
     const canvas = await html2canvas(element, {
       scale: 2, 
       useCORS: true,
       logging: false,
       backgroundColor: "#ffffff",
-      width: element.scrollWidth || 794, // Standard A4 width in pixels at 96 DPI
+      width: 794,
       height: element.scrollHeight || 1123,
-      windowWidth: element.scrollWidth || 794,
+      windowWidth: 794,
       windowHeight: element.scrollHeight || 1123
     });
 
