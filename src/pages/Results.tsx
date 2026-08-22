@@ -203,40 +203,50 @@ export default function Results() {
 
   const buildResumeDataFromOptimization = (o: Optimization): any => {
     // Maps flat optimization record back to structured ResumeData for template engine
-    // We parse the original resume_text if available to preserve sections not touched by AI
     let originalData: any = {};
     try {
-      if (o.resume_text && o.resume_text.startsWith('{')) {
+      if (o.resume_text && o.resume_text.trim().startsWith('{')) {
         originalData = JSON.parse(o.resume_text);
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn("Could not parse original resume_text, falling back to defaults");
+    }
 
-    return {
-      ...EMPTY_RESUME, // Fallback defaults
-      ...originalData, // Original education, projects, etc.
+    // Merge AI optimizations into the authoritative structured data
+    const improved = {
+      ...EMPTY_RESUME,
+      ...originalData,
       name: o.title?.split("'s")[0] || originalData.name || "Resume Candidate",
       title: o.role || originalData.title || "",
       summary: o.professional_summary || originalData.summary || "",
-      experience: o.improved_bullets?.length 
-        ? (o.improved_bullets || []).map(b => ({
-            company: o.company || "Company",
-            role: o.role || "Role",
-            location: "",
-            start: "",
-            end: "",
-            bullets: [b.improved]
-          }))
+      // If we have improved bullets, we need to map them back to the experience entries
+      experience: o.improved_bullets?.length && originalData.experience?.length
+        ? originalData.experience.map((exp: any) => {
+            // This is a simple heuristic: if a bullet matches an original one, replace it
+            const newBullets = exp.bullets.map((b: string) => {
+              const match = o.improved_bullets?.find(ib => ib.original.trim() === b.trim());
+              return match ? match.improved : b;
+            });
+            return { ...exp, bullets: newBullets };
+          })
         : originalData.experience || [],
+      // Handle skills similarly
       skills: o.skills_to_add?.length || o.missing_keywords?.length
-        ? [{ category: "Skills", items: [...(o.skills_to_add || []), ...(o.missing_keywords || [])] }]
+        ? normalizeResumeSkills({
+            skills: [
+              ...(originalData.skills || []),
+              { category: "Additional Skills", items: [...(o.skills_to_add || []), ...(o.missing_keywords || [])] }
+            ]
+          }).skills
         : originalData.skills || [],
       settings: { 
-        fontSize: 11, 
-        fontFamily: "Inter, sans-serif",
         ...originalData.settings,
-        sectionOrder: originalData.settings?.sectionOrder || ["summary", "experience", "projects", "education", "skills"]
+        fontSize: originalData.settings?.fontSize || 11, 
+        fontFamily: originalData.settings?.fontFamily || "Inter, sans-serif",
       }
     };
+
+    return improved;
   };
 
   const deltaCopy = (() => {

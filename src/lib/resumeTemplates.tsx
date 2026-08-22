@@ -1895,7 +1895,7 @@ export function ResumePreview({
   }, [template, data.settings?.sectionOrder, data.experience.length, data.education.length, data.projects.length, data.skills.length]);
 
   return (
-    <div ref={rootRef} data-rs-root={scopeId}>
+    <div ref={rootRef} data-rs-root={scopeId} data-rs-template={template} className="resume-root-container">
       <style dangerouslySetInnerHTML={{ __html: sectionCss(`[data-rs-root="${scopeId}"]`, data.settings?.sections) }} />
       <PagedSheet>{inner}</PagedSheet>
     </div>
@@ -1910,7 +1910,9 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
   const safe = safeName(data.name);
   
   // Use html2canvas to capture the actual DOM for perfect visual fidelity
+  // We look for the data-rs-root element which contains the full rendered template
   const element = document.querySelector(`[data-rs-root]`) as HTMLElement;
+  
   if (!element) {
     const msg = "Resume preview not found. Please ensure the preview is visible before exporting.";
     console.error(msg);
@@ -1921,32 +1923,46 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
   }
 
   try {
+    // Temporarily disable height constraints to capture full content
+    const originalStyle = element.style.height;
+    element.style.height = 'auto';
+    
     const canvas = await html2canvas(element, {
-      scale: 2, // Higher resolution
+      scale: 2, // Higher resolution for print quality
       useCORS: true,
       logging: false,
       backgroundColor: "#ffffff",
-      width: 794, // Standard A4 width in px at 96 DPI
-      windowWidth: 794
+      // Remove hardcoded width to allow template-specific widths (e.g. A4 vs Letter)
+      // but ensure we capture the full scroll width
+      width: element.scrollWidth,
+      height: element.scrollHeight,
+      windowWidth: element.scrollWidth,
+      windowHeight: element.scrollHeight
     });
+
+    // Restore original style
+    element.style.height = originalStyle;
 
     const imgData = canvas.toDataURL("image/jpeg", 1.0);
     
-    // A4 dimensions in points: 595.28 x 841.89
+    // Create PDF with the same aspect ratio as the captured canvas
+    // Default to A4 points: 595.28 x 841.89
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "pt",
       format: "a4"
     });
 
-    const imgProps = pdf.getImageProperties(imgData);
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
     pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
     pdf.save(`${safe}-${template}.pdf`);
   } catch (err) {
     console.error("PDF export failed:", err);
+    if (typeof window !== 'undefined') {
+      import('sonner').then(({ toast }) => toast.error("Export failed. Please try again."));
+    }
   }
 }
 
