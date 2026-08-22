@@ -110,7 +110,8 @@ export default function ResumeBuilder() {
 
   const [resumeData, setResumeData] = useState<ResumeData>(() => {
     const saved = localStorage.getItem("rs-current-resume");
-    return normalizeResumeSkills(saved ? JSON.parse(saved) : EMPTY_RESUME);
+    const data = saved ? JSON.parse(saved) : EMPTY_RESUME;
+    return normalizeResumeSkills(data);
   });
   const [targetJd, setTargetJd] = useState("");
   const [template, setTemplate] = useState<TemplateId>(() => {
@@ -192,7 +193,7 @@ export default function ResumeBuilder() {
 
   // Persistence & Autosave
   useEffect(() => {
-    // Immediate LocalStorage save for quick recovery
+    if (restoring.current) return;
     if (starter !== "choose" && starter !== "wizard") {
       localStorage.setItem("rs-builder-starter", starter);
       localStorage.setItem("rs-current-resume", JSON.stringify(resumeData));
@@ -801,19 +802,19 @@ export default function ResumeBuilder() {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">Full Name</Label>
-                      <Input value={resumeData.name} onChange={e => setResumeData({ ...resumeData, name: e.target.value })} placeholder="John Doe" className="rounded-xl border-border/60" />
+                      <Input value={resumeData.name} onChange={e => setResumeData({ ...resumeData, name: e.target.value })} placeholder="John Doe" className="rounded-xl border-border/60" name="resume-name" />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">Job Title</Label>
-                      <Input value={resumeData.title} onChange={e => setResumeData({ ...resumeData, title: e.target.value })} placeholder="Software Engineer" className="rounded-xl border-border/60" />
+                      <Input value={resumeData.title} onChange={e => setResumeData({ ...resumeData, title: e.target.value })} placeholder="Software Engineer" className="rounded-xl border-border/60" name="resume-title" />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">Email</Label>
-                      <Input value={resumeData.email} onChange={e => setResumeData({ ...resumeData, email: e.target.value })} placeholder="john@example.com" className="rounded-xl border-border/60" />
+                      <Input value={resumeData.email} onChange={e => setResumeData({ ...resumeData, email: e.target.value })} placeholder="john@example.com" className="rounded-xl border-border/60" name="resume-email" />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">Phone</Label>
-                      <Input value={resumeData.phone} onChange={e => setResumeData({ ...resumeData, phone: e.target.value })} placeholder="+1 (555) 000-0000" className="rounded-xl border-border/60" />
+                      <Input value={resumeData.phone} onChange={e => setResumeData({ ...resumeData, phone: e.target.value })} placeholder="+1 (555) 000-0000" className="rounded-xl border-border/60" name="resume-phone" />
                     </div>
                   </div>
                 </div>
@@ -848,6 +849,7 @@ export default function ResumeBuilder() {
                      placeholder="A brief overview of your professional background..." 
                      className="min-h-[120px] rounded-xl border-border/60 resize-none" 
                      spellCheck={spellCheckEnabled} 
+                     name="resume-summary"
                    />
                 </div>
 
