@@ -1922,8 +1922,11 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
       useCORS: true,
       logging: false,
       backgroundColor: "#ffffff",
-      windowWidth: element.scrollWidth,
-      windowHeight: element.scrollHeight
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      width: 794, // Standard A4 width in px at 96 DPI
+      windowWidth: 794
     });
 
     const imgData = canvas.toDataURL("image/jpeg", 1.0);
