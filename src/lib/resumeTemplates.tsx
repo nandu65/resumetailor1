@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import {
   Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType,
   BorderStyle, LevelFormat, PageBreak,
@@ -1904,191 +1905,45 @@ export function ResumePreview({
 
 
 /* ---------- PDF export ---------- */
-export function downloadResumePdfFromData(rawData: ResumeData, template: TemplateId) {
+export async function downloadResumePdfFromData(rawData: ResumeData, template: TemplateId) {
   const data = normalizeResumeSkills(rawData);
-  const doc = new jsPDF({ unit: "pt", format: "letter" });
-  const pageW = doc.internal.pageSize.getWidth();
-  const pageH = doc.internal.pageSize.getHeight();
-  const margin = 48;
-  const accentMap: Record<TemplateId, [number, number, number]> = {
-    modern: [6, 95, 70], classic: [20, 20, 20], compact: [40, 40, 40],
-    executive: [146, 64, 14], creative: [79, 70, 229], minimal: [64, 64, 64],
-    timeline: [15, 118, 110], elegant: [120, 53, 15],
-    "sidebar-dark": [17, 94, 89], "photo-header": [30, 41, 59],
-    "centered-serif": [30, 30, 30], "banner-photo": [15, 35, 64],
-    "teal-left": [15, 118, 110], "photo-grid": [3, 105, 161], "logo-boxed": [3, 105, 161],
-  };
-  const accent: [number, number, number] = accentMap[template] ?? [40, 40, 40];
-  const font = data.settings?.fontFamily || (template === "classic" || template === "executive" || template === "centered-serif" || template === "elegant" ? "times" : "helvetica");
-  const baseSize = data.settings?.fontSize || (template === "compact" ? 9 : 10);
-  
-  // Apply template-specific layout adjustments to PDF
-  const isTwoColumn = template === "modern" || template === "creative" || template === "sidebar-dark" || template === "banner-photo" || template === "teal-left";
-  const headerCenter = template === "classic" || template === "centered-serif" || template === "photo-grid";
-  let y = margin;
-
-  const ensure = (h = 14) => { if (y + h > pageH - margin) { doc.addPage(); y = margin; } };
-  const H1 = (t: string) => { 
-    const size = secStyles?.headings?.fontSize || 22;
-    doc.setFont(font, "bold"); 
-    doc.setFontSize(size); 
-    doc.setTextColor(...accent); 
-    const x = headerCenter ? pageW / 2 : margin;
-    const align = headerCenter ? "center" : "left";
-    doc.text(t, x, y, { align }); 
-    y += (size * 0.9); 
-  };
-  const meta = (t: string) => { 
-    doc.setFont(font, "normal"); 
-    doc.setFontSize(baseSize * 0.9); 
-    doc.setTextColor(100); 
-    const x = headerCenter ? pageW / 2 : margin;
-    const align = headerCenter ? "center" : "left";
-    doc.text(t, x, y, { align }); 
-    y += (baseSize * 1.4); 
-  };
-  const secStyles = data.settings?.sections;
-  let curSec: ResumeSectionKey | null = null;
-  const secOf = (t: string): ResumeSectionKey | null =>
-    (SECTION_MATCHERS.find(m => m.re.test(t.trim()))?.key ?? null);
-  const secSize = () => (curSec ? secStyles?.[curSec]?.fontSize : undefined) ?? baseSize;
-  const secBold = () => (curSec ? secStyles?.[curSec]?.bold : undefined);
-  const secItalic = () => (curSec ? secStyles?.[curSec]?.italic : undefined);
-
-  const parseRichText = (text: string) => parseRichSegments(text);
-
-  const H2 = (t: string) => {
-    curSec = secOf(t);
-    ensure(24); y += 6;
-    doc.setFont(font, "bold"); doc.setFontSize(secStyles?.headings?.fontSize ?? (baseSize + 1)); doc.setTextColor(...accent);
-    doc.text(t.toUpperCase(), margin, y); y += (baseSize * 0.4);
-    doc.setDrawColor(...accent); doc.setLineWidth(0.8);
-    doc.line(margin, y, pageW - margin, y); y += 12;
-    doc.setTextColor(30, 30, 30);
-  };
-
-  const line = (t: string, opts: { bold?: boolean; size?: number; italic?: boolean } = {}) => {
-    const defaultBold = opts.bold || secBold() === true;
-    const defaultItalic = opts.italic || secItalic() === true;
-    const size = opts.size ?? secSize();
-    
-    // Check if rich text
-    if (/<(b|i|u|strong|em|span|font)\b/i.test(t)) {
-      const parts = parseRichText(t);
-      ensure(13);
-      let curX = margin;
-      parts.forEach(p => {
-        const isBold = p.bold || defaultBold;
-        const isItalic = p.italic || defaultItalic;
-        doc.setFont(font, isBold && isItalic ? "bolditalic" : isBold ? "bold" : isItalic ? "italic" : "normal");
-        doc.setFontSize(p.fontSize ?? size);
-        doc.text(p.text, curX, y);
-        const w = doc.getTextWidth(p.text);
-        if (p.underline) { doc.setLineWidth(0.5); doc.line(curX, y + 1.5, curX + w, y + 1.5); }
-        curX += w;
-      });
-      y += 13;
-    } else {
-      doc.setFont(font, defaultBold ? "bold" : defaultItalic ? "italic" : "normal");
-      doc.setFontSize(size);
-      const lines = doc.splitTextToSize(/[<&]/.test(t) ? richToPlain(t) : t, pageW - margin * 2);
-      lines.forEach((l: string) => { ensure(size * 1.3); doc.text(l, margin, y); y += (size * 1.3); });
-    }
-  };
-
-  const bullet = (t: string) => {
-    const size = secSize();
-    const defaultBold = secBold() === true;
-    const defaultItalic = secItalic() === true;
-    
-    if (/<(b|i|u|strong|em|span|font)\b/i.test(t)) {
-      const parts = parseRichText(t);
-      ensure(size * 1.3);
-      doc.setFont(font, "normal"); doc.setFontSize(size);
-      doc.text("•", margin + 4, y);
-      let curX = margin + size * 1.4;
-      parts.forEach(p => {
-        const isBold = p.bold || defaultBold;
-        const isItalic = p.italic || defaultItalic;
-        doc.setFont(font, isBold && isItalic ? "bolditalic" : isBold ? "bold" : isItalic ? "italic" : "normal");
-        doc.setFontSize(p.fontSize ?? size);
-        doc.text(p.text, curX, y);
-        const w = doc.getTextWidth(p.text);
-        if (p.underline) { doc.setLineWidth(0.5); doc.line(curX, y + 1.5, curX + w, y + 1.5); }
-        curX += w;
-      });
-      y += (size * 1.3);
-    } else {
-      doc.setFont(font, defaultBold ? "bold" : defaultItalic ? "italic" : "normal"); doc.setFontSize(size);
-      const lines = doc.splitTextToSize(/[<&]/.test(t) ? richToPlain(t) : t, pageW - margin * 2 - size * 1.4);
-      lines.forEach((l: string, i: number) => {
-        ensure(size * 1.3);
-        if (i === 0) doc.text("•", margin + 4, y);
-        doc.text(l, margin + size * 1.4, y); y += (size * 1.3);
-      });
-    }
-  };
-
-  H1(data.name || "Your Name");
-  if (data.title) meta(data.title);
-  meta([data.email, data.phone, data.location, ...(data.links?.map(l => `${l.label}: ${l.url}`) ?? [])].filter(Boolean).join("  |  "));
-
-  const order = data.settings?.sectionOrder || ["summary", "experience", "projects", "education", "skills", "certifications"];
-  
-  order.forEach(key => {
-    switch (key) {
-      case "summary":
-        if (data.summary) { H2("Summary"); line(data.summary); }
-        break;
-      case "experience":
-        if (data.experience?.length) {
-          H2("Experience");
-          data.experience.forEach(e => {
-            line(`${e.role} — ${e.company}${e.location ? `, ${e.location}` : ""}`, { bold: true });
-            if (e.start || e.end) line(`${e.start} – ${e.end}`, { italic: true, size: 9 });
-            e.bullets?.forEach(b => bullet(b));
-            y += (secSize() * 0.4);
-          });
-        }
-        break;
-      case "projects":
-        if (data.projects?.length) {
-          H2("Projects");
-          data.projects.forEach(p => {
-            line(`${p.name}${p.tech ? ` — ${p.tech}` : ""}`, { bold: true });
-            p.bullets?.forEach(b => bullet(b));
-            y += (secSize() * 0.4);
-          });
-        }
-        break;
-      case "education":
-        if (data.education?.length) {
-          H2("Education");
-          data.education.forEach(e => {
-            line(`${e.degree} — ${e.school}${e.location ? `, ${e.location}` : ""}`, { bold: true });
-            if (e.start || e.end) line(`${e.start} – ${e.end}`, { italic: true, size: 9 });
-            if (e.details) line(e.details);
-            y += (secSize() * 0.4);
-          });
-        }
-        break;
-      case "skills":
-        if (data.skills?.length) { 
-          H2("Skills"); 
-          data.skills.forEach(s => line(isGenericSkillCategory(s.category) ? s.items.join(", ") : `${s.category}: ${s.items.join(", ")}`)); 
-        }
-        break;
-      case "certifications":
-        if (data.certifications?.length) { 
-          H2("Certifications"); 
-          data.certifications.forEach(c => bullet(c)); 
-        }
-        break;
-    }
-  });
-
   const safe = safeName(data.name);
-  doc.save(`${safe}-${template}.pdf`);
+  
+  // Use html2canvas to capture the actual DOM for perfect visual fidelity
+  const element = document.querySelector(`[data-rs-root]`) as HTMLElement;
+  if (!element) {
+    console.error("Resume preview element not found for PDF export");
+    return;
+  }
+
+  try {
+    const canvas = await html2canvas(element, {
+      scale: 2, // Higher resolution
+      useCORS: true,
+      logging: false,
+      backgroundColor: "#ffffff",
+      windowWidth: element.scrollWidth,
+      windowHeight: element.scrollHeight
+    });
+
+    const imgData = canvas.toDataURL("image/jpeg", 1.0);
+    
+    // A4 dimensions in points: 595.28 x 841.89
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "pt",
+      format: "a4"
+    });
+
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`${safe}-${template}.pdf`);
+  } catch (err) {
+    console.error("PDF export failed:", err);
+  }
 }
 
 /* ---------- DOCX export (editable in Word / Google Docs) ---------- */
@@ -2168,7 +2023,7 @@ export async function downloadResumeDocxFromData(rawData: ResumeData, template: 
   const contact = [data.email, data.phone, data.location, ...(data.links?.map(l => `${l.label}: ${l.url}`) ?? [])].filter(Boolean).join("  •  ");
   if (contact) children.push(P(contact, { size: baseSize - 2, align: AlignmentType.CENTER, color: "555555" }));
 
-  const order = data.settings?.sectionOrder || ["summary", "experience", "projects", "education", "skills", "certifications"];
+  const order = data.settings?.sectionOrder || ["summary", "experience", "education", "projects", "skills", "certifications"];
 
   order.forEach(key => {
     switch (key) {
@@ -2184,11 +2039,14 @@ export async function downloadResumeDocxFromData(rawData: ResumeData, template: 
             children.push(new Paragraph({
               children: [
                 new TextRun({ text: `${e.role}`, bold: true, size: fontSize, font }),
-                new TextRun({ text: ` — ${e.company}${e.location ? `, ${e.location}` : ""}`, size: fontSize, font }),
-                new TextRun({ text: `   ${e.start} – ${e.end}`, italics: true, size: fontSize - 2, color: "666666", font }),
+                new TextRun({ text: ` — ${e.company}`, size: fontSize, font }),
+                e.location ? new TextRun({ text: `, ${e.location}`, size: fontSize, font }) : new TextRun({ text: "" }),
+                new TextRun({ text: `\t${e.start} – ${e.end}`, italics: true, size: fontSize - 2, color: "666666", font }),
               ],
+              tabStops: [{ type: AlignmentType.RIGHT, position: 9000 }],
             }));
             e.bullets?.forEach(b => children.push(bullet(b, "experience")));
+            children.push(new Paragraph({ spacing: { after: 120 } }));
           });
         }
         break;
