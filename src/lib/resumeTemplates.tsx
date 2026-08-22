@@ -2003,7 +2003,7 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-    pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
     pdf.save(`${safe}-${template}.pdf`);
   } catch (err) {
     console.error("PDF export failed:", err);
