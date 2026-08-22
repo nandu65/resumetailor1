@@ -18,7 +18,7 @@ import {
   downloadResumeMarkdown, 
   downloadCoverLetterPdf 
 } from "@/lib/pdfExport";
-import { downloadResumePdfFromData, downloadResumeDocxFromData, TemplateId } from "@/lib/resumeTemplates";
+import { downloadResumePdfFromData, downloadResumeDocxFromData, TemplateId, ResumePreview } from "@/lib/resumeTemplates";
 import { toast } from "sonner";
 
 interface KeywordDensity { keyword: string; jd_count: number; resume_count: number; importance: "high" | "medium" | "low"; }
@@ -49,6 +49,22 @@ interface Optimization {
   created_at: string;
 }
 
+const EMPTY_RESUME: any = {
+  name: "",
+  title: "",
+  email: "",
+  phone: "",
+  location: "",
+  links: [],
+  summary: "",
+  experience: [],
+  education: [],
+  projects: [],
+  skills: [],
+  certifications: [],
+  settings: { fontSize: 11, fontFamily: "Inter, sans-serif", sections: {} }
+};
+
 export default function Results() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -60,6 +76,8 @@ export default function Results() {
   const [briefLoading, setBriefLoading] = useState(false);
   const [gapsLoading, setGapsLoading] = useState(false);
   const [briefUrl, setBriefUrl] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportData, setExportData] = useState<any>(null);
 
   const load = () => {
     if (!id) return;
@@ -185,33 +203,38 @@ export default function Results() {
 
   const buildResumeDataFromOptimization = (o: Optimization): any => {
     // Maps flat optimization record back to structured ResumeData for template engine
-    // We try to find existing resume details from the original resume_text if possible
-    const name = o.title?.split("'s")[0] || "Resume Candidate";
-    
+    // We parse the original resume_text if available to preserve sections not touched by AI
+    let originalData: any = {};
+    try {
+      if (o.resume_text && o.resume_text.startsWith('{')) {
+        originalData = JSON.parse(o.resume_text);
+      }
+    } catch (e) {}
+
     return {
-      name,
-      title: o.role || "",
-      email: "",
-      phone: "",
-      location: "",
-      links: [],
-      summary: o.professional_summary || "",
-      experience: (o.improved_bullets || []).map(b => ({
-        company: o.company || "Company",
-        role: o.role || "Role",
-        location: "",
-        start: "",
-        end: "",
-        bullets: [b.improved]
-      })),
-      education: [],
-      projects: [],
-      skills: [{ category: "Skills", items: [...(o.skills_to_add || []), ...(o.missing_keywords || [])] }],
-      certifications: [],
+      ...EMPTY_RESUME, // Fallback defaults
+      ...originalData, // Original education, projects, etc.
+      name: o.title?.split("'s")[0] || originalData.name || "Resume Candidate",
+      title: o.role || originalData.title || "",
+      summary: o.professional_summary || originalData.summary || "",
+      experience: o.improved_bullets?.length 
+        ? (o.improved_bullets || []).map(b => ({
+            company: o.company || "Company",
+            role: o.role || "Role",
+            location: "",
+            start: "",
+            end: "",
+            bullets: [b.improved]
+          }))
+        : originalData.experience || [],
+      skills: o.skills_to_add?.length || o.missing_keywords?.length
+        ? [{ category: "Skills", items: [...(o.skills_to_add || []), ...(o.missing_keywords || [])] }]
+        : originalData.skills || [],
       settings: { 
         fontSize: 11, 
         fontFamily: "Inter, sans-serif",
-        sectionOrder: ["summary", "experience", "skills"]
+        ...originalData.settings,
+        sectionOrder: originalData.settings?.sectionOrder || ["summary", "experience", "projects", "education", "skills"]
       }
     };
   };
@@ -279,13 +302,19 @@ export default function Results() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={() => {
+                  <DropdownMenuItem onClick={async () => {
                     const data = buildResumeDataFromOptimization(opt);
-                    downloadResumePdfFromData(data, (opt.rewrite_level as any) || "modern");
+                    setExportData(data);
+                    setIsExporting(true);
+                    // Short delay to allow hidden render
+                    setTimeout(async () => {
+                      await downloadResumePdfFromData(data, (opt.rewrite_level as any) || "modern");
+                      setIsExporting(false);
+                    }, 100);
                   }}><FileText className="h-4 w-4 mr-2" /> PDF (Template Match)</DropdownMenuItem>
-                  {proOnly && <DropdownMenuItem onClick={() => {
+                  {proOnly && <DropdownMenuItem onClick={async () => {
                     const data = buildResumeDataFromOptimization(opt);
-                    downloadResumeDocxFromData(data, (opt.rewrite_level as any) || "modern");
+                    await downloadResumeDocxFromData(data, (opt.rewrite_level as any) || "modern");
                   }}><FileText className="h-4 w-4 mr-2" /> Word (Template Match)</DropdownMenuItem>}
                   {proOnly && <DropdownMenuItem onClick={() => downloadResumeTxt(opt)}><FileText className="h-4 w-4 mr-2" /> Plain text (ATS-safe)</DropdownMenuItem>}
                   {proOnly && <DropdownMenuItem onClick={() => downloadResumeMarkdown(opt)}><Code2 className="h-4 w-4 mr-2" /> Markdown</DropdownMenuItem>}
@@ -921,6 +950,18 @@ export default function Results() {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Hidden export portal to ensure DOM capture works with canonical renderer */}
+      {isExporting && exportData && (
+        <div className="fixed left-[-9999px] top-0 opacity-0 pointer-events-none">
+          <div className="w-[794px]"> {/* A4 width approx */}
+            <ResumePreview 
+              template={(opt?.rewrite_level as any) || "modern"} 
+              data={exportData} 
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
