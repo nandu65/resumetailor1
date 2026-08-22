@@ -1938,6 +1938,16 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
     return;
   }
 
+  // Ensure element is visible in the layout tree
+  const isVisible = (el: HTMLElement) => {
+    const style = window.getComputedStyle(el);
+    return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+  };
+
+  if (!isVisible(element)) {
+    console.warn("Element found but not visible to user. Attempting forced visibility capture.");
+  }
+
   try {
     // Check if element is hidden or zero-sized (common issue with portals/tabs)
     const rect = element.getBoundingClientRect();
