@@ -966,7 +966,17 @@ export default function Results() {
       
       {/* Hidden export portal to ensure DOM capture works with canonical renderer */}
       {isExporting && exportData && (
-        <div className="fixed left-0 top-0 opacity-0 pointer-events-none z-[-1]" style={{ width: '794px', height: '1123px', overflow: 'hidden' }}>
+        <div 
+          className="fixed left-0 top-0 pointer-events-none" 
+          style={{ 
+            width: '794px', 
+            minHeight: '1123px', 
+            zIndex: 9999,
+            opacity: 0.01, // Nearly invisible but enough for html2canvas to "see" it
+            backgroundColor: 'white',
+            position: 'fixed'
+          }}
+        >
           <div className="bg-white">
             <ResumePreview 
               template={(opt?.rewrite_level as any) || "modern"} 

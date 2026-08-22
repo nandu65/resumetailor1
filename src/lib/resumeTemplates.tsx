@@ -1957,22 +1957,36 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
     };
 
     // Ensure it's captured at its natural size without scaling or overflow cuts
-    element.style.height = 'auto';
-    element.style.overflow = 'visible';
-    element.style.visibility = 'visible';
-    element.style.display = 'block';
-    element.style.transform = 'none'; // CRITICAL: remove scale-[0.9] etc.
-    element.style.width = '794px'; // Fixed A4 width for consistency
+    element.style.setProperty('height', 'auto', 'important');
+    element.style.setProperty('overflow', 'visible', 'important');
+    element.style.setProperty('visibility', 'visible', 'important');
+    element.style.setProperty('display', 'block', 'important');
+    element.style.setProperty('transform', 'none', 'important');
+    element.style.setProperty('width', '794px', 'important');
+    element.style.setProperty('opacity', '1', 'important');
     
+    // Give browser a micro-tick to apply forced styles
+    await new Promise(r => setTimeout(r, 100));
+
     const canvas = await html2canvas(element, {
       scale: 2, 
       useCORS: true,
-      logging: false,
+      logging: true, // Enable logging for debugging
       backgroundColor: "#ffffff",
       width: 794,
       height: element.scrollHeight || 1123,
       windowWidth: 794,
-      windowHeight: element.scrollHeight || 1123
+      windowHeight: element.scrollHeight || 1123,
+      onclone: (clonedDoc) => {
+        const clonedEl = clonedDoc.querySelector(`[data-rs-root]`) as HTMLElement || 
+                         clonedDoc.querySelector(".resume-root-container") as HTMLElement;
+        if (clonedEl) {
+          clonedEl.style.height = 'auto';
+          clonedEl.style.opacity = '1';
+          clonedEl.style.visibility = 'visible';
+          clonedEl.style.display = 'block';
+        }
+      }
     });
 
     // Restore original styles
