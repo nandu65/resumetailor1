@@ -1938,6 +1938,16 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
     return;
   }
 
+  // Ensure element is visible in the layout tree
+  const isVisible = (el: HTMLElement) => {
+    const style = window.getComputedStyle(el);
+    return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+  };
+
+  if (!isVisible(element)) {
+    console.warn("Element found but not visible to user. Attempting forced visibility capture.");
+  }
+
   try {
     // Check if element is hidden or zero-sized (common issue with portals/tabs)
     const rect = element.getBoundingClientRect();
@@ -1957,39 +1967,54 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
     };
 
     // Ensure it's captured at its natural size without scaling or overflow cuts
-    element.style.height = 'auto';
-    element.style.overflow = 'visible';
-    element.style.visibility = 'visible';
-    element.style.display = 'block';
-    element.style.transform = 'none'; // CRITICAL: remove scale-[0.9] etc.
-    element.style.width = '794px'; // Fixed A4 width for consistency
+    element.style.setProperty('height', 'auto', 'important');
+    element.style.setProperty('overflow', 'visible', 'important');
+    element.style.setProperty('visibility', 'visible', 'important');
+    element.style.setProperty('display', 'block', 'important');
+    element.style.setProperty('transform', 'none', 'important');
+    element.style.setProperty('width', '794px', 'important');
+    element.style.setProperty('opacity', '1', 'important');
     
+    // Give browser a micro-tick to apply forced styles
+    await new Promise(r => setTimeout(r, 100));
+
     const canvas = await html2canvas(element, {
       scale: 2, 
       useCORS: true,
-      logging: false,
+      logging: true, // Enable logging for debugging
       backgroundColor: "#ffffff",
       width: 794,
       height: element.scrollHeight || 1123,
       windowWidth: 794,
-      windowHeight: element.scrollHeight || 1123
+      windowHeight: element.scrollHeight || 1123,
+      onclone: (clonedDoc) => {
+        const clonedEl = clonedDoc.querySelector(`[data-rs-root]`) as HTMLElement || 
+                         clonedDoc.querySelector(".resume-root-container") as HTMLElement;
+        if (clonedEl) {
+          clonedEl.style.height = 'auto';
+          clonedEl.style.opacity = '1';
+          clonedEl.style.visibility = 'visible';
+          clonedEl.style.display = 'block';
+        }
+      }
     });
 
     // Restore original styles
     Object.assign(element.style, originalStyle);
 
-    const imgData = canvas.toDataURL("image/jpeg", 1.0);
+    const imgData = canvas.toDataURL("image/png", 1.0); // Use PNG for better quality/transparency handling
     
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "pt",
-      format: "a4"
+      format: "a4",
+      compress: true
     });
 
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-    pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
     pdf.save(`${safe}-${template}.pdf`);
   } catch (err) {
     console.error("PDF export failed:", err);
