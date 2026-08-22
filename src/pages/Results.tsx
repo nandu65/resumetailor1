@@ -18,7 +18,7 @@ import {
   downloadResumeMarkdown, 
   downloadCoverLetterPdf 
 } from "@/lib/pdfExport";
-import { downloadResumePdfFromData, downloadResumeDocxFromData, TemplateId, ResumePreview } from "@/lib/resumeTemplates";
+import { downloadResumePdfFromData, downloadResumeDocxFromData, TemplateId, ResumePreview, normalizeResumeSkills } from "@/lib/resumeTemplates";
 import { toast } from "sonner";
 
 interface KeywordDensity { keyword: string; jd_count: number; resume_count: number; importance: "high" | "medium" | "low"; }
