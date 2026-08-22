@@ -423,11 +423,15 @@ export default function ResumeBuilder() {
     }
   };
 
-  const downloadPdf = () => {
+  const downloadPdf = async () => {
+    toast.loading("Preparing PDF...", { duration: 2000 });
+    // Force a small layout sync before capture
+    await new Promise(r => setTimeout(r, 100));
     downloadResumePdfFromData(resumeData, template);
   };
   
   const downloadDocx = () => {
+    toast.info("Generating Word document...");
     downloadResumeDocxFromData(resumeData, template);
   };
 
