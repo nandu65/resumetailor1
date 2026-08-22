@@ -48,19 +48,19 @@ test.describe('Resume Builder Audit Tests', () => {
     // Note: Some might be inside the preview if inline editing is used, but for this test
     // we use the form to ensure state updates preview.
     
-    await page.fill('input[placeholder*="Name"]', sentinel.name);
-    await page.fill('input[placeholder*="Role"]', sentinel.title);
-    await page.fill('input[placeholder*="Email"]', sentinel.email);
-    await page.fill('textarea[placeholder*="Professional summary"]', sentinel.summary);
+    await page.fill('input[name="resume-name"]', sentinel.name);
+    await page.fill('input[name="resume-title"]', sentinel.title);
+    await page.fill('input[name="resume-email"]', sentinel.email);
+    await page.fill('textarea[name="resume-summary"]', sentinel.summary);
     
     // Add Experience
-    await page.getByRole('button', { name: 'Add Experience' }).click();
+    await page.getByRole('button', { name: 'ADD ROLE' }).click();
     await page.fill('input[placeholder="Company"]', sentinel.company);
     await page.fill('input[placeholder="Role"]', sentinel.role);
     await page.fill('textarea[placeholder*="Bullet points"]', sentinel.bullet);
 
     // Add Education
-    await page.getByRole('button', { name: 'Add Education' }).click();
+    await page.getByRole('button', { name: 'ADD SCHOOL' }).click();
     await page.fill('input[placeholder="School"]', sentinel.school);
     await page.fill('input[placeholder="Degree"]', sentinel.degree);
     
