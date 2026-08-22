@@ -124,7 +124,7 @@ export default function ResumeBuilder() {
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const [showEditHint, setShowEditHint] = useState(false);
-  const [showIntro, setShowIntro] = useState(() => !localStorage.getItem("rs-intro-seen"));
+  const [showIntro, setShowIntro] = useState(false);
   const [prefs, setPrefs] = useState<ResumePrefs>(DEFAULT_PREFS);
   const [spellCheckEnabled, setSpellCheckEnabled] = useState(true);
   const restoring = useRef(false);
