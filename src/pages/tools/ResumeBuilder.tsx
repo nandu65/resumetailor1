@@ -110,7 +110,8 @@ export default function ResumeBuilder() {
 
   const [resumeData, setResumeData] = useState<ResumeData>(() => {
     const saved = localStorage.getItem("rs-current-resume");
-    return normalizeResumeSkills(saved ? JSON.parse(saved) : EMPTY_RESUME);
+    const data = saved ? JSON.parse(saved) : EMPTY_RESUME;
+    return normalizeResumeSkills(data);
   });
   const [targetJd, setTargetJd] = useState("");
   const [template, setTemplate] = useState<TemplateId>(() => {
@@ -192,7 +193,7 @@ export default function ResumeBuilder() {
 
   // Persistence & Autosave
   useEffect(() => {
-    // Immediate LocalStorage save for quick recovery
+    if (restoring.current) return;
     if (starter !== "choose" && starter !== "wizard") {
       localStorage.setItem("rs-builder-starter", starter);
       localStorage.setItem("rs-current-resume", JSON.stringify(resumeData));
