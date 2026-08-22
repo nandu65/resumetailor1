@@ -316,11 +316,14 @@ export default function Results() {
                     const data = buildResumeDataFromOptimization(opt);
                     setExportData(data);
                     setIsExporting(true);
-                    // Short delay to allow hidden render
+                    // Long delay to ensure the hidden portal is fully rendered and styles applied
                     setTimeout(async () => {
-                      await downloadResumePdfFromData(data, (opt.rewrite_level as any) || "modern");
-                      setIsExporting(false);
-                    }, 100);
+                      try {
+                        await downloadResumePdfFromData(data, (opt.rewrite_level as any) || "modern");
+                      } finally {
+                        setIsExporting(false);
+                      }
+                    }, 800);
                   }}><FileText className="h-4 w-4 mr-2" /> PDF (Template Match)</DropdownMenuItem>
                   {proOnly && <DropdownMenuItem onClick={async () => {
                     const data = buildResumeDataFromOptimization(opt);
