@@ -2007,7 +2007,8 @@ export async function downloadResumePdfFromData(rawData: ResumeData, template: T
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "pt",
-      format: "a4"
+      format: "a4",
+      compress: true
     });
 
     const pdfWidth = pdf.internal.pageSize.getWidth();
