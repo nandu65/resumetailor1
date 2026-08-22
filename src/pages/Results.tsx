@@ -185,17 +185,34 @@ export default function Results() {
 
   const buildResumeDataFromOptimization = (o: Optimization): any => {
     // Maps flat optimization record back to structured ResumeData for template engine
+    // We try to find existing resume details from the original resume_text if possible
+    const name = o.title?.split("'s")[0] || "Resume Candidate";
+    
     return {
-      name: o.title?.split("'s")[0] || "Resume",
+      name,
       title: o.role || "",
+      email: "",
+      phone: "",
+      location: "",
+      links: [],
       summary: o.professional_summary || "",
       experience: (o.improved_bullets || []).map(b => ({
         company: o.company || "Company",
         role: o.role || "Role",
+        location: "",
+        start: "",
+        end: "",
         bullets: [b.improved]
       })),
+      education: [],
+      projects: [],
       skills: [{ category: "Skills", items: [...(o.skills_to_add || []), ...(o.missing_keywords || [])] }],
-      settings: { fontSize: 11, fontFamily: "Inter, sans-serif" }
+      certifications: [],
+      settings: { 
+        fontSize: 11, 
+        fontFamily: "Inter, sans-serif",
+        sectionOrder: ["summary", "experience", "skills"]
+      }
     };
   };
 
