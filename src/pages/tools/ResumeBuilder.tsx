@@ -120,10 +120,7 @@ export default function ResumeBuilder() {
   });
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<"ai" | "verbatim">("ai");
-  const [starter, setStarter] = useState<"choose" | "scratch" | "uploaded" | "wizard">(() => {
-    const saved = localStorage.getItem("rs-builder-starter");
-    return (saved as any) || "choose";
-  });
+  const [starter, setStarter] = useState<"choose" | "scratch" | "uploaded" | "wizard">("scratch");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const [showEditHint, setShowEditHint] = useState(false);
